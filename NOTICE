@@ -1,0 +1,6 @@
+Hy3 TraceJudge is a personal entry for the 2026 Rhinoceros Bird open-source
+practice challenge. It is not an official Tencent or Tencent Hunyuan release.
+
+Hy3 is an open-source model from Tencent Hunyuan. This project calls a
+user-provided Hy3-compatible endpoint but does not redistribute model weights.
+

@@ -1,0 +1,91 @@
+{
+  "version": "1.0",
+  "policy": "原始大数据不入库；固定上游版本、样本 ID、转换脚本和许可证记录。发布衍生题集前逐条复核源题许可。",
+  "sources": [
+    {
+      "name": "TACO",
+      "kind": "algorithm_problem",
+      "role": "主训练/开发题源，带标准程序与测试",
+      "repository": "https://github.com/FlagOpen/TACO",
+      "dataset": "https://huggingface.co/datasets/BAAI/TACO",
+      "planned_subset": {"dev": 45, "test": 150},
+      "license": "Apache-2.0 repository; individual scraped problem statements may carry source-specific terms",
+      "review_required": true
+    },
+    {
+      "name": "LiveCodeBench",
+      "kind": "algorithm_problem",
+      "role": "时间切分 OOD 测试，降低训练污染",
+      "repository": "https://github.com/LiveCodeBench/LiveCodeBench",
+      "dataset": "https://huggingface.co/datasets/livecodebench/code_generation_lite",
+      "planned_subset": {"ood": 60},
+      "license": "See upstream repository and per-problem source terms",
+      "review_required": true
+    },
+    {
+      "name": "CRUXEval",
+      "kind": "code_reasoning",
+      "role": "代码输入/输出执行推理专项",
+      "repository": "https://github.com/facebookresearch/cruxeval",
+      "planned_subset": {"execution": 60},
+      "license": "See upstream repository",
+      "review_required": true
+    },
+    {
+      "name": "EvalPlus",
+      "kind": "test_augmentation",
+      "role": "HumanEval+/MBPP+ 边界测试设计参考",
+      "repository": "https://github.com/evalplus/evalplus",
+      "planned_subset": {"reference_only": true},
+      "license": "Apache-2.0 repository; base datasets retain their licenses",
+      "review_required": true
+    },
+    {
+      "name": "ProcessBench",
+      "kind": "process_supervision",
+      "role": "首错定位评估器元评测",
+      "repository": "https://github.com/QwenLM/ProcessBench",
+      "dataset": "https://huggingface.co/datasets/Qwen/ProcessBench",
+      "planned_subset": {"meta_eval": 300},
+      "license": "Apache-2.0",
+      "review_required": false
+    },
+    {
+      "name": "PRMBench",
+      "kind": "process_supervision",
+      "role": "错误步骤与错误类型元评测",
+      "repository": "https://github.com/ssmisya/PRMBench",
+      "dataset": "https://huggingface.co/datasets/hitsmy/PRMBench_Preview",
+      "planned_subset": {"meta_eval": 300},
+      "license": "Apache-2.0",
+      "review_required": false
+    },
+    {
+      "name": "PRM800K",
+      "kind": "process_supervision",
+      "role": "大规模步骤级标签研究参考，不作为默认运行依赖",
+      "repository": "https://github.com/openai/prm800k",
+      "planned_subset": {"reference_only": true},
+      "license": "MIT",
+      "review_required": false
+    },
+    {
+      "name": "BIG-Bench Mistake",
+      "kind": "error_localization",
+      "role": "首错定位方法与基准参考",
+      "repository": "https://github.com/WHGTyen/BIG-Bench-Mistake",
+      "planned_subset": {"reference_only": true},
+      "license": "See upstream repository",
+      "review_required": true
+    },
+    {
+      "name": "Verify-then-Generate",
+      "kind": "process_verification",
+      "role": "先验证后生成流程与人工标注参考",
+      "repository": "https://github.com/eth-lre/verify-then-generate",
+      "planned_subset": {"reference_only": true},
+      "license": "CC BY-SA (verify exact version upstream)",
+      "review_required": true
+    }
+  ]
+}

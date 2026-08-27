@@ -1,0 +1,22 @@
+{
+  "version": "tracejudge_seed_v1",
+  "construction": "原创参数化题；按固定奇偶序号划分 dev/test，仅供工程验收",
+  "difficulty_basis": "状态/算法复杂度、证明负担、边界与反例强度",
+  "counts": {
+    "all": 6,
+    "dev": 3,
+    "test": 3
+  },
+  "ids": {
+    "dev": [
+      "two_sum_exists",
+      "max_subarray",
+      "coin_change"
+    ],
+    "test": [
+      "bracket_balance",
+      "grid_shortest_path",
+      "lis_length"
+    ]
+  }
+}

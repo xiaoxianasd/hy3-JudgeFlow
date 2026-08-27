@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hy3-tracejudge"
+version = "0.1.0"
+description = "Personal Rhinoceros Bird challenge entry: process-level evaluation and error localization for verifiable algorithm tasks"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "Challenge participant"}]
+dependencies = [
+  "hypothesis>=6.100,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9"]
+
+[project.scripts]
+tracejudge = "hy3_tracejudge.cli:main"
+tracejudge-web = "hy3_tracejudge.web:main"
+
+[tool.setuptools.packages.find]
+include = ["hy3_tracejudge*"]
+
+[tool.setuptools.package-data]
+hy3_tracejudge = ["web_assets/*.html"]
