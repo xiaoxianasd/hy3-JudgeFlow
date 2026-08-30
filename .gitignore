@@ -5,6 +5,9 @@ __pycache__/
 venv/
 .pytest_cache/
 .hypothesis/
+.workbuddy/
 *.egg-info/
 tmp/
 reports/hy3_raw/
+data/raw/*
+!data/raw/README.md

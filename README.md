@@ -20,7 +20,8 @@
 | 模块 | 当前状态 |
 |---|---|
 | Hy3 OpenAI-compatible / TokenHub 接入 | 已实现 |
-| Web 与 CLI 完整评估流程 | 已实现 |
+| 生产 Web/API、鉴权、限流与异步任务队列 | 已实现 |
+| MySQL 持久化队列、租约恢复与 Alembic 迁移 | 已实现 |
 | 固定测试、隐藏测试与 Hypothesis 差分验证 | 已实现 |
 | Single / Supervisor / Bounded Swarm | 已实现 |
 | 6 道 easy / medium / hard 种子题 | 已实现 |
@@ -41,6 +42,7 @@ Hy3_TraceJudge.bat doctor
 Hy3_TraceJudge.bat fixtures
 Hy3_TraceJudge.bat benchmark
 Hy3_TraceJudge.bat test
+Hy3_TraceJudge.bat database
 ```
 
 启动 Web 后会自动打开 `http://127.0.0.1:8765`；承载后端日志的 CMD 窗口必须保持打开。
@@ -131,13 +133,15 @@ tracejudge doctor
 
 ## 3. 运行应用
 
-Web Demo：
+Web/API（开发模式）：
 
 ```bash
 tracejudge serve --port 8765
 ```
 
 浏览器打开 `http://127.0.0.1:8765`，选择题目和编排模式后运行：
+
+Web 端使用版本化 `/api/v1` 协议：提交评估后立即得到任务编号，再轮询任务状态，避免 Hy3 长耗时请求持续占用 HTTP 连接。MySQL 保存任务、租约、重试状态和最终结果，服务重启后仍可查询；MySQL 8 的 `SKIP LOCKED` 支持多 Worker/多实例安全抢占。生产环境还会强制 API 密钥、有限队列、提交限流、请求大小限制、安全响应头与隐藏测试脱敏。完整部署方式见 [生产 Web/API 文档](docs/PRODUCTION.md)，队列细节见 [MySQL 任务队列文档](docs/DATABASE.md)。
 
 - `supervisor`（默认）：生成 1 次，5 个专业 Agent 并行审查，共 6 次 Hy3 调用；
 - `swarm`：在 Supervisor 基础上，发现冲突或错误时最多追加 1 次仲裁；
@@ -157,6 +161,23 @@ tracejudge solve --problem coin_change --review-mode supervisor --hypothesis-exa
 ```bash
 tracejudge benchmark --source hy3 --review-mode supervisor --hypothesis-examples 60 --output reports/hy3_benchmark.json
 ```
+
+### 扩展外部题集（MBPP+ / HumanEval+）
+
+种子集之外，可以从 EvalPlus 导入函数级外部题扩大真实模型评测的分层样本：
+
+```bash
+python scripts/import_evalplus.py            # 自动下载（需网络）并沙盒验证后导入
+python scripts/import_evalplus.py --source mbpp --max 120
+```
+
+导入题写入 `data/problems_external.json`，标记 `tier: external`：
+
+- 每题的参考实现与测试都会在项目沙盒中实际执行验证，失败即拒绝导入；
+- `rubric/gold_steps` 为空，过程判定依赖固定测试 + Hy3 多 Agent 证据（Hypothesis 差分对外部题自动关闭并在报告中标注）；
+- 难度为 AST 复杂度启发式，需人工复核；
+- fixtures 构造集验收仍然只用 6 道原创种子题，不受外部题影响；
+- 真实基准可用 `--tier seed|external|all` 控制范围，例如 `tracejudge benchmark --source hy3 --tier external --limit 30`。
 
 不依赖模型服务的评估器验收：
 
@@ -216,12 +237,26 @@ python scripts/prepare_data.py
 python -m unittest discover -s tests -v
 ```
 
-候选程序在隔离 Python 子进程中运行，禁用了导入和危险 builtins，并设置超时；这用于稳定评测，不是对恶意代码的安全级沙盒。公开服务应进一步放入无网络、只读文件系统、有限 CPU/内存的容器（如 Docker/nsjail）。Web 服务默认只监听 `127.0.0.1`。
+候选代码统一通过 `SandboxExecutor` 执行。默认 `local` 后端供 Windows 开发和单元测试使用，包含 AST 策略、受限 builtins、输入/输出上限和强制超时，但它不是宿主机安全边界。生产环境必须使用一次性 Docker 后端：
+
+```bash
+docker build -f sandbox/Dockerfile -t hy3-process-sandbox:py3.12 .
+```
+
+```dotenv
+APP_ENV=production
+SANDBOX_BACKEND=docker
+ALLOW_UNSAFE_LOCAL_EXECUTION=false
+SANDBOX_DOCKER_IMAGE=hy3-process-sandbox:py3.12
+```
+
+Docker 后端不挂载宿主目录，并启用无网络、只读根文件系统、非 root、CPU/内存/PID、临时目录和输出限制。`APP_ENV=production` 时本地后端会被强制拒绝，不能静默降级。完整威胁模型、构建和验收方式见 [安全沙盒文档](docs/SANDBOX.md)。Web/API 默认只监听 `127.0.0.1`，上线时通过 TLS 反向代理发布；生产配置样例见 `.env.production.example`。
 
 ## 目录
 
 ```text
-hy3_tracejudge/       Hy3 客户端、多Agent编排、沙盒、Hypothesis、评估器、CLI/Web
+hy3_tracejudge/       Hy3 客户端、多Agent编排、沙盒、Hypothesis、评估器、生产 API
+migrations/           MySQL/Alembic 数据库结构迁移
 data/problems.json    可运行种子题集与金标准过程
 data/manifests/       外部数据栈、许可和抽样计划
 data/annotations/     人工抽检模板
@@ -234,6 +269,9 @@ docs/                 方法与案例报告
 ## 文档
 
 - [方案设计：架构、数据流、Agent 编排与接口](docs/DESIGN.md)
+- [安全沙盒设计、生产配置与验收](docs/SANDBOX.md)
+- [生产 Web/API：鉴权、异步任务、限流与部署](docs/PRODUCTION.md)
+- [MySQL 持久化任务队列：租约、重试、迁移与运维](docs/DATABASE.md)
 - [过程评估方法与有效性验证](docs/METHOD.md)
 - [当前结果与典型案例](docs/RESULTS.md)
 - [题集与数据栈](data/README.md)

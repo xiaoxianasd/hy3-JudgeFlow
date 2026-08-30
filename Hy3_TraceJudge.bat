@@ -16,6 +16,7 @@ if /I "%APP_COMMAND%"=="doctor" goto doctor
 if /I "%APP_COMMAND%"=="fixtures" goto fixtures
 if /I "%APP_COMMAND%"=="benchmark" goto benchmark
 if /I "%APP_COMMAND%"=="test" goto tests
+if /I "%APP_COMMAND%"=="database" goto database
 
 :menu
 cls
@@ -29,10 +30,12 @@ echo   3. Run offline evaluator validation
 echo   4. Run real Hy3 benchmark
 echo   5. Run project tests
 echo   6. Install or repair Python environment
+echo   7. Initialize or upgrade MySQL task database
 echo   0. Exit
 echo.
-choice /C 1234560 /N /M "Select: "
-if errorlevel 7 goto end
+choice /C 12345670 /N /M "Select: "
+if errorlevel 8 goto end
+if errorlevel 7 goto database
 if errorlevel 6 goto install
 if errorlevel 5 goto tests
 if errorlevel 4 goto benchmark
@@ -76,8 +79,8 @@ if errorlevel 1 exit /b 1
 echo [2/3] Updating pip ...
 "%APP_PYTHON%" -m pip install --upgrade pip
 if errorlevel 1 exit /b 1
-echo [3/3] Installing Hy3 TraceJudge and Hypothesis ...
-"%APP_PYTHON%" -m pip install -e "."
+echo [3/3] Installing TraceJudge, production Web/API, and test tools ...
+"%APP_PYTHON%" -m pip install -e ".[dev]"
 exit /b %errorlevel%
 
 :check_config
@@ -99,6 +102,16 @@ call :ensure_environment
 if errorlevel 1 goto failed
 call :check_config
 if errorlevel 1 goto failed
+findstr /B /I /C:"QUEUE_BACKEND=mysql" ".env" >nul 2>nul
+if errorlevel 1 goto check_hy3
+echo [Check] Checking MySQL task database ...
+"%APP_CLI%" database status
+if errorlevel 1 (
+    echo [Error] MySQL is unavailable or the schema is not initialized.
+    echo Run option 7 or: Hy3_TraceJudge.bat database
+    goto failed
+)
+:check_hy3
 echo [Check] Connecting to Hy3 TokenHub ...
 "%APP_CLI%" doctor
 if not errorlevel 1 goto launch_web
@@ -153,6 +166,18 @@ goto succeeded
 call :ensure_environment
 if errorlevel 1 goto failed
 "%APP_PYTHON%" -m unittest discover -s tests -v
+if errorlevel 1 goto failed
+goto succeeded
+
+:database
+call :ensure_environment
+if errorlevel 1 goto failed
+call :check_config
+if errorlevel 1 goto failed
+echo [Database] Creating/upgrading the MySQL task database ...
+"%APP_CLI%" database upgrade
+if errorlevel 1 goto failed
+"%APP_CLI%" database status
 if errorlevel 1 goto failed
 goto succeeded
 

@@ -191,7 +191,7 @@ def evaluate_answer(
         "judge_sources": [
             "fixed_tests",
             "rubric_rules",
-            *(["hypothesis"] if use_hypothesis else []),
+            *(["hypothesis"] if hypothesis and hypothesis.get("enabled", True) else []),
             *(
                 ["hy3_step_review"]
                 if hy3_client is not None and review_mode == "single"

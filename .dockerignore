@@ -1,0 +1,12 @@
+.git
+.env
+.venv
+.hypothesis
+.workbuddy
+__pycache__
+*.pyc
+data
+docs
+reports
+tests
+tmp

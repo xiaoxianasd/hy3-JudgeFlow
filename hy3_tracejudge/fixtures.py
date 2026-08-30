@@ -28,7 +28,10 @@ def build_labeled_samples(problems: list[dict[str, Any]]) -> list[dict[str, Any]
     The mix intentionally becomes harder: easy has 3 sound / 1 wrong,
     medium has 2 sound / 1 unsupported-correct / 1 wrong, and hard has
     1 sound / 1 unsupported-correct / 2 wrong samples per problem.
+    Auto-imported external problems (fault=None) are skipped: the fixture
+    suite stays on hand-curated seed problems with reviewed single defects.
     """
+    problems = [problem for problem in problems if problem.get("fault")]
     profiles = {
         "easy": ["gold", "gold", "gold", "wrong"],
         "medium": ["gold", "gold", "unsupported_correct", "wrong"],

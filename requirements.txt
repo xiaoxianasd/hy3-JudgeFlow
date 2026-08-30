@@ -1,1 +1,7 @@
+alembic>=1.13,<2
+cryptography>=42,<47
+fastapi>=0.115,<1
 hypothesis>=6.100,<7
+pymysql>=1.1,<2
+sqlalchemy>=2.0,<3
+uvicorn[standard]>=0.30,<1

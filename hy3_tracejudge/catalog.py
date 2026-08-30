@@ -8,6 +8,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = ROOT / "data" / "problems.json"
+EXTERNAL_PATH = ROOT / "data" / "problems_external.json"
 
 
 @lru_cache(maxsize=1)
@@ -15,6 +16,14 @@ def load_problems() -> list[dict[str, Any]]:
     with DATA_PATH.open("r", encoding="utf-8") as stream:
         problems = json.load(stream)
     validate_catalog(problems)
+    if EXTERNAL_PATH.exists():
+        external = json.loads(EXTERNAL_PATH.read_text(encoding="utf-8"))
+        validate_catalog(external)
+        seed_ids = {problem["id"] for problem in problems}
+        for problem in external:
+            if problem["id"] in seed_ids:
+                raise ValueError(f"External problem id collides with seed: {problem['id']}")
+        problems.extend(external)
     return problems
 
 

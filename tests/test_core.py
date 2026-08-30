@@ -13,6 +13,16 @@ from hy3_tracejudge.property_testing import find_counterexample
 class CatalogTests(unittest.TestCase):
     def test_all_reference_solutions_pass_fixed_tests(self) -> None:
         for problem in load_problems():
+            if problem.get("tier") == "external":
+                continue  # 导入时已逐题沙盒验证；这里仅全量覆盖种子题
+            with self.subTest(problem=problem["id"]):
+                result = reference_check(problem)
+                self.assertIsNone(result.harness_error)
+                self.assertTrue(result.all_passed)
+
+    def test_imported_external_problems_spot_check(self) -> None:
+        external = [p for p in load_problems() if p.get("tier") == "external"][:5]
+        for problem in external:
             with self.subTest(problem=problem["id"]):
                 result = reference_check(problem)
                 self.assertIsNone(result.harness_error)

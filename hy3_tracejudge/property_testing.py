@@ -97,6 +97,19 @@ def find_counterexample(
     random_seed: int = 20260824,
 ) -> dict[str, Any]:
     """Use Hypothesis generation and shrinking to find a differential failure."""
+    try:
+        strategy = strategy_for(problem["id"])
+    except KeyError:
+        return {
+            "enabled": False,
+            "found": False,
+            "engine": "none",
+            "reason": "external problem without curated Hypothesis strategy",
+            "examples_checked": 0,
+            "max_examples": max_examples,
+            "seed": random_seed,
+            "counterexample": None,
+        }
     failures: list[dict[str, Any]] = []
     checked = 0
 
@@ -109,7 +122,7 @@ def find_counterexample(
         suppress_health_check=(HealthCheck.too_slow,),
         phases=(Phase.generate, Phase.target, Phase.shrink),
     )
-    @given(strategy_for(problem["id"]))
+    @given(strategy)
     def differential(case: dict[str, Any]) -> None:
         nonlocal checked
         checked += 1

@@ -34,11 +34,12 @@
     {
       "name": "EvalPlus",
       "kind": "test_augmentation",
-      "role": "HumanEval+/MBPP+ 边界测试设计参考",
+      "role": "MBPP+/HumanEval+ 函数级扩展题集：经 scripts/import_evalplus.py 沙盒验证后导入 data/problems_external.json",
       "repository": "https://github.com/evalplus/evalplus",
-      "planned_subset": {"reference_only": true},
+      "planned_subset": {"imported_external": "auto, capped per run"},
       "license": "Apache-2.0 repository; base datasets retain their licenses",
-      "review_required": true
+      "review_required": true,
+      "notes": "外部题 tier=external；rubric/gold_steps 为空，过程判定依赖执行证据与 Hy3 Agent；难度为 AST 启发式，需人工复核"
     },
     {
       "name": "ProcessBench",

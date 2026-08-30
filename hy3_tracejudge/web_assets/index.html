@@ -3,40 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
   <title>Hy3 TraceJudge</title>
-  <style>
-    :root{--ink:#15231f;--muted:#62706b;--paper:#f4f1e8;--panel:#fffdf7;--green:#176b52;--lime:#d8ef8f;--red:#ad3b35;--line:#d7d5ca}
-    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 10%,#eef6c8,transparent 32%),var(--paper);color:var(--ink);font:15px/1.6 system-ui,"Microsoft YaHei",sans-serif}
-    main{max-width:1180px;margin:auto;padding:34px 24px 70px}.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:12px;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-weight:900}.kicker{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--green);font-weight:800}h1{font-size:clamp(36px,7vw,78px);line-height:.95;letter-spacing:-.055em;margin:32px 0 14px;max-width:850px}.lead{font-size:18px;color:var(--muted);max-width:740px}.layout{display:grid;grid-template-columns:360px 1fr;gap:18px;margin-top:34px}.card{background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 14px 36px #273b3210}.label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}select,input,button{width:100%;border-radius:11px;border:1px solid var(--line);padding:12px;font:inherit;margin:7px 0 16px;background:white}button{background:var(--green);color:white;border:0;font-weight:800;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hint{color:var(--muted);font-size:13px;margin:-9px 0 16px}.status{display:flex;gap:8px;align-items:center;margin:8px 0 20px}.dot{width:9px;height:9px;border-radius:99px;background:#aaa}.dot.ok{background:#24a56e}.pipeline{display:grid;gap:8px;margin-top:20px}.pipe{display:flex;gap:10px;padding:10px;border-left:3px solid var(--line)}.pipe.done{border-color:var(--green)}pre{white-space:pre-wrap;word-break:break-word;background:#17231f;color:#dcecdf;padding:17px;border-radius:13px;max-height:390px;overflow:auto}.empty{display:grid;place-items:center;min-height:420px;color:var(--muted);text-align:center}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{padding:14px;background:#f0f5df;border-radius:13px}.metric b{font-size:25px;display:block}.steps{display:grid;gap:10px}.step{border-left:4px solid var(--green);padding:9px 14px;background:#f8f7f1;border-radius:0 10px 10px 0}.step.bad{border-color:var(--red)}.agents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.agent{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfaf4}.agent.bad{border-color:#d59a95;background:#fff5f3}.agent small{display:block;color:var(--muted)}.badge{display:inline-block;padding:2px 8px;border-radius:99px;background:#e5efcc;font-size:12px;margin-left:6px}.badge.bad{background:#f7d8d4;color:var(--red)}@media(max-width:800px){.layout{grid-template-columns:1fr}.metrics,.agents{grid-template-columns:1fr}h1{font-size:48px}}
-  </style>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/app.js" defer></script>
 </head>
-<body><main>
+<body>
+<main>
   <div class="brand"><div class="mark">H3</div><div><div class="kicker">Rhinoceros Bird Challenge</div><strong>Hy3 TraceJudge</strong></div></div>
   <h1>答案对了，<br>过程真的成立吗？</h1>
   <p class="lead">调用 Hy3 生成完整算法解答；固定测试和 Hypothesis 验证实现，规则与 Hy3 交叉审查逐步定位首错。</p>
   <div class="layout">
-    <section class="card">
-      <div class="label">Hy3 endpoint</div><div class="status"><span id="dot" class="dot"></span><span id="health">正在检查…</span></div>
-      <label class="label" for="problem">评测题目</label><select id="problem"></select>
-      <div id="statement" style="color:var(--muted);min-height:92px"></div>
+    <section class="card controls">
+      <div class="label">Service status</div><div class="status"><span id="dot" class="dot"></span><span id="health">正在检查…</span></div>
+      <div id="authGroup" hidden>
+        <label class="label" for="apiKey">API 访问密钥</label>
+        <input id="apiKey" type="password" autocomplete="off" maxlength="512" placeholder="输入 WEB_API_KEY">
+        <p class="hint">密钥仅保存在当前浏览器标签页，不会写入页面或服务器日志。</p>
+        <button id="checkKey" class="secondary" type="button">保存密钥并检查连接</button>
+      </div>
+      <label class="label" for="problem">选择要让 Hy3 解答的题目</label>
+      <div class="problem-filters">
+        <input id="problemSearch" type="search" autocomplete="off" placeholder="搜索题名或题号">
+        <select id="difficulty" aria-label="按难度筛选题目">
+          <option value="all">全部难度</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <select id="problem" aria-describedby="problemCount"></select>
+      <div id="problemCount" class="hint problem-count"></div>
+      <div id="problemMeta" class="problem-meta"></div>
+      <div id="statement" class="statement"></div>
       <label class="label" for="examples">Hypothesis 自动测试输入上限</label><input id="examples" type="number" min="1" max="500" value="60">
       <label class="label" for="reviewMode">多 Agent 编排模式</label>
       <select id="reviewMode"><option value="supervisor">Supervisor · 5 专家并行</option><option value="swarm">Bounded Swarm · 冲突仲裁</option><option value="single">Single · 单评审基线</option></select>
       <div id="modeHint" class="hint"></div>
-      <button id="run">调用 Hy3 并开始评估</button>
+      <button id="run" type="button">调用 Hy3 解答并评估所选题</button>
       <div class="pipeline">
         <div class="pipe">01 · Hy3 生成分步解答</div><div class="pipe">02 · 固定/隐藏用例执行</div><div class="pipe">03 · Hypothesis 搜索最小反例</div><div class="pipe">04 · Supervisor 分派专业 Agent</div><div class="pipe">05 · 汇总证据并定位首错</div>
       </div>
     </section>
-    <section id="result" class="card empty"><div><b>等待一次完整评估</b><br>选择题目后点击左侧按钮</div></section>
+    <section id="result" class="card empty"><div><b>等待一次完整评估</b><br>从下拉框选择具体题目，再让 Hy3 生成答案</div></section>
   </div>
 </main>
-<script>
-let problems=[];const $=s=>document.querySelector(s);const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-async function init(){problems=await fetch('/api/problems').then(r=>r.json());$('#problem').innerHTML=problems.map(p=>`<option value="${p.id}">${p.title} · ${p.difficulty}</option>`).join('');showProblem();fetch('/api/health').then(async r=>{const v=await r.json();$('#health').textContent=v.ok?`${v.requested_model} 已连接 · ${v.latency_ms}ms`:(v.error||'未连接');$('#dot').classList.toggle('ok',!!v.ok)}).catch(e=>$('#health').textContent=e.message)}
-function showProblem(){const p=problems.find(x=>x.id===$('#problem').value);if(p)$('#statement').textContent=p.statement}
-function showMode(){const hints={supervisor:'推荐：5 个专业 Agent 并行审查，额外调用 Hy3 5 次。',swarm:'5 个专家并行；存在冲突或错误时再调用 1 次仲裁。',single:'兼容基线：仅调用 1 次通用过程评审。'};$('#modeHint').textContent=hints[$('#reviewMode').value]}
-function renderAgents(e){const o=e.orchestration;if(!o)return `<p>当前使用 Single 基线评审。</p>`;const cards=o.specialist_reviews.map(x=>{const failed=x.status!=='completed'||x.valid===false;const state=x.status!=='completed'?'调用失败':(x.valid?'通过':'发现问题');return `<div class="agent ${failed?'bad':''}"><b>${esc(x.agent)}</b><span class="badge ${failed?'bad':''}">${state}</span><small>审查阶段：${esc(x.stage)} · 置信度 ${Math.round((x.confidence||0)*100)}%</small><div>${esc(x.reason||'无补充说明')}</div>${x.first_error_step!=null?`<small>候选首错：步骤 ${x.first_error_step} · ${esc(x.error_type||'')}</small>`:''}</div>`}).join('');return `<p>拓扑：${esc(o.topology)}；本轮审查模型调用 ${o.model_calls} 次；冲突 ${o.conflicts.length} 项。</p><div class="agents">${cards}</div>${o.arbitration?`<h3>Swarm 仲裁</h3><p>${esc(o.arbitration.rationale||'已完成仲裁')}</p>`:''}`}
-function render(v){const e=v.evaluation,a=v.answer,h=e.hypothesis;$('#result').className='card';$('#result').innerHTML=`<div class="metrics"><div class="metric"><span>最终答案</span><b>${e.final_correct?'正确':'错误'}</b></div><div class="metric"><span>推理过程</span><b>${e.process_correct?'成立':'不成立'}</b></div><div class="metric"><span>首个错误</span><b>${e.first_error_step==null?'—':'步骤 '+e.first_error_step}</b></div></div><h2>推理链</h2><div class="steps">${a.reasoning_steps.map(s=>`<div class="step ${s.id===e.first_error_step?'bad':''}"><b>${s.id}. ${esc(s.title)}</b><div>${esc(s.content)}</div></div>`).join('')}</div><h2>多 Agent 审查</h2>${renderAgents(e)}<h2>验证证据</h2><p>固定测试 ${e.execution.passed}/${e.execution.total}；Hypothesis ${h?(h.found?'发现并缩减出反例':'未发现反例'):'未启用'}；错误类型：${e.error_labels.join('、')||'无'}</p>${h&&h.counterexample?`<pre>${esc(JSON.stringify(h.counterexample,null,2))}</pre>`:''}<h2>Hy3 代码</h2><pre>${esc(a.code)}</pre>`}
-$('#problem').addEventListener('change',showProblem);$('#reviewMode').addEventListener('change',showMode);$('#run').addEventListener('click',async()=>{const b=$('#run');b.disabled=true;b.textContent='运行中：Hy3 与评估器正在工作…';document.querySelectorAll('.pipe').forEach(x=>x.classList.remove('done'));$('#result').className='card empty';$('#result').innerHTML='<div><b>正在执行完整评估</b><br>模型推理可能需要一段时间</div>';try{const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({problem_id:$('#problem').value,hypothesis_examples:Number($('#examples').value),review_mode:$('#reviewMode').value})});const v=await r.json();if(!r.ok)throw new Error(v.error||'请求失败');document.querySelectorAll('.pipe').forEach(x=>x.classList.add('done'));render(v)}catch(e){$('#result').className='card empty';$('#result').innerHTML=`<div style="color:var(--red)"><b>运行失败</b><br>${esc(e.message)}</div>`}finally{b.disabled=false;b.textContent='调用 Hy3 并开始评估'}});showMode();init();
-</script></body></html>
+</body>
+</html>

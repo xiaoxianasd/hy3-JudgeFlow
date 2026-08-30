@@ -109,9 +109,15 @@ def _fixture_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def _filter_tier(problems: list[dict[str, Any]], tier: str) -> list[dict[str, Any]]:
+    if tier == "all":
+        return problems
+    return [problem for problem in problems if problem.get("tier", "seed") == tier]
+
+
 def _hy3_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     client = Hy3Client()
-    selected = load_problems()
+    selected = _filter_tier(load_problems(), args.tier)
     if args.limit:
         selected = selected[: args.limit]
     records = []
@@ -150,6 +156,7 @@ def _hy3_benchmark(args: argparse.Namespace) -> dict[str, Any]:
         "model": client.config.model,
         "endpoint": client.config.base_url,
         "review_mode": args.review_mode,
+        "tier": args.tier,
         "summary": summarize_results(completed),
         "completed": len(completed),
         "failed_runs": len(records) - len(completed),
@@ -201,6 +208,20 @@ def command_serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_database_upgrade(_: argparse.Namespace) -> int:
+    from .api.database_admin import upgrade_database
+
+    _print(upgrade_database())
+    return 0
+
+
+def command_database_status(_: argparse.Namespace) -> int:
+    from .api.database_admin import database_status
+
+    _print(database_status())
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tracejudge", description="Hy3 可验证算法过程评估")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -238,6 +259,12 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--hypothesis-examples", type=int, default=20)
     benchmark.add_argument("--limit", type=int)
     benchmark.add_argument(
+        "--tier",
+        choices=("seed", "external", "all"),
+        default="all",
+        help="hy3 基准的题集范围；seed=仅原创题，external=仅导入题，all=全部",
+    )
+    benchmark.add_argument(
         "--review-mode",
         choices=("single", "supervisor", "swarm"),
         default="supervisor",
@@ -245,10 +272,19 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--output", type=Path)
     benchmark.set_defaults(func=command_benchmark)
 
-    serve_parser = subparsers.add_parser("serve", help="启动本地 Web Demo")
-    serve_parser.add_argument("--host", default="127.0.0.1")
-    serve_parser.add_argument("--port", type=int, default=8765)
+    serve_parser = subparsers.add_parser("serve", help="启动生产级 Web/API 服务")
+    serve_parser.add_argument("--host", help="监听地址；默认读取 WEB_HOST")
+    serve_parser.add_argument("--port", type=int, help="监听端口；默认读取 WEB_PORT")
     serve_parser.set_defaults(func=command_serve)
+
+    database = subparsers.add_parser("database", help="管理 MySQL 任务数据库")
+    database_commands = database.add_subparsers(dest="database_command", required=True)
+    database_commands.add_parser("upgrade", help="创建数据库并升级到最新结构").set_defaults(
+        func=command_database_upgrade
+    )
+    database_commands.add_parser("status", help="检查数据库连接和迁移版本").set_defaults(
+        func=command_database_status
+    )
     return parser
 
 
@@ -256,7 +292,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return int(args.func(args))
-    except (Hy3APIError, KeyError, ValueError, OSError) as exc:
+    except (Hy3APIError, KeyError, ValueError, OSError, RuntimeError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2
 

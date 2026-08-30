@@ -1,48 +1,9 @@
 from __future__ import annotations
 
-import json
-import subprocess
-import sys
 from dataclasses import dataclass, asdict
 from typing import Any
 
-
-RUNNER = r'''
-import collections
-import heapq
-import json
-import math
-import sys
-
-SAFE_BUILTINS = {
-    "abs": abs, "all": all, "any": any, "bool": bool, "dict": dict,
-    "enumerate": enumerate, "filter": filter, "float": float, "int": int,
-    "len": len, "list": list, "map": map, "max": max, "min": min,
-    "range": range, "reversed": reversed, "round": round, "set": set,
-    "sorted": sorted, "str": str, "sum": sum, "tuple": tuple, "zip": zip,
-}
-
-payload = json.loads(sys.stdin.read())
-namespace = {
-    "__builtins__": SAFE_BUILTINS,
-    "collections": collections,
-    "heapq": heapq,
-    "math": math,
-}
-try:
-    exec(compile(payload["code"], "<candidate>", "exec"), namespace)
-    function = namespace[payload["function_name"]]
-    results = []
-    for test in payload["tests"]:
-        try:
-            actual = function(test["input"])
-            results.append({"name": test["name"], "actual": actual, "error": None})
-        except BaseException as exc:
-            results.append({"name": test["name"], "actual": None, "error": type(exc).__name__ + ": " + str(exc)})
-    print(json.dumps({"ok": True, "results": results}, ensure_ascii=False))
-except BaseException as exc:
-    print(json.dumps({"ok": False, "error": type(exc).__name__ + ": " + str(exc)}, ensure_ascii=False))
-'''
+from .sandbox import execute_payload
 
 
 @dataclass
@@ -94,33 +55,21 @@ def run_candidate(
         "function_name": problem["function_name"],
         "tests": [{"name": test["name"], "input": test["input"]} for test in tests],
     }
-    command = [sys.executable, "-I", "-S", "-c", RUNNER]
-    try:
-        process = subprocess.run(
-            command,
-            input=json.dumps(payload, ensure_ascii=False),
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            capture_output=True,
-            timeout=timeout_seconds,
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return ExecutionResult(0, len(tests), False, [], "TimeLimitExceeded")
-    if process.returncode != 0:
-        message = (process.stderr or process.stdout or "runner failed").strip()
-        return ExecutionResult(0, len(tests), False, [], f"RunnerExit{process.returncode}: {message}")
-    try:
-        output = json.loads(process.stdout)
-    except json.JSONDecodeError:
-        return ExecutionResult(0, len(tests), False, [], f"InvalidRunnerOutput: {process.stdout[:300]}")
-    if not output.get("ok"):
-        return ExecutionResult(0, len(tests), False, [], output.get("error", "candidate load failed"))
-    by_name = {item["name"]: item for item in output["results"]}
+    sandbox = execute_payload(payload, timeout_seconds=timeout_seconds)
+    if not sandbox.ok:
+        return ExecutionResult(0, len(tests), False, [], sandbox.error or "candidate load failed")
+    by_name = {item["name"]: item for item in sandbox.results}
     test_results: list[TestResult] = []
     for test in tests:
-        item = by_name[test["name"]]
+        item = by_name.get(test["name"])
+        if item is None:
+            return ExecutionResult(
+                0,
+                len(tests),
+                False,
+                [],
+                f"SandboxProtocolError: missing result for {test['name']}",
+            )
         passed = item["error"] is None and _equivalent(item["actual"], test["expected"])
         test_results.append(
             TestResult(
