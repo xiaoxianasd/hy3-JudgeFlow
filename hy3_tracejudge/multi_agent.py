@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any
@@ -44,6 +46,56 @@ def _confidence(value: Any) -> float:
         return max(0.0, min(float(value), 1.0))
     except (TypeError, ValueError):
         return 0.0
+
+
+def is_adapter_contract_false_positive(
+    problem: dict[str, Any],
+    answer: dict[str, Any],
+    review: dict[str, Any],
+) -> bool:
+    """Detect the known source-signature versus solve_case adapter false positive."""
+    contract = problem.get("adapter_contract")
+    if not isinstance(contract, dict) or contract.get("kind") != "keyword_case_adapter":
+        return False
+    error_types = review.get("error_types")
+    if not isinstance(error_types, list):
+        error_types = [review.get("error_type")]
+    if {item for item in error_types if item} != {"problem_misread"}:
+        return False
+    first_step = review.get("first_error_step")
+    if not isinstance(first_step, int):
+        return False
+    review_text = json.dumps(
+        {
+            "reason": review.get("reason"),
+            "rationale": review.get("rationale"),
+            "evidence": review.get("evidence"),
+            "step_reviews": review.get("step_reviews"),
+        },
+        ensure_ascii=False,
+    ).lower()
+    adapter_markers = ("solve_case", "case", "字典")
+    source_markers = ("原题", "原函数", "直接接收", "位置参数", "函数签名", "断言", "assert")
+    if not any(marker in review_text for marker in adapter_markers):
+        return False
+    if not any(marker in review_text for marker in source_markers):
+        return False
+    target_steps = [
+        item
+        for item in answer.get("reasoning_steps", [])
+        if isinstance(item, dict)
+        and (item.get("id") == first_step or item.get("stage") == "understanding")
+    ]
+    answer_text = json.dumps(target_steps, ensure_ascii=False).lower()
+    if "case" not in answer_text and "字典" not in answer_text:
+        return False
+    fields = contract.get("case_fields", [])
+    if not isinstance(fields, list):
+        return False
+    return all(
+        re.search(rf"(?<![A-Za-z0-9_]){re.escape(str(field).lower())}(?![A-Za-z0-9_])", answer_text)
+        for field in fields
+    )
 
 
 def _normalize_review(spec: Specialist, review: dict[str, Any]) -> dict[str, Any]:
@@ -117,6 +169,7 @@ def _run_specialists(
 
 
 def _build_decision(
+    problem: dict[str, Any],
     answer: dict[str, Any],
     evidence: dict[str, Any],
     reviews: list[dict[str, Any]],
@@ -163,6 +216,17 @@ def _build_decision(
         if review["status"] != "completed":
             conflicts.append(
                 {"kind": "agent_unavailable", "stage": review["stage"], "reason": review["reason"]}
+            )
+            continue
+        if is_adapter_contract_false_positive(problem, answer, review):
+            review["ignored_by_supervisor"] = "adapter_contract_false_positive"
+            conflicts.append(
+                {
+                    "kind": "adapter_contract_false_positive",
+                    "stage": review["stage"],
+                    "agent": review["agent"],
+                    "reason": "原函数直接参数与 solve_case(case) 是已声明的等价适配。",
+                }
             )
             continue
         if review["valid"] is False and review["confidence"] >= 0.65:
@@ -236,7 +300,7 @@ def run_multi_agent_review(
     if mode not in {"supervisor", "swarm"}:
         raise ValueError(f"Unsupported multi-agent mode: {mode}")
     reviews, metadata = _run_specialists(client, problem, answer, evidence)
-    decision, conflicts = _build_decision(answer, evidence, reviews)
+    decision, conflicts = _build_decision(problem, answer, evidence, reviews)
     arbitration = None
     arbitration_metadata = None
     should_arbitrate = mode == "swarm" and (

@@ -12,4 +12,4 @@ annotations/                  人工抽检与仲裁
 meta_eval/                    ProcessBench / PRMBench 固定子集
 ```
 
-统一问题记录的最小字段是：`id/source/source_record_id/title/statement/difficulty/function_name/tests/reference_solution/gold_steps/rubric/content_sha256`。`scripts/prepare_data.py` 可重建当前 seed split；大型上游数据应另写适配器并在 manifest 中固定 revision 和样本 ID。
+统一问题记录的最小字段是：`id/source/source_record_id/title/statement/difficulty/function_name/tests/reference_solution/gold_steps/rubric/content_sha256`。外部函数题还保留 `source_statement` 与 `adapter_contract`，确保上游原函数签名和本项目 `solve_case(case)` 执行接口可以追溯且不会在过程评审中被误判。`scripts/prepare_data.py` 可重建当前 seed split；大型上游数据应另写适配器并在 manifest 中固定 revision 和样本 ID。

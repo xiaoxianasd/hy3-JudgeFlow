@@ -35,6 +35,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from hy3_tracejudge.catalog import normalize_external_problem  # noqa: E402
 from hy3_tracejudge.executor import run_cases  # noqa: E402
 
 RAW_DIR = ROOT / "data" / "raw" / "evalplus"
@@ -287,6 +288,18 @@ def convert_record(record: dict[str, Any], source_tag: str) -> tuple[dict[str, A
         "difficulty": _difficulty(code),
         "difficulty_basis": f"AST 复杂度启发式（≤{DIFFICULTY_THRESHOLDS['easy']} easy / ≤{DIFFICULTY_THRESHOLDS['medium']} medium / 其余 hard），需人工复核",
         "statement": statement,
+        "source_statement": statement,
+        "source_function_name": function_name,
+        "adapter_contract": {
+            "kind": "keyword_case_adapter",
+            "entrypoint": "solve_case(case)",
+            "source_entrypoint": function_name,
+            "case_fields": list(first_case),
+            "equivalence": (
+                "原题中的直接参数调用描述任务语义；TraceJudge 将这些参数按名称装入 "
+                "case 字典，两种接口语义等价。"
+            ),
+        },
         "function_name": "solve_case",
         "input_schema": {name: _type_tag(value) for name, value in first_case.items()},
         "constraints": ["外部导入题（MBPP+/HumanEval+）未提供显式约束；规模以测试用例为准"],
@@ -300,7 +313,7 @@ def convert_record(record: dict[str, Any], source_tag: str) -> tuple[dict[str, A
         "boundary_cases": [],
         "source": f"{source_tag} (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证",
     }
-    return problem, ""
+    return normalize_external_problem(problem), ""
 
 
 def _same(derived: Any, expected: Any) -> bool:

@@ -7,6 +7,7 @@ import uuid
 from typing import Any
 
 from ..hy3_client import Hy3APIError
+from ..submissions import SubmissionSandboxRequired
 from .database import DatabaseUnavailable, MySQLJobStore
 from .jobs import JobRunner, run_evaluation_job
 
@@ -65,13 +66,13 @@ class DatabaseEvaluationJobManager:
                 self._threads.append(thread)
                 thread.start()
 
-    def submit(self, problem_id: str, hypothesis_examples: int, review_mode: str) -> dict[str, Any]:
+    def submit(self, problem_id: str, hypothesis_examples: int, review_mode: str, *, submission: dict[str, Any] | None = None) -> dict[str, Any]:
         with self._lock:
             if self._closed:
                 from .jobs import JobQueueFull
 
                 raise JobQueueFull("evaluation service is shutting down")
-        return self._store.enqueue(problem_id, hypothesis_examples, review_mode)
+        return self._store.enqueue(problem_id, hypothesis_examples, review_mode, submission=submission)
 
     def snapshot(self, job_id: str) -> dict[str, Any]:
         return self._store.get(job_id)
@@ -135,14 +136,22 @@ class DatabaseEvaluationJobManager:
             self._store.set_phase(job_id, worker_id, phase)
 
         try:
+            options = {"submission": job["submission"]} if job.get("submission") is not None else {}
             result = self._runner(
                 job["problem_id"],
                 int(job["hypothesis_examples"]),
                 str(job["review_mode"]),
                 update_phase,
+                **options,
             )
             if not self._store.complete(job_id, worker_id, result):
                 LOGGER.error("Completion ignored because lease was lost for job %s", job_id)
+        except SubmissionSandboxRequired:
+            self._store.fail_or_retry(
+                job_id, worker_id,
+                {"code": "submission_sandbox_required", "message": "用户代码任务需要 Docker 安全沙盒，请检查配置后重新提交"},
+                retryable=False,
+            )
         except Hy3APIError:
             LOGGER.exception("Hy3 evaluation job %s failed", job_id)
             self._store.fail_or_retry(

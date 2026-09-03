@@ -6,7 +6,7 @@ from hy3_tracejudge.catalog import get_problem, load_problems
 from hy3_tracejudge.evaluator import evaluate_answer
 from hy3_tracejudge.executor import reference_check
 from hy3_tracejudge.fixtures import make_answer
-from hy3_tracejudge.hy3_client import Hy3Client, Hy3Config
+from hy3_tracejudge.hy3_client import Hy3APIError, Hy3Client, Hy3Config
 from hy3_tracejudge.property_testing import find_counterexample
 
 
@@ -27,6 +27,14 @@ class CatalogTests(unittest.TestCase):
                 result = reference_check(problem)
                 self.assertIsNone(result.harness_error)
                 self.assertTrue(result.all_passed)
+
+    def test_external_problem_declares_normalized_adapter_contract(self) -> None:
+        problem = get_problem("mbpp_Mbpp/77")
+        self.assertEqual(problem["adapter_contract"]["entrypoint"], "solve_case(case)")
+        self.assertEqual(problem["adapter_contract"]["case_fields"], ["n"])
+        self.assertIn("TraceJudge 统一执行接口", problem["statement"])
+        self.assertIn("不得将合法的 case 字典描述判为题意误读", problem["statement"])
+        self.assertNotIn("TraceJudge 统一执行接口", problem["source_statement"])
 
 
 class PropertyTestingTests(unittest.TestCase):
@@ -87,6 +95,17 @@ class FakeHy3(Hy3Client):
 
 
 class Hy3ClientTests(unittest.TestCase):
+    def test_invalid_structured_json_is_classified_as_upstream_error(self) -> None:
+        problem = get_problem("mbpp_Mbpp/123")
+        fake = FakeHy3(
+            {
+                "choices": [{"message": {"content": "not a JSON object"}}],
+                "usage": {"completion_tokens": 4},
+            }
+        )
+        with self.assertRaisesRegex(Hy3APIError, "invalid structured JSON"):
+            fake.solve(problem)
+
     def test_solve_calls_openai_compatible_hy3_payload(self) -> None:
         problem = get_problem("two_sum_exists")
         answer = make_answer(problem, "gold")

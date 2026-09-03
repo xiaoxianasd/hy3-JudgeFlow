@@ -21,7 +21,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from starlette.concurrency import run_in_threadpool
 
 from ..catalog import get_problem, load_problems
@@ -52,6 +52,29 @@ class APIError(Exception):
         self.code = code
         self.message = message
         self.headers = headers or {}
+
+
+class CodeSubmissionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    problem_id: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$")
+    hypothesis_examples: int = Field(default=60, ge=1, le=500)
+    code: str = Field(min_length=1, max_length=20_000)
+    reasoning_steps: list[str] = Field(default_factory=list, max_length=20)
+
+    @field_validator("code")
+    @classmethod
+    def nonempty_code(cls, value: str) -> str:
+        if not value.strip() or "\x00" in value:
+            raise ValueError("代码不能为空或包含空字符")
+        return value  # Preserve indentation and exact line numbers.
+
+    @field_validator("reasoning_steps")
+    @classmethod
+    def bounded_steps(cls, values: list[str]) -> list[str]:
+        if any(not value.strip() or len(value) > 2000 for value in values):
+            raise ValueError("每个步骤应包含 1–2000 个字符")
+        return [value.strip() for value in values]
 
 
 class SlidingWindowLimiter:
@@ -143,7 +166,7 @@ def _client_address(request: Request, config: WebConfig) -> str:
         return direct
 
 
-async def _bounded_payload(request: Request, config: WebConfig) -> EvaluationRequest:
+async def _bounded_payload(request: Request, config: WebConfig, request_model: type[BaseModel] = EvaluationRequest) -> Any:
     content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
     if content_type != "application/json":
         raise APIError(415, "unsupported_media_type", "Content-Type 必须是 application/json")
@@ -159,7 +182,7 @@ async def _bounded_payload(request: Request, config: WebConfig) -> EvaluationReq
     if not isinstance(raw, dict):
         raise APIError(422, "validation_error", "请求体必须是 JSON 对象")
     try:
-        return EvaluationRequest.model_validate(raw)
+        return request_model.model_validate(raw)
     except ValidationError as exc:
         details = [
             {
@@ -358,6 +381,11 @@ def create_app(
             "authentication_required": config.authentication_required,
             "hypothesis_examples": {"default": 60, "minimum": 1, "maximum": 500},
             "review_modes": sorted(REVIEW_MODES),
+            "code_submission": {
+                "enabled": os.getenv("SANDBOX_BACKEND", "local").strip().lower() == "docker",
+                "language": "python", "max_code_chars": 20_000, "max_steps": 20,
+                "max_step_chars": 2000, "max_request_bytes": config.max_request_bytes,
+            },
         }
 
     @app.get("/api/v1/health/live")
@@ -420,6 +448,17 @@ def create_app(
                     "title": title,
                     "difficulty": item["difficulty"],
                     "statement": item["statement"],
+                    "source_statement": item.get("source_statement") or item["statement"],
+                    "input_schema": item.get("input_schema", {}),
+                    "constraints": item.get("constraints", []),
+                    "public_tests": [
+                        {
+                            "name": test.get("name", ""),
+                            "input": test["input"],
+                            "expected": test["expected"],
+                        }
+                        for test in item.get("public_tests", [])
+                    ],
                     "source": item.get("source", "未标注"),
                     "tier": item.get("tier", "seed"),
                     "function_name": item.get("function_name", "solve_case"),
@@ -440,6 +479,22 @@ def create_app(
         },
     )
     async def create_evaluation(request: Request, principal: str = Depends(require_api_key)):
+        payload = await _bounded_payload(request, config)
+        return await enqueue_evaluation(request, principal, payload)
+
+    @app.post(
+        "/api/v1/code-submissions", status_code=202,
+        openapi_extra={"requestBody": {"required": True, "content": {
+            "application/json": {"schema": CodeSubmissionRequest.model_json_schema()},
+        }}},
+    )
+    async def create_code_submission(request: Request, principal: str = Depends(require_api_key)):
+        payload = await _bounded_payload(request, config, CodeSubmissionRequest)
+        return await enqueue_evaluation(request, principal, payload, submission={
+            "code": payload.code, "reasoning_steps": payload.reasoning_steps,
+        })
+
+    async def enqueue_evaluation(request: Request, principal: str, payload: Any, submission: dict[str, Any] | None = None):
         retry_after = limiter.consume(f"{principal}:{_client_address(request, config)}")
         if retry_after is not None:
             raise APIError(
@@ -448,16 +503,23 @@ def create_app(
                 "提交过于频繁，请稍后重试",
                 {"Retry-After": str(retry_after)},
             )
-        payload = await _bounded_payload(request, config)
         try:
             get_problem(payload.problem_id)
         except KeyError:
             raise APIError(404, "problem_not_found", "指定题目不存在")
+        if submission is not None:
+            if os.getenv("SANDBOX_BACKEND", "local").strip().lower() != "docker":
+                raise APIError(503, "submission_sandbox_required", "提交用户代码必须启用 Docker 安全沙盒，请配置 SANDBOX_BACKEND=docker 后重启服务")
+            if not await run_in_threadpool(docker_probe.ready, os.getenv("SANDBOX_DOCKER_IMAGE", "hy3-process-sandbox:py3.12")):
+                raise APIError(503, "submission_sandbox_unavailable", "Docker 沙盒未就绪，请启动 Docker 并构建沙盒镜像后重试")
         try:
-            job = manager.submit(
+            options = {"submission": submission} if submission is not None else {}
+            job = await run_in_threadpool(
+                manager.submit,
                 payload.problem_id,
                 payload.hypothesis_examples,
-                payload.review_mode,
+                "submission" if submission is not None else payload.review_mode,
+                **options,
             )
         except JobQueueFull:
             raise APIError(

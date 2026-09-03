@@ -6,7 +6,7 @@ from typing import Any
 
 from .executor import run_candidate
 from .hy3_client import Hy3Client
-from .multi_agent import run_multi_agent_review
+from .multi_agent import is_adapter_contract_false_positive, run_multi_agent_review
 from .property_testing import find_counterexample
 from .protocol import validate_answer_shape
 
@@ -139,15 +139,18 @@ def evaluate_answer(
             confidence = float(hy3_review.get("confidence", 0.0) or 0.0)
             llm_step = hy3_review.get("first_error_step")
             if not hy3_review.get("process_correct", True) and confidence >= 0.65:
-                process_correct = False
-                if isinstance(llm_step, int) and (
-                    first_error_step is None or llm_step < first_error_step
-                ):
-                    first_error_step = llm_step
-                    proposed = hy3_review.get("error_types", [])
-                    error_types = [item for item in proposed if item in ERROR_LABELS] or [
-                        "algorithm_error"
-                    ]
+                if is_adapter_contract_false_positive(problem, answer, hy3_review):
+                    hy3_review["ignored_by_supervisor"] = "adapter_contract_false_positive"
+                else:
+                    process_correct = False
+                    if isinstance(llm_step, int) and (
+                        first_error_step is None or llm_step < first_error_step
+                    ):
+                        first_error_step = llm_step
+                        proposed = hy3_review.get("error_types", [])
+                        error_types = [item for item in proposed if item in ERROR_LABELS] or [
+                            "algorithm_error"
+                        ]
         else:
             orchestration = run_multi_agent_review(
                 hy3_client,

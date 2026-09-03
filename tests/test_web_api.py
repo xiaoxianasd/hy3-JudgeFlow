@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from hy3_tracejudge.api.app import create_app
 from hy3_tracejudge.api.config import WebConfig
 from hy3_tracejudge.api.jobs import EvaluationJobManager, JobNotFound, JobQueueFull
+from hy3_tracejudge.catalog import ADAPTER_HEADING, get_problem
 
 
 API_KEY = "test-web-api-key-with-32-characters"
@@ -21,11 +22,14 @@ class FakeManager:
         self.accepting_jobs = True
         self.queue_full = queue_full
         self.submissions: list[tuple[str, int, str]] = []
+        self.code_submissions: list[dict] = []
 
-    def submit(self, problem_id: str, examples: int, mode: str):
+    def submit(self, problem_id: str, examples: int, mode: str, *, submission=None):
         if self.queue_full:
             raise JobQueueFull()
         self.submissions.append((problem_id, examples, mode))
+        if submission is not None:
+            self.code_submissions.append(submission)
         return {
             "id": JOB_ID,
             "status": "queued",
@@ -141,6 +145,117 @@ class WebAPITests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.json()["error"]["code"], "validation_error")
+
+    @patch.dict("os.environ", {"SANDBOX_BACKEND": "docker"})
+    @patch("hy3_tracejudge.api.app.DockerReadinessProbe.ready", return_value=True)
+    def test_code_submission_queues_original_code_and_optional_steps(self, _ready) -> None:
+        code = "\n\ndef solve_case(case):\n    return True\n"
+        response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={
+            "problem_id": "two_sum_exists", "code": code, "reasoning_steps": ["  用户步骤  "],
+        })
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(self.manager.submissions, [("two_sum_exists", 60, "submission")])
+        self.assertEqual(self.manager.code_submissions, [{"code": code, "reasoning_steps": ["用户步骤"]}])
+        self.assertNotIn(code, response.text)
+        self.assertEqual(response.json()["status_url"], f"/api/v1/evaluations/{JOB_ID}")
+
+    def test_code_submission_requires_auth_and_valid_payload(self) -> None:
+        payload = {"problem_id": "two_sum_exists", "code": "def solve_case(case): return True"}
+        self.assertEqual(self.client.post("/api/v1/code-submissions", json=payload).status_code, 401)
+        for invalid in ({"code": "  "}, {"code": "x\x00"}, {"code": 12},
+                        {"reasoning_steps": [""]}, {"reasoning_steps": ["x"] * 21},
+                        {"reasoning_steps": [False]}, {"review_mode": "supervisor"},
+                        {"reference_solution": "must not be accepted"}):
+            with self.subTest(invalid=invalid):
+                response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={**payload, **invalid})
+                self.assertEqual(response.status_code, 422)
+        self.assertEqual(self.manager.submissions, [])
+
+    @patch.dict("os.environ", {"SANDBOX_BACKEND": "local", "ALLOW_UNSAFE_LOCAL_EXECUTION": "true"})
+    def test_code_submission_cannot_use_local_sandbox(self) -> None:
+        response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={
+            "problem_id": "two_sum_exists", "code": "def solve_case(case): return True",
+        })
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"]["code"], "submission_sandbox_required")
+        self.assertFalse(self.client.get("/api/v1/config").json()["code_submission"]["enabled"])
+        self.assertEqual(self.manager.submissions, [])
+
+    @patch.dict("os.environ", {"SANDBOX_BACKEND": "docker"})
+    @patch("hy3_tracejudge.api.app.DockerReadinessProbe.ready", return_value=False)
+    def test_code_submission_fails_closed_when_docker_is_unavailable(self, _ready) -> None:
+        response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={
+            "problem_id": "two_sum_exists", "code": "def solve_case(case): return True",
+        })
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"]["code"], "submission_sandbox_unavailable")
+        self.assertEqual(self.manager.submissions, [])
+
+    def test_code_submission_rejects_oversize_and_unknown_problem(self) -> None:
+        client = TestClient(create_app(test_config(max_request_bytes=100_000), self.manager))
+        for payload in ({"code": "x" * 20001}, {"reasoning_steps": ["x" * 2001]}):
+            response = client.post("/api/v1/code-submissions", headers=self.auth, json={
+                "problem_id": "two_sum_exists", "code": "pass", **payload,
+            })
+            self.assertEqual(response.status_code, 422)
+        response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={"problem_id": "unknown", "code": "pass"})
+        self.assertEqual(response.status_code, 404)
+        response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={"problem_id": "two_sum_exists", "code": "x" * 2000})
+        self.assertEqual(response.status_code, 413)
+
+    def test_code_submissions_share_generation_rate_limit(self) -> None:
+        client = TestClient(create_app(test_config(rate_limit_per_minute=1), self.manager))
+        self.assertEqual(client.post("/api/v1/evaluations", headers=self.auth, json={"problem_id": "two_sum_exists"}).status_code, 202)
+        response = client.post("/api/v1/code-submissions", headers=self.auth, json={"problem_id": "two_sum_exists", "code": "pass"})
+        self.assertEqual(response.status_code, 429)
+
+    def test_problem_details_include_full_public_content(self) -> None:
+        catalog = self.client.get("/api/v1/problems").json()
+        for problem_id in ("two_sum_exists", "mbpp_Mbpp/8"):
+            with self.subTest(problem_id=problem_id):
+                original = get_problem(problem_id)
+                detail = next(item for item in catalog if item["id"] == problem_id)
+                self.assertEqual(detail["input_schema"], original["input_schema"])
+                self.assertEqual(detail["constraints"], original["constraints"])
+                self.assertEqual(detail["public_tests"], original["public_tests"])
+                self.assertEqual(
+                    detail["source_statement"],
+                    original.get("source_statement", original["statement"]),
+                )
+        external = next(item for item in catalog if item["id"] == "mbpp_Mbpp/8")
+        self.assertNotIn(ADAPTER_HEADING, external["source_statement"])
+        self.assertIn(ADAPTER_HEADING, external["statement"])
+
+    def test_problem_details_never_expose_private_evaluation_material(self) -> None:
+        allowed = {
+            "id", "title", "difficulty", "statement", "source_statement", "source",
+            "tier", "function_name", "input_schema", "constraints", "public_tests",
+            "public_test_count", "hidden_test_count",
+        }
+        original = get_problem("two_sum_exists")
+        sample = {
+            **original,
+            "private_annotation": "must-not-leak",
+            "public_tests": [{**original["public_tests"][0], "internal_note": "must-not-leak"}],
+        }
+        with patch("hy3_tracejudge.api.app.load_problems", return_value=[sample]):
+            response = self.client.get("/api/v1/problems")
+        detail = response.json()[0]
+        self.assertEqual(set(detail), allowed)
+        self.assertEqual(set(detail["public_tests"][0]), {"name", "input", "expected"})
+        self.assertNotIn("must-not-leak", response.text)
+        for item in self.client.get("/api/v1/problems").json():
+            self.assertEqual(set(item), allowed)
+
+    def test_homepage_has_professional_heading_and_persistent_details(self) -> None:
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Hy3 JudgeFlow", response.text)
+        self.assertIn("代码解题与过程评估平台", response.text)
+        self.assertNotIn("过程真的成立吗", response.text)
+        self.assertIn('id="problemDetails"', response.text)
+        self.assertIn('id="publicExamples"', response.text)
+        self.assertLess(response.text.index('id="problemDetails"'), response.text.index('id="result"'))
 
     def test_unknown_problem_is_not_accepted(self) -> None:
         response = self.client.post(

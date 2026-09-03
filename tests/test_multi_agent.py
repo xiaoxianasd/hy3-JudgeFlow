@@ -50,6 +50,71 @@ class FakeMultiAgentClient:
         )
 
 
+class FakeAdapterMismatchClient:
+    """Reproduces the former MBPP source-signature false positive."""
+
+    def review_stage(self, problem, answer, evidence, *, agent_name, stage, responsibility):
+        invalid = stage == "understanding"
+        return (
+            {
+                "valid": not invalid,
+                "reviewed_steps": [1] if invalid else [],
+                "first_error_step": 1 if invalid else None,
+                "error_type": "problem_misread" if invalid else None,
+                "reason": (
+                    "原题断言 is_Diff(12345) 直接接收整数，而步骤1使用 case 字典。"
+                    if invalid
+                    else "本阶段未发现问题"
+                ),
+                "evidence": ["原函数直接参数与 case 形式不同"] if invalid else [],
+                "inherited_from_step": None,
+                "confidence": 0.97,
+            },
+            {"usage": {"prompt_tokens": 5, "completion_tokens": 2}},
+        )
+
+    def review(self, problem, answer, evidence):
+        return (
+            {
+                "step_reviews": [
+                    {
+                        "step": 1,
+                        "valid": False,
+                        "error_type": "problem_misread",
+                        "reason": "原函数直接接收整数，但答案使用 solve_case 的 case 字典。",
+                    }
+                ],
+                "process_correct": False,
+                "first_error_step": 1,
+                "error_types": ["problem_misread"],
+                "confidence": 0.97,
+                "rationale": "原题直接参数调用与 case 字典接口不同。",
+            },
+            {"usage": {"prompt_tokens": 5, "completion_tokens": 2}},
+        )
+
+
+def external_adapter_answer(problem):
+    return {
+        "reasoning_steps": [
+            {
+                "id": 1,
+                "stage": "understanding",
+                "title": "题意与建模",
+                "content": "输入是 case 字典，其中 n 为待判断的整数。",
+            },
+            {"id": 2, "stage": "algorithm", "title": "算法", "content": "检查 n 是否能被 11 整除。"},
+            {"id": 3, "stage": "proof", "title": "正确性", "content": "余数为零当且仅当可以整除。"},
+            {"id": 4, "stage": "complexity", "title": "复杂度", "content": "时间和空间均为 O(1)。"},
+            {"id": 5, "stage": "boundary", "title": "边界", "content": "覆盖零、负数和正数。"},
+        ],
+        "complexity": {"time": "O(1)", "space": "O(1)"},
+        "edge_cases": ["0", "负数"],
+        "code": problem["reference_solution"],
+        "final_answer": "按统一接口返回能否被 11 整除。",
+    }
+
+
 class MultiAgentTests(unittest.TestCase):
     def setUp(self) -> None:
         self.problem = get_problem("two_sum_exists")
@@ -108,6 +173,45 @@ class MultiAgentTests(unittest.TestCase):
         self.assertTrue(evaluation["unsupported_correct"])
         self.assertEqual(evaluation["first_error_step"], 2)
         self.assertEqual(len(evaluation["orchestration"]["specialist_reviews"]), 5)
+
+    def test_supervisor_ignores_declared_adapter_contract_false_positive(self) -> None:
+        problem = get_problem("mbpp_Mbpp/77")
+        evaluation = evaluate_answer(
+            problem,
+            external_adapter_answer(problem),
+            use_hypothesis=False,
+            hy3_client=FakeAdapterMismatchClient(),  # type: ignore[arg-type]
+            review_mode="supervisor",
+        )
+        self.assertTrue(evaluation["final_correct"])
+        self.assertTrue(evaluation["process_correct"])
+        self.assertIsNone(evaluation["first_error_step"])
+        understanding = evaluation["orchestration"]["specialist_reviews"][0]
+        self.assertEqual(
+            understanding["ignored_by_supervisor"],
+            "adapter_contract_false_positive",
+        )
+        self.assertIn(
+            "adapter_contract_false_positive",
+            {item["kind"] for item in evaluation["orchestration"]["conflicts"]},
+        )
+
+    def test_single_review_ignores_declared_adapter_contract_false_positive(self) -> None:
+        problem = get_problem("mbpp_Mbpp/77")
+        evaluation = evaluate_answer(
+            problem,
+            external_adapter_answer(problem),
+            use_hypothesis=False,
+            hy3_client=FakeAdapterMismatchClient(),  # type: ignore[arg-type]
+            review_mode="single",
+        )
+        self.assertTrue(evaluation["final_correct"])
+        self.assertTrue(evaluation["process_correct"])
+        self.assertIsNone(evaluation["first_error_step"])
+        self.assertEqual(
+            evaluation["hy3_review"]["ignored_by_supervisor"],
+            "adapter_contract_false_positive",
+        )
 
 
 if __name__ == "__main__":

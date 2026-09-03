@@ -51,6 +51,7 @@ class EvaluationJob(Base):
     problem_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     hypothesis_examples: Mapped[int] = mapped_column(Integer, nullable=False)
     review_mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    submission_json: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True), nullable=True)
     priority: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
     attempts: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
     max_attempts: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=2)
@@ -88,6 +89,7 @@ def public_job(job: EvaluationJob) -> dict[str, Any]:
         "problem_id": job.problem_id,
         "hypothesis_examples": job.hypothesis_examples,
         "review_mode": job.review_mode,
+        "kind": "code_submission" if job.submission_json is not None else "hy3_generation",
         "attempts": job.attempts,
         "max_attempts": job.max_attempts,
         "created_at": _iso(job.created_at),
@@ -201,7 +203,7 @@ class MySQLJobStore:
         except SQLAlchemyError as exc:
             raise DatabaseUnavailable("could not read queue statistics") from exc
 
-    def enqueue(self, problem_id: str, hypothesis_examples: int, review_mode: str) -> dict[str, Any]:
+    def enqueue(self, problem_id: str, hypothesis_examples: int, review_mode: str, *, submission: dict[str, Any] | None = None) -> dict[str, Any]:
         try:
             with self._sessions() as session, session.begin():
                 lock_acquired = False
@@ -228,6 +230,7 @@ class MySQLJobStore:
                         problem_id=problem_id,
                         hypothesis_examples=hypothesis_examples,
                         review_mode=review_mode,
+                        submission_json=submission,
                         priority=0,
                         attempts=0,
                         max_attempts=self.max_attempts,
@@ -290,7 +293,7 @@ class MySQLJobStore:
                 job.started_at = job.started_at or now
                 job.updated_at = now
                 session.flush()
-                return public_job(job)
+                return {**public_job(job), "submission": job.submission_json}
         except SQLAlchemyError as exc:
             raise DatabaseUnavailable("could not claim evaluation job") from exc
 
