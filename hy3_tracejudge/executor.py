@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
+import json
 from typing import Any
 
 from .sandbox import execute_payload
@@ -34,7 +35,11 @@ class ExecutionResult:
         return data
 
 
-def _equivalent(actual: Any, expected: Any) -> bool:
+def _equivalent(actual: Any, expected: Any, comparison: str = "exact") -> bool:
+    if comparison == "unordered_set":
+        if not isinstance(actual, list) or not isinstance(expected, list):
+            return False
+        return {json.dumps(x, sort_keys=True) for x in actual} == {json.dumps(x, sort_keys=True) for x in expected}
     if isinstance(expected, float) and isinstance(actual, (int, float)):
         return abs(float(actual) - expected) <= 1e-9 * max(1.0, abs(expected))
     return actual == expected
@@ -70,7 +75,7 @@ def run_candidate(
                 [],
                 f"SandboxProtocolError: missing result for {test['name']}",
             )
-        passed = item["error"] is None and _equivalent(item["actual"], test["expected"])
+        passed = item["error"] is None and _equivalent(item["actual"], test["expected"], problem.get("output_comparison", "exact"))
         test_results.append(
             TestResult(
                 name=test["name"],
@@ -119,6 +124,11 @@ def run_cases(
             False,
             [],
             "ReferenceOracleError: " + reference.harness_error,
+        )
+    if len(reference.tests) != len(cases) or any(test.error is not None for test in reference.tests):
+        return ExecutionResult(
+            0, len(cases), False, [],
+            "ReferenceOracleError: reference case execution failed or returned incomplete results",
         )
     with_expected = []
     for test, result in zip(named, reference.tests, strict=True):

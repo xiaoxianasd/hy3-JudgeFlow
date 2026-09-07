@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from hy3_tracejudge.catalog import get_problem, load_problems
 from hy3_tracejudge.evaluator import evaluate_answer
@@ -54,7 +55,12 @@ class EvaluatorTests(unittest.TestCase):
     def test_answer_correct_but_process_invalid_is_identified(self) -> None:
         problem = get_problem("coin_change")
         answer = make_answer(problem, "unsupported_correct")
-        evaluation = evaluate_answer(problem, answer, hypothesis_examples=8)
+        review = {"process_correct": False, "first_error_step": 2,
+                  "error_types": ["theorem_misuse"], "confidence": 0.95,
+                  "rationale": "一般币制下最大硬币贪心不成立；1、3、4 面额凑 6 的最优解是 3+3。"}
+        with patch.object(Hy3Client, "review", return_value=(review, {})):
+            evaluation = evaluate_answer(problem, answer, hypothesis_examples=8,
+                                         hy3_client=Hy3Client(Hy3Config()))
         self.assertTrue(evaluation["final_correct"])
         self.assertFalse(evaluation["process_correct"])
         self.assertTrue(evaluation["unsupported_correct"])
@@ -95,6 +101,24 @@ class FakeHy3(Hy3Client):
 
 
 class Hy3ClientTests(unittest.TestCase):
+    def test_all_review_protocols_accept_null_and_reject_string_booleans(self) -> None:
+        import json
+        problem = get_problem("two_sum_exists")
+        answer = make_answer(problem, "gold")
+        for field in ("process_correct", "valid"):
+            for verdict in (None, "false"):
+                fake = FakeHy3({"choices": [{"message": {"content": json.dumps({field: verdict})}}]})
+                calls = [lambda: fake.review_stage(problem, answer, {}, agent_name="proof", stage="proof", responsibility="test")] if field == "valid" else [
+                    lambda: fake.review(problem, answer, {}),
+                    lambda: fake.arbitrate_reviews(problem, answer, {}, [], []),
+                ]
+                for call in calls:
+                    if verdict is None:
+                        self.assertIsNone(call()[0][field])
+                    else:
+                        with self.assertRaises(Hy3APIError):
+                            call()
+
     def test_invalid_structured_json_is_classified_as_upstream_error(self) -> None:
         problem = get_problem("mbpp_Mbpp/123")
         fake = FakeHy3(

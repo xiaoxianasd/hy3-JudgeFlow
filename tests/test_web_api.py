@@ -92,6 +92,23 @@ class WebAPITests(unittest.TestCase):
         self.assertNotIn("unsafe-inline", response.headers["content-security-policy"])
         self.assertTrue(response.headers["x-request-id"])
 
+    def test_job_response_preserves_unknown_verdict_and_coverage(self) -> None:
+        job = self.manager.snapshot(JOB_ID)
+        job["result"]["evaluation"] = {
+            "final_correct": True, "process_correct": None, "process_status": "uncertain",
+            "unsupported_correct": None, "first_error_step": None,
+            "review_coverage": {"expected": 5, "completed": 0, "conclusive": 0},
+            "hypothesis": {"enabled": False, "status": "unsupported", "examples_checked": 0},
+        }
+        with patch.object(self.manager, "snapshot", return_value=job):
+            response = self.client.get(f"/api/v1/evaluations/{JOB_ID}", headers=self.auth)
+        self.assertEqual(response.status_code, 200)
+        result = response.json()["job"]["result"]["evaluation"]
+        self.assertIsNone(result["process_correct"])
+        self.assertIsNone(result["unsupported_correct"])
+        self.assertEqual(result["review_coverage"]["completed"], 0)
+        self.assertEqual(result["hypothesis"]["status"], "unsupported")
+
     def test_submission_requires_api_key(self) -> None:
         response = self.client.post(
             "/api/v1/evaluations",

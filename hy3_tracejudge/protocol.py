@@ -32,6 +32,11 @@ def validate_answer_shape(answer: Any) -> list[str]:
             for field in ("id", "stage", "title", "content"):
                 if field not in step:
                     errors.append(f"第 {index} 步缺少 {field}")
+            if type(step.get("id")) is not int or step["id"] != index:
+                errors.append(f"第 {index} 步 id 必须为从 1 开始连续编号的整数")
+            for field in ("stage", "title", "content"):
+                if field in step and not isinstance(step[field], str):
+                    errors.append(f"第 {index} 步 {field} 必须是字符串")
     if "code" in answer and not isinstance(answer["code"], str):
         errors.append("code 必须是字符串")
     return errors

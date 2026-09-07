@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .hy3_client import Hy3APIError, Hy3Client
+from .verdicts import MIN_REVIEW_CONFIDENCE, confidence_value, error_step, localization_status, process_status, test_verdict
 
 
 ALLOWED_ERROR_TYPES = {
@@ -42,10 +43,7 @@ SPECIALISTS = (
 
 
 def _confidence(value: Any) -> float:
-    try:
-        return max(0.0, min(float(value), 1.0))
-    except (TypeError, ValueError):
-        return 0.0
+    return confidence_value(value)
 
 
 def is_adapter_contract_false_positive(
@@ -99,17 +97,18 @@ def is_adapter_contract_false_positive(
 
 
 def _normalize_review(spec: Specialist, review: dict[str, Any]) -> dict[str, Any]:
+    valid = review.get("valid") if type(review.get("valid")) is bool else None
     error_type = review.get("error_type")
     if error_type not in ALLOWED_ERROR_TYPES:
-        error_type = None if review.get("valid") else "algorithm_error"
+        error_type = "algorithm_error" if valid is False else None
     step = review.get("first_error_step")
-    if not isinstance(step, int):
+    if type(step) is not int:
         step = None
     return {
         "agent": spec.name,
         "stage": spec.stage,
         "status": "completed",
-        "valid": bool(review.get("valid")),
+        "valid": valid,
         "reviewed_steps": review.get("reviewed_steps", []),
         "first_error_step": step,
         "error_type": error_type,
@@ -173,52 +172,39 @@ def _build_decision(
     answer: dict[str, Any],
     evidence: dict[str, Any],
     reviews: list[dict[str, Any]],
+    *,
+    specialists: tuple[Specialist, ...] = SPECIALISTS,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     candidates: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
-    by_stage = {item["stage"]: item for item in reviews if item["status"] == "completed"}
+    incomplete: list[str] = []
+    conclusive: set[str] = set()
+    for spec in specialists:
+        if not any(item.get("agent") == spec.name for item in reviews):
+            incomplete.append(spec.stage)
+            conflicts.append({"kind": "agent_missing", "stage": spec.stage})
+    if not specialists:
+        incomplete.append("semantic_review")
+        conflicts.append({"kind": "semantic_review_required"})
+    elif not any(spec.stage == "all" for spec in specialists):
+        stages = {spec.stage for spec in specialists}
+        if any(step.get("stage") not in stages for step in answer.get("reasoning_steps", [])):
+            incomplete.append("unassigned_steps")
+            conflicts.append({"kind": "unassigned_steps"})
 
-    for criterion in evidence.get("criteria", []):
-        if criterion.get("passed"):
-            agent = by_stage.get(criterion["stage"])
-            if agent and agent["valid"] is False and agent["confidence"] >= 0.65:
-                conflicts.append(
-                    {
-                        "kind": "agent_vs_rule",
-                        "stage": criterion["stage"],
-                        "rule": "passed",
-                        "agent": "invalid",
-                    }
-                )
-            continue
-        agent = by_stage.get(criterion["stage"])
-        hard_rule = str(criterion.get("reason", "")).startswith("forbidden:")
-        if agent and agent["valid"] is True and agent["confidence"] >= 0.75 and not hard_rule:
-            conflicts.append(
-                {
-                    "kind": "agent_overrides_weak_rule",
-                    "stage": criterion["stage"],
-                    "rule": criterion.get("reason"),
-                    "agent_confidence": agent["confidence"],
-                }
-            )
-            continue
-        candidates.append(
-            {
-                "step": criterion["source_step"],
-                "error_type": criterion["error_type"],
-                "source": "rubric_rule",
-                "confidence": 1.0 if hard_rule else 0.7,
-            }
-        )
-
+    # All current rubric rules are lexical hints. Even legacy passed/forbidden
+    # fields must not become verdicts when re-evaluating stored evidence.
     for review in reviews:
+        review["assessment_status"] = "uncertain"
         if review["status"] != "completed":
+            incomplete.append(review["stage"])
             conflicts.append(
                 {"kind": "agent_unavailable", "stage": review["stage"], "reason": review["reason"]}
             )
             continue
         if is_adapter_contract_false_positive(problem, answer, review):
+            # Discarding an objection does not establish that this stage is sound.
+            incomplete.append(review["stage"])
             review["ignored_by_supervisor"] = "adapter_contract_false_positive"
             conflicts.append(
                 {
@@ -229,22 +215,43 @@ def _build_decision(
                 }
             )
             continue
-        if review["valid"] is False and review["confidence"] >= 0.65:
+        confidence = _confidence(review.get("confidence"))
+        if type(review.get("valid")) is not bool or confidence < MIN_REVIEW_CONFIDENCE:
+            incomplete.append(review["stage"])
+            conflicts.append({"kind": "review_inconclusive", "stage": review["stage"]})
+            continue
+        if not str(review.get("reason") or "").strip():
+            incomplete.append(review["stage"])
+            conflicts.append({"kind": "review_missing_reason", "stage": review["stage"]})
+            continue
+        if review["valid"] is False:
+            review["assessment_status"] = "invalid"
             inherited = review.get("inherited_from_step")
-            step = inherited if isinstance(inherited, int) else review.get("first_error_step")
-            if isinstance(step, int):
-                candidates.append(
-                    {
-                        "step": step,
-                        "error_type": review["error_type"] or "algorithm_error",
-                        "source": review["agent"],
-                        "confidence": review["confidence"],
-                    }
-                )
+            step = error_step(answer, inherited if inherited is not None else review.get("first_error_step"))
+            candidates.append({"step": step, "error_type": review["error_type"] or "algorithm_error",
+                               "source": review["agent"], "confidence": confidence})
+            conclusive.add(review["agent"])
+            continue
+        target_ids = {
+            item["id"] for item in answer.get("reasoning_steps", [])
+            if type(item.get("id")) is int
+            and (review["stage"] == "all" or item.get("stage") == review["stage"])
+        }
+        reviewed = review.get("reviewed_steps")
+        reviewed_ids = {item for item in reviewed if type(item) is int} if isinstance(reviewed, list) else set()
+        if (not target_ids or not target_ids.issubset(reviewed_ids)
+                or review.get("first_error_step") is not None or review.get("error_type") is not None):
+            incomplete.append(review["stage"])
+            conflicts.append({"kind": "review_coverage_or_verdict_conflict", "stage": review["stage"]})
+        else:
+            review["assessment_status"] = "valid"
+            conclusive.add(review["agent"])
 
-    property_failed = bool(evidence.get("hypothesis") and evidence["hypothesis"].get("found"))
-    execution_failed = not evidence.get("execution", {}).get("all_passed", False)
-    if execution_failed or property_failed:
+    executable_verdict = test_verdict(evidence.get("execution") or {}, evidence.get("hypothesis"))
+    if executable_verdict is None:
+        incomplete.append("execution")
+        conflicts.append({"kind": "execution_inconclusive"})
+    if executable_verdict is False:
         candidates.append(
             {
                 "step": len(answer.get("reasoning_steps", [])) + 1,
@@ -254,23 +261,37 @@ def _build_decision(
             }
         )
 
+    deterministic_errors = [item for item in candidates if item["source"] == "executable_evidence"]
+    coverage = {"expected": len(specialists),
+                "completed": sum(item["status"] == "completed" for item in reviews),
+                "conclusive": len(conclusive)}
     if not candidates:
+        verdict = None if incomplete else True
         return (
             {
-                "process_correct": True,
+                "deterministic_errors": deterministic_errors,
+                "incomplete_checks": sorted(set(incomplete)),
+                "process_correct": verdict,
+                "process_status": process_status(verdict),
+                "localization_status": localization_status(verdict, None),
+                "review_coverage": coverage,
                 "first_error_step": None,
                 "error_types": [],
                 "confidence": min(
-                    [item["confidence"] for item in reviews if item["status"] == "completed"] or [0.0]
+                    [_confidence(item["confidence"]) for item in reviews if item["status"] == "completed"] or [0.0]
                 ),
-                "rationale": "规则、专业Agent和执行证据均未发现过程错误。",
+                "rationale": (
+                    "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。"
+                    if incomplete else "已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。"
+                ),
                 "supporting_sources": [],
             },
             conflicts,
         )
 
-    first_step = min(item["step"] for item in candidates)
-    first = [item for item in candidates if item["step"] == first_step]
+    # An unlocalized objection may precede every localized candidate.
+    first_step = None if any(item["step"] is None for item in candidates) else min(item["step"] for item in candidates)
+    first = candidates if first_step is None else [item for item in candidates if item["step"] == first_step]
     error_types = sorted({item["error_type"] for item in first})
     if len(error_types) > 1:
         conflicts.append(
@@ -278,15 +299,102 @@ def _build_decision(
         )
     return (
         {
+            "deterministic_errors": deterministic_errors,
+            "incomplete_checks": sorted(set(incomplete)),
             "process_correct": False,
+            "process_status": "invalid",
+            "localization_status": localization_status(False, first_step),
+            "review_coverage": coverage,
             "first_error_step": first_step,
             "error_types": error_types,
             "confidence": max(item["confidence"] for item in first),
-            "rationale": f"最早错误证据出现在步骤 {first_step}。",
+            "rationale": (
+                "已发现过程问题，但尚不能可靠定位首个错误步骤。"
+                if first_step is None else f"当前最早定位的错误证据出现在步骤 {first_step}。"
+            ),
             "supporting_sources": sorted({item["source"] for item in first}),
         },
         conflicts,
     )
+
+
+def run_single_agent_review(
+    client: Hy3Client, problem: dict[str, Any], answer: dict[str, Any], evidence: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any]]:
+    """Apply the same evidence/abstention rules to the single-review baseline."""
+    spec = Specialist("hy3_step_review", "all", "完整过程审查")
+    metadata = None
+    try:
+        raw, metadata = client.review(problem, answer, evidence)
+        step_reviews = raw.get("step_reviews")
+        step_reviews = step_reviews if isinstance(step_reviews, list) else []
+        types = raw.get("error_types") or []
+        review = _normalize_review(spec, {
+            **raw, "valid": raw.get("process_correct"), "reason": raw.get("rationale"),
+            "error_type": next((item for item in types if item in ALLOWED_ERROR_TYPES), None),
+            "reviewed_steps": [item.get("step") for item in step_reviews
+                               if isinstance(item, dict) and type(item.get("valid")) is bool],
+        })
+        if review["valid"] is True and any(isinstance(item, dict) and item.get("valid") is False for item in step_reviews):
+            review["valid"] = None
+    except Hy3APIError:
+        raw = {"status": "error", "process_correct": None}
+        review = {"agent": spec.name, "stage": spec.stage, "status": "error", "valid": None,
+                  "confidence": 0.0, "reason": "Hy3 过程审查暂不可用，请稍后重试。"}
+    decision, conflicts = _build_decision(problem, answer, evidence, [review], specialists=(spec,))
+    raw["confidence"] = review["confidence"]
+    raw["assessment_status"] = review["assessment_status"]
+    if review.get("ignored_by_supervisor"):
+        raw["ignored_by_supervisor"] = review["ignored_by_supervisor"]
+    decision["conflicts"] = conflicts
+    return raw, metadata, decision
+
+
+def _merge_arbitration(
+    decision: dict[str, Any], arbitration: dict[str, Any], answer: dict[str, Any],
+    conflicts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Arbitration can add evidence, never turn an incomplete check into a pass."""
+    confidence = _confidence(arbitration.get("confidence"))
+    arbitration["confidence"] = confidence
+    verdict = arbitration.get("process_correct")
+    reason = str(arbitration.get("rationale") or "").strip()
+    types = arbitration.get("error_types")
+    types = [item for item in types if isinstance(item, str) and item in ALLOWED_ERROR_TYPES] if isinstance(types, list) else []
+    consistent = verdict is not True or (arbitration.get("first_error_step") is None and not types)
+    if type(verdict) is not bool or confidence < MIN_REVIEW_CONFIDENCE or not reason or not consistent:
+        conflicts.append({"kind": "arbitration_inconclusive"})
+        if decision["process_correct"] is True:
+            return {**decision, "process_correct": None, "process_status": "uncertain",
+                    "localization_status": "uncertain", "confidence": 0.0,
+                    "rationale": "待仲裁意见未获得明确结论，过程证据不足。"}
+        return decision
+    if verdict is True:
+        if decision.get("deterministic_errors"):
+            conflicts.append({"kind": "arbitration_cannot_erase_deterministic_evidence",
+                              "kept_step": decision["first_error_step"]})
+            return decision
+        reviewed = arbitration.get("reviewed_steps")
+        covered = {x for x in reviewed if type(x) is int} if isinstance(reviewed, list) else set()
+        required = {s["id"] for s in answer.get("reasoning_steps", [])}
+        if decision.get("incomplete_checks") or not required or not required.issubset(covered):
+            conflicts.append({"kind": "arbitration_positive_coverage_incomplete"})
+            return decision
+        return {**decision, "process_correct": True, "process_status": "valid",
+                "localization_status": "not_applicable", "first_error_step": None,
+                "error_types": [], "confidence": confidence, "rationale": reason,
+                "supporting_sources": ["hy3_arbitration"]}
+    step = error_step(answer, arbitration.get("first_error_step"))
+    current_step = decision.get("first_error_step")
+    if step is not None and current_step is not None and step > current_step:
+        conflicts.append({"kind": "arbitration_cannot_move_error_later",
+                          "kept_step": current_step, "proposed_step": step})
+        return decision
+    return {**decision, "process_correct": False, "process_status": "invalid",
+            "localization_status": localization_status(False, step), "first_error_step": step,
+            "error_types": types or decision["error_types"] or ["algorithm_error"],
+            "confidence": confidence, "rationale": reason,
+            "supporting_sources": arbitration.get("supporting_agents") or []}
 
 
 def run_multi_agent_review(
@@ -311,51 +419,13 @@ def run_multi_agent_review(
             arbitration, arbitration_metadata = client.arbitrate_reviews(
                 problem, answer, evidence, reviews, conflicts
             )
-            confidence = _confidence(arbitration.get("confidence"))
-            step = arbitration.get("first_error_step")
-            current_step = decision.get("first_error_step")
-            may_move_earlier = current_step is None or step <= current_step
-            if (
-                not arbitration.get("process_correct", True)
-                and confidence >= 0.65
-                and isinstance(step, int)
-                and may_move_earlier
-            ):
-                # Arbitration may move a semantic error earlier, but may not erase
-                # a deterministic implementation failure without an earlier cause.
-                proposed = [
-                    item for item in arbitration.get("error_types", []) if item in ALLOWED_ERROR_TYPES
-                ]
-                decision = {
-                    "process_correct": False,
-                    "first_error_step": step,
-                    "error_types": proposed or ["algorithm_error"],
-                    "confidence": confidence,
-                    "rationale": str(arbitration.get("rationale", "Supervisor仲裁确认过程错误。")),
-                    "supporting_sources": arbitration.get("supporting_agents", []),
-                }
-            elif (
-                not arbitration.get("process_correct", True)
-                and isinstance(step, int)
-                and current_step is not None
-                and step > current_step
-            ):
-                conflicts.append(
-                    {
-                        "kind": "arbitration_cannot_move_error_later",
-                        "kept_step": current_step,
-                        "proposed_step": step,
-                    }
-                )
-            elif arbitration.get("process_correct") and not decision["process_correct"]:
-                conflicts.append(
-                    {
-                        "kind": "arbitration_cannot_erase_deterministic_evidence",
-                        "kept_step": decision["first_error_step"],
-                    }
-                )
+            decision = _merge_arbitration(decision, arbitration, answer, conflicts)
         except Hy3APIError as exc:
             conflicts.append({"kind": "arbitration_unavailable", "reason": str(exc)})
+            if decision["process_correct"] is True:
+                decision.update({"process_correct": None, "process_status": "uncertain",
+                                 "localization_status": "uncertain",
+                                 "rationale": "存在待仲裁意见，但仲裁调用失败，过程结论证据不足。"})
 
     total_usage: dict[str, int] = {}
     for item in [*metadata, *([arbitration_metadata] if arbitration_metadata else [])]:

@@ -5,8 +5,15 @@ import json
 from typing import Any
 
 from hypothesis import HealthCheck, Phase, given, seed, settings, strategies as st
+from hypothesis.errors import HypothesisException
 
 from .executor import run_cases
+from .verdicts import is_infrastructure_error
+from .external_strategies import external_strategy_for, external_domain, STRATEGY_VERSION
+
+
+class _VerificationUnavailable(Exception):
+    """A failed verifier is not a counterexample to the candidate."""
 
 
 @st.composite
@@ -69,8 +76,8 @@ def strategy_for(problem_id: str) -> st.SearchStrategy[dict[str, Any]]:
         # Curated boundary families make short interactive runs stable; the broad
         # strategy still explores combinations that were never hand-written.
         return st.one_of(st.sampled_from(probes[problem_id]), strategies[problem_id])
-    except KeyError as exc:
-        raise KeyError(f"No Hypothesis strategy for {problem_id}") from exc
+    except KeyError:
+        return external_strategy_for(problem_id)
 
 
 def _case_size(value: Any) -> tuple[int, int]:
@@ -102,14 +109,18 @@ def find_counterexample(
     except KeyError:
         return {
             "enabled": False,
+            "status": "unsupported",
             "found": False,
             "engine": "none",
-            "reason": "external problem without curated Hypothesis strategy",
+            "reason": "problem without a reviewed Hypothesis strategy",
             "examples_checked": 0,
             "max_examples": max_examples,
             "seed": random_seed,
             "counterexample": None,
         }
+    metadata = {}
+    if problem["id"].startswith("mbpp_"):
+        metadata = {"strategy_version": STRATEGY_VERSION, "input_domain": external_domain(problem["id"])}
     failures: list[dict[str, Any]] = []
     checked = 0
 
@@ -127,6 +138,8 @@ def find_counterexample(
         nonlocal checked
         checked += 1
         result = run_cases(problem, code, [case])
+        if is_infrastructure_error(result.harness_error):
+            raise _VerificationUnavailable("沙盒或标准答案验证服务异常")
         if result.harness_error:
             failures.append(
                 {"case": copy.deepcopy(case), "expected": None, "actual": None, "error": result.harness_error}
@@ -146,10 +159,20 @@ def find_counterexample(
 
     try:
         differential()
+    except (_VerificationUnavailable, HypothesisException):
+        return {
+            **metadata,
+            "enabled": True, "status": "error", "found": False, "engine": "hypothesis",
+            "error": "属性验证未可靠完成，请检查沙盒、标准答案或测试策略后重试。",
+            "examples_checked": checked, "max_examples": max_examples,
+            "seed": random_seed, "counterexample": None,
+        }
     except AssertionError:
         best = min(failures, key=lambda item: _case_size(item["case"]))
         return {
+            **metadata,
             "enabled": True,
+            "status": "failed",
             "found": True,
             "engine": "hypothesis",
             "examples_checked": checked,
@@ -158,7 +181,9 @@ def find_counterexample(
             "counterexample": best,
         }
     return {
+        **metadata,
         "enabled": True,
+        "status": "passed",
         "found": False,
         "engine": "hypothesis",
         "examples_checked": checked,

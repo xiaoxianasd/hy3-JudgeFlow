@@ -30,7 +30,7 @@ TraceJudge 是一个面向可验证算法任务的 Hy3 应用。系统不仅回�
 | 过程正确性判定 | 题目量表 + 五个专业 Agent + 确定性证据融合 |
 | 错误步骤定位 | 候选错误统一映射到步骤，选择最早证据充分的根因 |
 | 错误类型归类 | 12 类标准错误标签 |
-| 正确答案但过程错误 | `unsupported_correct = final_correct and not process_correct` |
+| 正确答案但过程错误 | 两项结论明确时，`final_correct is True` 且 `process_correct is False`；否则未知 |
 | 定位准确率与误报率 | 受控错误轨迹、金标准首错、人工抽检记录 |
 | 分难度结果 | easy / medium / hard 分层统计 |
 | 可运行应用 | 本地 Web、CLI 与 Windows BAT 启动器 |
@@ -155,8 +155,8 @@ expected 与 actual 比较
 
 每个阶段拥有题目专属的正向证据词和可选禁用陈述：
 
-- 命中明确禁用陈述属于硬规则错误；
-- 缺少关键词属于弱证据，允许高置信度语义 Agent 识别等价表达并纠正；
+- 关键词和禁用陈述只作为语义审查提示，不直接判对错；
+- 语义 Agent 需要判断否定、引用、等价表达和实际推导，不能根据词汇匹配作结论；
 - 规则结果保留在报告中，方便人工复核。
 
 ### 6.5 Multi-Agent 审查
@@ -193,12 +193,12 @@ Swarm 是“有界”的：没有开放式循环讨论，只允许一次仲裁�
 
 处理顺序如下：
 
-1. 收集规则失败、专业 Agent 问题和执行失败；
-2. 若弱关键词规则与高置信度语义 Agent 冲突，记录冲突并允许语义覆盖；
-3. 明确禁用规则和可执行反例保持为硬证据；
+1. 收集专业 Agent 问题和执行失败，保留词汇提示供复核；
+2. 检查模型意见的置信度、理由及步骤覆盖；未评审的步骤阻止正面结论；
+3. 只有可靠执行失败或反例保持为不可抹去的确定性证据；
 4. 采用最小 `step` 作为首错；
 5. 同一步骤有多种类型时保留并列类型；
-6. Swarm 仲裁可以把根因提前，但不能抹去确定性证据，也不能把已定位首错后移。
+6. Swarm 仲裁不能抹去确定性证据；覆盖全部步骤且没有缺失检查时，可以撤回专家误报。负面仲裁不能把已定位首错后移。
 
 最终正确性定义为：
 
@@ -209,8 +209,11 @@ final_correct = fixed_tests_all_passed AND no_hypothesis_counterexample
 过程与结果关系为：
 
 ```text
-unsupported_correct = final_correct AND NOT process_correct
+unsupported_correct = null if either verdict is unknown
+                      else (final_correct is true AND process_correct is false)
 ```
+
+判定已升级为三态协议：缺失评审不再隐式通过，错误存在与错误定位分别记录；准确率需同时报告有效样本分母及覆盖率。以上二值表达式只适用于测试已可靠完成的情况，详细口径与兼容规则以 [三态判定与验证覆盖](VERDICTS.md) 为准。
 
 ## 9. 错误分类体系
 
@@ -233,7 +236,7 @@ unsupported_correct = final_correct AND NOT process_correct
 
 ### 10.1 受控轨迹
 
-当前 6 道题分别构造 gold、wrong、unsupported-correct 等轨迹，共 24 个评估器验收样本。每个错误轨迹只注入一个人工标注根因，以获得明确的 `first_error_step` 金标准。
+当前 6 道题的构造轨迹已去重，并增加关键词堆砌、循环论证和否定错误示例的对抗样本。样本数量以实际生成报告为准；构造标签不等于独立人工复核。
 
 ### 10.2 指标
 
@@ -299,7 +302,7 @@ API Key 不得提交到 Git。默认 Supervisor 模式会为一道题产生 6 �
 当前边界：
 
 - Web 只支持选择仓库内题目，尚未提供任意题目的可视化导入表单；
-- Hypothesis strategy 当前按 6 道种子题手工定义；
+- Hypothesis strategy 已覆盖 6 道种子题和 60 道外部题；外部题使用逐题显式策略注册表，并记录版本与输入域；
 - 参考实现本身仍需要来源审计和独立验证；
 - Python 子进程隔离不是安全级沙盒；
 - Multi-Agent 语义判断可能受提示词和模型随机性影响；

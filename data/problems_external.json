@@ -7881,7 +7881,9 @@
       "space": "未标注"
     },
     "boundary_cases": [],
-    "source": "mbpp (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证"
+    "source": "mbpp (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证",
+    "output_comparison": "unordered_set",
+    "validation_note": "题面使用 set(...) 比较交集，输出元素顺序不影响正确性。"
   },
   {
     "id": "mbpp_Mbpp/116",
@@ -8615,86 +8617,86 @@
     "statement": "\"\"\"\nWrite a function to sum all amicable numbers from 1 to a specified number.\nassert amicable_numbers_sum(999)==504\n\"\"\"",
     "function_name": "solve_case",
     "input_schema": {
-      "num": "int"
+      "limit": "int"
     },
     "constraints": [
-      "外部导入题（MBPP+/HumanEval+）未提供显式约束；规模以测试用例为准"
+      "limit 为正整数；返回 1..limit 范围内所有亲和数之和。"
     ],
     "public_tests": [
       {
         "name": "case_01",
         "input": {
-          "num": 999
+          "limit": 999
         },
-        "expected": 521.0
+        "expected": 504
       },
       {
         "name": "case_02",
         "input": {
-          "num": 9999
+          "limit": 9999
         },
-        "expected": 5913.0
+        "expected": 31626
       }
     ],
     "hidden_tests": [
       {
         "name": "case_03",
         "input": {
-          "num": 99
+          "limit": 99
         },
-        "expected": 57.0
+        "expected": 0
       },
       {
         "name": "case_04",
         "input": {
-          "num": 10000
+          "limit": 10000
         },
-        "expected": 14211.0
+        "expected": 31626
       },
       {
         "name": "case_05",
         "input": {
-          "num": 5000
+          "limit": 5000
         },
-        "expected": 6715.0
+        "expected": 8442
       },
       {
         "name": "case_06",
         "input": {
-          "num": 4999
+          "limit": 4999
         },
-        "expected": 1
+        "expected": 8442
       },
       {
         "name": "case_07",
         "input": {
-          "num": 4998
+          "limit": 4998
         },
-        "expected": 7314.0
+        "expected": 8442
       },
       {
         "name": "case_08",
         "input": {
-          "num": 5001
+          "limit": 5001
         },
-        "expected": 1671.0
+        "expected": 8442
       },
       {
         "name": "case_09",
         "input": {
-          "num": 90
+          "limit": 90
         },
-        "expected": 144.0
+        "expected": 0
       },
       {
         "name": "case_10",
         "input": {
-          "num": 92
+          "limit": 92
         },
-        "expected": 76.0
+        "expected": 0
       }
     ],
-    "reference_solution": "def div_sum(num):\n    res = 1\n    i = 2\n    while i * i <= num:\n        if num % i == 0:\n            res += i\n            if i * i != num:\n                res += num / i\n        i += 1\n    return res\ndef amicable_numbers_sum(limit):\n    amicables = set()\n    for num in range(2, limit + 1):\n        if num in amicables:\n            continue\n        sum_fact = div_sum(num)\n        sum_fact2 = div_sum(sum_fact)\n        if num == sum_fact2 and num != sum_fact:\n            amicables.add(num)\n            amicables.add(sum_fact2)\n    return sum(amicables)\n\n\ndef solve_case(case):\n    return div_sum(**case)\n",
+    "reference_solution": "def div_sum(num):\n    res = 1\n    i = 2\n    while i * i <= num:\n        if num % i == 0:\n            res += i\n            if i * i != num:\n                res += num / i\n        i += 1\n    return res\ndef amicable_numbers_sum(limit):\n    amicables = set()\n    for num in range(2, limit + 1):\n        if num in amicables:\n            continue\n        sum_fact = div_sum(num)\n        sum_fact2 = div_sum(sum_fact)\n        if num == sum_fact2 and num != sum_fact:\n            amicables.add(num)\n            amicables.add(sum_fact2)\n    return sum(amicables)\n\n\ndef solve_case(case):\n    return amicable_numbers_sum(**case)\n",
     "fault": null,
     "gold_steps": [],
     "rubric": [],
@@ -8703,7 +8705,18 @@
       "space": "未标注"
     },
     "boundary_cases": [],
-    "source": "mbpp (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证"
+    "source": "mbpp (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证",
+    "source_function_name": "amicable_numbers_sum",
+    "adapter_contract": {
+      "kind": "keyword_case_adapter",
+      "entrypoint": "solve_case(case)",
+      "source_entrypoint": "amicable_numbers_sum",
+      "case_fields": [
+        "limit"
+      ],
+      "equivalence": "原题主函数参数 limit 装入 case 字典；辅助函数 div_sum 不是题目入口。"
+    },
+    "validation_note": "2026-09-07 修复辅助函数入口误绑定；题面 999->504 与独立因数和筛法交叉验证全部固定用例。"
   },
   {
     "id": "mbpp_Mbpp/125",

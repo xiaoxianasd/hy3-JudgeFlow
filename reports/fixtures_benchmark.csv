@@ -1,25 +1,29 @@
-﻿sample_id,problem_id,difficulty,final_correct,process_correct,unsupported_correct,first_error_step,error_types
-two_sum_exists-01-gold,two_sum_exists,easy,True,True,False,,
-two_sum_exists-02-gold,two_sum_exists,easy,True,True,False,,
-two_sum_exists-03-gold,two_sum_exists,easy,True,True,False,,
-two_sum_exists-04-wrong,two_sum_exists,easy,False,False,False,2,algorithm_error
-bracket_balance-01-gold,bracket_balance,easy,True,True,False,,
-bracket_balance-02-gold,bracket_balance,easy,True,True,False,,
-bracket_balance-03-gold,bracket_balance,easy,True,True,False,,
-bracket_balance-04-wrong,bracket_balance,easy,False,False,False,2,concept_error
-max_subarray-01-gold,max_subarray,medium,True,True,False,,
-max_subarray-02-gold,max_subarray,medium,True,True,False,,
-max_subarray-03-unsupported_correct,max_subarray,medium,True,False,True,1,condition_omission
-max_subarray-04-wrong,max_subarray,medium,False,False,False,1,condition_omission
-grid_shortest_path-01-gold,grid_shortest_path,medium,True,True,False,,
-grid_shortest_path-02-gold,grid_shortest_path,medium,True,True,False,,
-grid_shortest_path-03-unsupported_correct,grid_shortest_path,medium,True,False,True,1,problem_misread
-grid_shortest_path-04-wrong,grid_shortest_path,medium,False,False,False,1,problem_misread
-coin_change-01-gold,coin_change,hard,True,True,False,,
-coin_change-02-unsupported_correct,coin_change,hard,True,False,True,2,theorem_misuse
-coin_change-03-wrong,coin_change,hard,False,False,False,2,theorem_misuse
-coin_change-04-wrong,coin_change,hard,False,False,False,2,theorem_misuse
-lis_length-01-gold,lis_length,hard,True,True,False,,
-lis_length-02-unsupported_correct,lis_length,hard,True,False,True,1,problem_misread
-lis_length-03-wrong,lis_length,hard,False,False,False,1,problem_misread
-lis_length-04-wrong,lis_length,hard,False,False,False,1,problem_misread
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error
+two_sum_exists-01-gold,two_sum_exists,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+two_sum_exists-04-wrong,two_sum_exists,easy,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+bracket_balance-01-gold,bracket_balance,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+bracket_balance-04-wrong,bracket_balance,easy,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+max_subarray-01-gold,max_subarray,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+max_subarray-03-unsupported_correct,max_subarray,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+max_subarray-04-wrong,max_subarray,medium,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+grid_shortest_path-01-gold,grid_shortest_path,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+grid_shortest_path-03-unsupported_correct,grid_shortest_path,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+grid_shortest_path-04-wrong,grid_shortest_path,medium,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+coin_change-01-gold,coin_change,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+coin_change-02-unsupported_correct,coin_change,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+coin_change-03-wrong,coin_change,hard,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+lis_length-01-gold,lis_length,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+lis_length-02-unsupported_correct,lis_length,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+lis_length-03-wrong,lis_length,hard,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,
+two_sum_exists-keyword-only,two_sum_exists,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+two_sum_exists-negated-fault,two_sum_exists,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+bracket_balance-keyword-only,bracket_balance,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+bracket_balance-negated-fault,bracket_balance,easy,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+max_subarray-keyword-only,max_subarray,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+max_subarray-negated-fault,max_subarray,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+grid_shortest_path-keyword-only,grid_shortest_path,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+grid_shortest_path-negated-fault,grid_shortest_path,medium,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+coin_change-keyword-only,coin_change,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+coin_change-negated-fault,coin_change,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+lis_length-keyword-only,lis_length,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,
+lis_length-negated-fault,lis_length,hard,True,,uncertain,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,

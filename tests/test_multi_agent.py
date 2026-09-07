@@ -184,7 +184,8 @@ class MultiAgentTests(unittest.TestCase):
             review_mode="supervisor",
         )
         self.assertTrue(evaluation["final_correct"])
-        self.assertTrue(evaluation["process_correct"])
+        self.assertIsNone(evaluation["process_correct"])
+        self.assertIsNone(evaluation["unsupported_correct"])
         self.assertIsNone(evaluation["first_error_step"])
         understanding = evaluation["orchestration"]["specialist_reviews"][0]
         self.assertEqual(
@@ -206,7 +207,8 @@ class MultiAgentTests(unittest.TestCase):
             review_mode="single",
         )
         self.assertTrue(evaluation["final_correct"])
-        self.assertTrue(evaluation["process_correct"])
+        self.assertIsNone(evaluation["process_correct"])
+        self.assertIsNone(evaluation["unsupported_correct"])
         self.assertIsNone(evaluation["first_error_step"])
         self.assertEqual(
             evaluation["hy3_review"]["ignored_by_supervisor"],

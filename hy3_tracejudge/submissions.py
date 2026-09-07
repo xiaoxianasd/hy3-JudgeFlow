@@ -11,6 +11,7 @@ from .executor import run_candidate
 from .hy3_client import Hy3APIError, Hy3Client
 from .property_testing import find_counterexample
 from .sandbox import SandboxLimits
+from .verdicts import is_infrastructure_error, test_verdict, unsupported_verdict
 
 
 class SubmissionSandboxRequired(RuntimeError):
@@ -99,21 +100,13 @@ def evaluate_submission(
     update_phase("code_execution")
     execution = run_candidate(problem, code)
     harness_error = execution.harness_error or ""
-    infrastructure_failure = harness_error.startswith((
-        "SandboxBackendUnavailable", "SandboxExit", "InvalidSandbox", "SandboxProtocolError",
-        "UnsafeLocalSandbox", "UnknownSandboxBackend",
-    ))
     hypothesis = None
     if not harness_error:
         update_phase("property_testing")
         hypothesis = find_counterexample(problem, code, max_examples=hypothesis_examples)
     # A failed oracle/container is not a counterexample to the submitted algorithm.
-    property_error = ((hypothesis or {}).get("counterexample") or {}).get("error") or ""
-    if property_error.startswith(("ReferenceOracleError", "SandboxBackendUnavailable", "SandboxExit", "InvalidSandbox")):
-        infrastructure_failure = True
-    final_correct = None if infrastructure_failure else bool(
-        execution.all_passed and not (hypothesis and hypothesis.get("found"))
-    )
+    final_correct = test_verdict(execution.to_dict(), hypothesis)
+    infrastructure_failure = is_infrastructure_error(harness_error) or final_correct is None
     public_execution = execution.to_dict(reveal_hidden=False)
     for item in public_execution["tests"]:
         if item["visibility"] == "hidden" and item.get("error"):
@@ -170,7 +163,7 @@ def evaluate_submission(
             "final_correct": final_correct, "code_correct": code_correct,
             "process_correct": process_correct,
             "process_status": "not_provided" if not steps else ("reviewed" if process_correct is not None else "uncertain"),
-            "unsupported_correct": final_correct and process_correct is False if final_correct is not None and process_correct is not None else None,
+            "unsupported_correct": unsupported_verdict(final_correct, process_correct),
             "first_error_step": first_step, "first_error_line": first_line,
             "error_types": sorted(errors), "error_labels": [ERROR_LABELS[item] for item in sorted(errors)],
             "execution": public_execution, "hypothesis": hypothesis,

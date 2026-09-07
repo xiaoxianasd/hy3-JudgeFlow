@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Hy3 JudgeFlow · 代码解题与过程评估平台</title>
-  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/assets/styles.css?v=d6a5df813cb8">
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
@@ -41,7 +41,8 @@
       </div>
       <select id="problem" aria-describedby="problemCount" disabled></select>
       <div id="problemCount" class="hint problem-count"></div>
-      <label class="label" for="examples">Hypothesis 自动测试输入上限</label><input id="examples" type="number" min="1" max="500" value="60">
+      <label class="label" for="examples">Hypothesis 测试生成预算</label><input id="examples" type="number" min="1" max="500" value="60" aria-describedby="examplesHint">
+      <p id="examplesHint" class="hint">仅对已配置策略的题目生效；实际检查次数含反例收缩与重放，可能超过生成预算。</p>
       <div id="generationOptions">
       <label class="label" for="reviewMode">多 Agent 编排模式</label>
       <select id="reviewMode"><option value="supervisor">Supervisor · 5 专家并行</option><option value="swarm">Bounded Swarm · 冲突仲裁</option><option value="single">Single · 单评审基线</option></select>

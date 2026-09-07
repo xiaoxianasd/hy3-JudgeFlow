@@ -239,15 +239,39 @@ function setPipeline(phase) {
 
 function renderAgents(evaluation) {
   const orchestration = evaluation.orchestration;
-  if (!orchestration) return '<p>当前使用 Single 基线评审。</p>';
+  if (!orchestration) return `<p>${evaluation.review_coverage?.expected === 0 ? '当前仅使用规则校验，未调用模型评审。' : '当前使用 Single 基线评审。'}</p>`;
   const cards = orchestration.specialist_reviews.map(item => {
-    const failed = item.status !== 'completed' || item.valid === false;
-    const state = item.status !== 'completed' ? '调用失败' : (item.valid ? '通过' : '发现问题');
-    const firstError = item.first_error_step != null ? `<small>候选首错：步骤 ${item.first_error_step} · ${esc(item.error_type || '')}</small>` : '';
-    return `<div class="agent ${failed ? 'bad' : ''}"><b>${esc(item.agent)}</b><span class="badge ${failed ? 'bad' : ''}">${state}</span><small>审查阶段：${esc(item.stage)} · 置信度 ${Math.round((item.confidence || 0) * 100)}%</small><div>${esc(item.reason || '无补充说明')}</div>${firstError}</div>`;
+    const status = item.assessment_status || 'uncertain';
+    const tone = status === 'invalid' ? 'bad' : status === 'valid' ? '' : 'uncertain';
+    const state = item.status !== 'completed' ? '调用失败 · 证据不足' : item.ignored_by_supervisor ? '意见待复核' : ({valid: '通过审查', invalid: '发现问题', uncertain: '证据不足'}[status] || '证据不足');
+    const firstError = status === 'invalid' && item.first_error_step != null ? `<small>模型报告位置：步骤 ${esc(item.first_error_step)} · ${esc(item.error_type || '')}（以汇总定位为准）</small>` : '';
+    return `<div class="agent ${tone}"><b>${esc(item.agent)}</b><span class="badge ${tone}">${state}</span><small>审查阶段：${esc(item.stage)} · 置信度 ${Math.round((item.confidence || 0) * 100)}%</small><div>${esc(item.reason || '无补充说明')}</div>${firstError}</div>`;
   }).join('');
   const arbitration = orchestration.arbitration ? `<h3>Swarm 仲裁</h3><p>${esc(orchestration.arbitration.rationale || '已完成仲裁')}</p>` : '';
   return `<p>拓扑：${esc(orchestration.topology)}；本轮审查模型调用 ${orchestration.model_calls} 次；冲突 ${orchestration.conflicts.length} 项。</p><div class="agents">${cards}</div>${arbitration}`;
+}
+
+function verdictText(value, positive = '成立', negative = '不成立') {
+  return value === true ? positive : value === false ? negative : '证据不足';
+}
+
+function verdictTone(value) {
+  return value === true ? '' : value === false ? 'bad' : 'uncertain';
+}
+
+function propertyCheckText(hypothesis) {
+  if (!hypothesis) return '未执行';
+  // Old saved jobs have no status field; never interpret disabled as a passing run.
+  const status = hypothesis.error ? 'error' : hypothesis.status || (
+    hypothesis.enabled === false ? 'unsupported' : hypothesis.enabled !== true ? 'not_run'
+      : hypothesis.examples_checked === 0 ? 'not_run' : hypothesis.found === true ? 'failed'
+        : hypothesis.found === false ? 'passed' : 'not_run'
+  );
+  const labels = {unsupported: '该题尚未配置属性测试策略', disabled: '未启用', not_run: '未执行',
+    error: '验证异常，结果不可用', failed: '发现反例', passed: '当前预算内未发现反例'};
+  const count = Number.isInteger(hypothesis.examples_checked) ? `；实际检查 ${hypothesis.examples_checked} 次（含收缩与重放）` : '';
+  const budget = Number.isInteger(hypothesis.max_examples) ? `；生成预算 ${hypothesis.max_examples}` : '';
+  return (labels[status] || '状态未知') + count + budget;
 }
 
 function render(value) {
@@ -255,8 +279,28 @@ function render(value) {
   const evaluation = value.evaluation;
   const answer = value.answer;
   const hypothesis = evaluation.hypothesis;
+  const execution = evaluation.execution;
+  const coverage = evaluation.review_coverage;
+  const steps = Array.isArray(answer.reasoning_steps) ? answer.reasoning_steps.filter(step => step && typeof step === 'object') : [];
+  const position = evaluation.first_error_step != null ? `步骤 ${evaluation.first_error_step}`
+    : evaluation.process_correct === false ? '尚未定位' : evaluation.process_correct === true ? '未发现错误' : '未确定';
+  const coverageText = coverage && coverage.expected > 0
+    ? `评审完成 ${coverage.completed}/${coverage.expected}，结论明确 ${coverage.conclusive}/${coverage.expected}`
+    : coverage ? '未调用模型评审' : '历史记录未提供评审覆盖统计';
+  const fixedText = execution ? `${execution.passed}/${execution.total}${execution.harness_error ? '（执行异常，请结合错误信息复核）' : ''}` : '未执行';
   $('#result').className = 'card';
-  $('#result').innerHTML = `<div class="metrics"><div class="metric"><span>最终答案</span><b>${evaluation.final_correct ? '正确' : '错误'}</b></div><div class="metric"><span>推理过程</span><b>${evaluation.process_correct ? '成立' : '不成立'}</b></div><div class="metric"><span>首个错误</span><b>${evaluation.first_error_step == null ? '—' : `步骤 ${esc(evaluation.first_error_step)}`}</b></div></div><h2>推理链</h2><div class="steps">${answer.reasoning_steps.map(step => `<div class="step ${step.id === evaluation.first_error_step ? 'bad' : ''}"><b>${esc(step.id)}. ${esc(step.title)}</b><div>${esc(step.content)}</div></div>`).join('')}</div><h2>多 Agent 审查</h2>${renderAgents(evaluation)}<h2>验证证据</h2><p>固定测试 ${evaluation.execution.passed}/${evaluation.execution.total}；Hypothesis ${hypothesis ? (hypothesis.found ? '发现并缩减出反例' : '未发现反例') : '未启用'}；错误类型：${evaluation.error_labels.join('、') || '无'}</p>${hypothesis && hypothesis.counterexample ? `<pre>${esc(JSON.stringify(hypothesis.counterexample, null, 2))}</pre>` : ''}<h2>Hy3 代码</h2><pre>${esc(answer.code)}</pre>`;
+  $('#result').innerHTML = `<div class="metrics">
+    <div class="metric ${verdictTone(evaluation.final_correct)}"><span>测试验证</span><b>${verdictText(evaluation.final_correct, '通过当前测试', '未通过')}</b></div>
+    <div class="metric ${verdictTone(evaluation.process_correct)}"><span>推理过程</span><b>${verdictText(evaluation.process_correct)}</b></div>
+    <div class="metric"><span>错误定位</span><b>${esc(position)}</b></div></div>
+    <p class="assessment-note ${verdictTone(evaluation.process_correct)}">${esc(evaluation.assessment_note || '历史记录未提供判定说明，建议重新评估。')}</p>
+    <p class="detail-note">测试通过仅表示当前测试覆盖内未发现错误，不是完整正确性证明。</p>
+    <h2>推理链</h2><div class="steps">${steps.map(step => `<div class="step ${step.id === evaluation.first_error_step ? 'bad' : ''}"><b>${esc(step.id)}. ${esc(step.title)}</b><div>${esc(step.content)}</div></div>`).join('')}</div>
+    <h2>过程审查</h2><p>${esc(coverageText)}</p>${renderAgents(evaluation)}
+    <h2>验证证据</h2><p>固定测试 ${esc(fixedText)}；Hypothesis：${esc(propertyCheckText(hypothesis))}。</p>
+    <p>错误类型：${esc((evaluation.error_labels || []).join('、') || (evaluation.process_correct === true ? '未发现' : '未确认'))}</p>
+    ${hypothesis?.counterexample && !hypothesis.error ? `<pre>${esc(formatValue(hypothesis.counterexample))}</pre>` : ''}
+    <h2>Hy3 代码</h2><pre>${esc(answer.code || '')}</pre>`;
 }
 
 function renderSubmission(value) {
@@ -265,7 +309,7 @@ function renderSubmission(value) {
   const review = evaluation.submission_review;
   const execution = evaluation.execution;
   const hypothesis = evaluation.hypothesis;
-  const verdict = (value, positive = '未发现问题') => value === true ? positive : (value === false ? '发现问题' : '未确定');
+  const verdict = (value, positive = '未发现问题') => verdictText(value, positive, '发现问题');
   const position = [
     evaluation.first_error_step != null ? `步骤 ${evaluation.first_error_step}` : '',
     evaluation.first_error_line != null ? `代码行 ${evaluation.first_error_line}` : '',
@@ -277,7 +321,7 @@ function renderSubmission(value) {
   const steps = answer.reasoning_steps.length
     ? `<div class="steps">${answer.reasoning_steps.map(step => `<div class="step ${step.id === evaluation.first_error_step ? 'bad' : ''}"><b>用户步骤 ${esc(step.id)}</b><div class="submitted-step">${esc(step.content)}</div></div>`).join('')}</div>`
     : '<p class="detail-note">未提交分步说明。系统不会从代码反推或编造你的思考过程。</p>';
-  const propertyStatus = !hypothesis ? '未执行' : hypothesis.error ? '验证服务异常' : hypothesis.enabled === false ? '该题尚未配置属性测试策略' : hypothesis.found ? '发现并缩减出反例' : '当前预算内未发现反例';
+  const propertyStatus = propertyCheckText(hypothesis);
   const code = answer.code.split('\n').map((line, index) => `<span class="code-line ${index + 1 === evaluation.first_error_line ? 'flagged' : ''}">${esc(line) || ' '}</span>`).join('');
   const publicTests = (execution.tests || []).filter(item => item.visibility === 'public').map(item => `<details><summary>${esc(item.name)} · ${item.passed ? '通过' : '未通过'}</summary><pre>${esc(formatValue({expected: item.expected, actual: item.actual, error: item.error}))}</pre></details>`).join('');
   $('#result').className = 'card';

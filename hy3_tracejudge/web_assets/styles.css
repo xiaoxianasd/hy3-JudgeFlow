@@ -13,6 +13,18 @@ select,input,button{width:100%;min-width:0;border-radius:11px;border:1px solid v
 pre{white-space:pre-wrap;word-break:break-word;background:#17231f;color:#dcecdf;padding:17px;border-radius:13px;max-height:390px;overflow:auto}.empty{display:grid;place-items:center;min-height:180px;color:var(--muted);text-align:center}.error{color:var(--red)}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{padding:14px;background:#f0f5df;border-radius:13px}.metric b{font-size:25px;display:block}.steps{display:grid;gap:10px}.step{border-left:4px solid var(--green);padding:9px 14px;background:#f8f7f1;border-radius:0 10px 10px 0}.step.bad{border-color:var(--red)}
 .agents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.agent{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfaf4}.agent.bad{border-color:#d59a95;background:#fff5f3}.agent small{display:block;color:var(--muted)}.badge{display:inline-block;padding:2px 8px;border-radius:99px;background:#e5efcc;font-size:12px;margin-left:6px}.badge.bad{background:#f7d8d4;color:var(--red)}
+.metric.bad{background:#fff0ee}.metric.uncertain,.agent.uncertain,.badge.uncertain{background:#fff6df;color:#795300}.agent.uncertain{border-color:#d8bb72}.assessment-note{padding:12px;border-left:3px solid var(--green);background:#f6f7ef;overflow-wrap:anywhere}.assessment-note.uncertain{border-color:#b88116;background:#fff6df}.assessment-note.bad{border-color:var(--red)}
+/* Keep desktop controls reachable while the problem and results scroll. */
+@media(min-width:901px){
+  .controls{
+    position:sticky;
+    top:20px;
+    max-height:calc(100vh - 40px);
+    max-height:calc(100dvh - 40px);
+    overflow-y:auto;
+    scrollbar-gutter:stable;
+  }
+}
 @media(max-width:900px){.layout{grid-template-columns:1fr}.metrics,.agents{grid-template-columns:1fr}.pipeline{display:none}}
 @media(max-width:560px){main{padding:24px 16px 40px}.card{padding:18px}.example-values{grid-template-columns:1fr}.problem-details h2{font-size:19px}}
 @media(max-width:430px){.problem-filters{grid-template-columns:1fr}.problem-filters input,.problem-filters select{margin-bottom:4px}}

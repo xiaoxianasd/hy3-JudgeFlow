@@ -77,14 +77,17 @@ def ensure_source(name: str, offline_file: str | None) -> Path | None:
     return None
 
 
-def _signature(code: str) -> tuple[str, list[str]] | None:
-    """Return (function_name, params) of the first def, if simple."""
+def _signature(code: str, entrypoint: str | None = None) -> tuple[str, list[str]] | None:
+    """Resolve a named function; never guess the first helper in multi-def code."""
     try:
         tree = ast.parse(code)
     except SyntaxError:
         return None
-    for node in tree.body:
-        if isinstance(node, ast.FunctionDef):
+    functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
+    if entrypoint is None and len(functions) != 1:
+        return None
+    for node in functions:
+        if entrypoint is None or node.name == entrypoint:
             params: list[str] = []
             for arg in [*node.args.posonlyargs, *node.args.args]:
                 if arg.arg in {"case"}:
@@ -98,7 +101,7 @@ def _signature(code: str) -> tuple[str, list[str]] | None:
     return None
 
 
-def _parse_asserts(test_list: list[str]) -> list[tuple[list[Any], Any]]:
+def _parse_asserts(test_list: list[str], entrypoint: str | None = None) -> list[tuple[list[Any], Any]]:
     """Extract (positional args, expected) from MBPP-style assert strings."""
     parsed: list[tuple[list[Any], Any]] = []
     for line in test_list:
@@ -115,6 +118,7 @@ def _parse_asserts(test_list: list[str]) -> list[tuple[list[Any], Any]]:
             and len(test.ops) == 1
             and isinstance(test.ops[0], ast.Eq)
             and not test.left.keywords
+            and (entrypoint is None or (isinstance(test.left.func, ast.Name) and test.left.func.id == entrypoint))
         ):
             continue
         try:
@@ -124,6 +128,25 @@ def _parse_asserts(test_list: list[str]) -> list[tuple[list[Any], Any]]:
             continue
         parsed.append((args, expected))
     return parsed
+
+
+def _entrypoint(record: dict[str, Any], text: str, code: str) -> str | None:
+    functions = {node.name for node in ast.parse(code).body if isinstance(node, ast.FunctionDef)}
+    explicit = record.get("entry_point")
+    if explicit:
+        return explicit if explicit in functions else None
+    calls = set()
+    lines = list(record.get("test_list") or []) + [line.strip() for line in text.splitlines() if line.strip().startswith("assert ")]
+    for line in lines:
+        try:
+            tree = ast.parse(line)
+        except SyntaxError:
+            continue
+        calls.update(node.func.id for node in ast.walk(tree) if isinstance(node, ast.Call)
+                     and isinstance(node.func, ast.Name) and node.func.id in functions)
+    if len(calls) == 1:
+        return next(iter(calls))
+    return next(iter(functions)) if not calls and len(functions) == 1 else None
 
 
 def _direct_inputs(record: dict[str, Any]) -> list[tuple[list[Any], Any | None]] | None:
@@ -211,7 +234,11 @@ def convert_record(record: dict[str, Any], source_tag: str) -> tuple[dict[str, A
     if not parsed:
         return None, "missing text/code"
     text, code = parsed
-    signature = _signature(code)
+    try:
+        entrypoint = _entrypoint(record, text, code)
+    except SyntaxError:
+        return None, "invalid reference syntax"
+    signature = _signature(code, entrypoint) if entrypoint else None
     if not signature:
         return None, "unsupported signature"
     function_name, params = signature
@@ -221,7 +248,7 @@ def convert_record(record: dict[str, Any], source_tag: str) -> tuple[dict[str, A
         return None, "solution contains import statements"
 
     if isinstance(record.get("test_list"), list) and record["test_list"]:
-        cases = _parse_asserts(record["test_list"])
+        cases = _parse_asserts(record["test_list"], function_name)
         if not cases:
             return None, "no parseable asserts"
     else:
@@ -229,6 +256,15 @@ def convert_record(record: dict[str, Any], source_tag: str) -> tuple[dict[str, A
         if not cases:
             return None, "no usable inputs"
 
+    # Cross-check published expectations, rather than only running the reference
+    # against itself on plus-format inputs (which previously hid a wrong entry).
+    documented = _parse_asserts([line.strip() for line in text.splitlines() if line.strip().startswith("assert ")], function_name)
+    for args, expected in documented:
+        match = next((i for i, (values, _) in enumerate(cases) if values == args), None)
+        if match is None:
+            cases.append((args, expected))
+        else:
+            cases[match] = (args, expected)
     if len(params) != len({len(args) for args, _ in cases} - {0}) and not all(
         len(args) == len(params) for args, _ in cases
     ):
