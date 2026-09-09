@@ -2,6 +2,9 @@
 
 Domains are reviewed against the task, signature and reference, not inferred from
 the first example's type. Bounds limit interactive runtime, not full problem scope.
+
+v2 adds the five TACO/CodeWars hard problems; several need structured generators
+(valid bowling games, well-formed polynomials) rather than plain type domains.
 """
 from __future__ import annotations
 
@@ -10,7 +13,65 @@ from functools import lru_cache
 from hypothesis import strategies as st
 
 
-STRATEGY_VERSION = "mbpp-domains-v1"
+STRATEGY_VERSION = "mbpp-taco-domains-v2"
+
+
+def _roll_char(pins: int) -> str:
+    if pins == 0:
+        return "0"
+    if pins == 10:
+        return "X"
+    return str(pins)
+
+
+@st.composite
+def bowling_game(draw):
+    """Generate a valid ten-pin bowling game string (10 space-separated frames)."""
+    frames = []
+    for _ in range(9):
+        if draw(st.booleans()):
+            frames.append("X")
+        else:
+            first = draw(st.integers(0, 9))
+            second = draw(st.integers(0, 10 - first))
+            if first + second == 10:
+                frames.append(f"{_roll_char(first)}/")
+            else:
+                frames.append(f"{_roll_char(first)}{_roll_char(second)}")
+    first = draw(st.integers(0, 10))
+    if first == 10:
+        second = draw(st.integers(0, 10))
+        if second == 10:
+            frames.append("XX" + _roll_char(draw(st.integers(0, 10))))
+        else:
+            third = draw(st.integers(0, 10 - second))
+            tail = "/" if second + third == 10 else _roll_char(third)
+            frames.append("X" + _roll_char(second) + tail)
+    else:
+        second = draw(st.integers(0, 10 - first))
+        if first + second == 10:
+            frames.append(f"{_roll_char(first)}/{_roll_char(draw(st.integers(0, 10)))}")
+        else:
+            frames.append(f"{_roll_char(first)}{_roll_char(second)}")
+    return {"frames": " ".join(frames)}
+
+
+@st.composite
+def polynomial(draw):
+    """Generate a well-formed polynomial string like ``-a+5ab+3a-c-2a``."""
+    terms = []
+    for _ in range(draw(st.integers(1, 4))):
+        coeff = draw(st.integers(1, 5))
+        var_len = draw(st.integers(1, 3))
+        var = "".join(sorted(draw(st.lists(
+            st.sampled_from("abcxyz"), min_size=var_len, max_size=var_len, unique=True
+        ))))
+        head = "" if coeff == 1 and draw(st.booleans()) else str(coeff)
+        terms.append(head + var)
+    expr = ("-" if draw(st.booleans()) else "") + terms[0]
+    for term in terms[1:]:
+        expr += draw(st.sampled_from("+-")) + term
+    return {"poly": expr}
 
 
 @st.composite
@@ -136,6 +197,35 @@ def definitions():
     fields(132, "单字符序列，长度 0..30", tup1=st.lists(st.sampled_from(list("abcXYZ中 ")), max_size=30))
     fields(138, "非负整数 n=0..10000", n=natural)
     custom(142, "三条等长整数列表，长度 0..15，元素 -4..4", same_position_lists())
+
+    taco_text = st.text(alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.'", max_size=40)
+    defs["taco_converter"] = (
+        st.fixed_dictionaries({
+            "n": st.integers(-1000, 1000),
+            "decimals": st.integers(0, 5),
+            "base": st.one_of(st.just(3.141592653589793), st.integers(2, 16)),
+        }),
+        "整数 n -1000..1000；decimals 0..5 与 base（π 或 2..16 整数）始终显式给出",
+    )
+    defs["taco_mix"] = (
+        st.fixed_dictionaries({"s1": taco_text, "s2": taco_text}),
+        "两条长度 0..40 的混合大小写字符串，含空格与标点",
+    )
+    defs["taco_count_change"] = (
+        st.fixed_dictionaries({
+            "money": st.integers(0, 12),
+            "coins": st.lists(st.integers(1, 9), min_size=1, max_size=3, unique=True),
+        }),
+        "money 0..12；coins 为 1..3 个互异面额 1..9（参考为朴素递归，域刻意保持小规模）",
+    )
+    defs["taco_simplify"] = (
+        polynomial(),
+        "1..4 项多项式；系数 1..5 可省略 1；变量为 abcxyz 中 1..3 个互异字母按字母序",
+    )
+    defs["taco_bowling_score"] = (
+        bowling_game(),
+        "合法十瓶保龄球局：前 9 帧单投全中或两投和 ≤10，第 10 帧含补投规则",
+    )
     return defs
 
 

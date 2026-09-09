@@ -1,7 +1,7 @@
 {
   "version": 1,
   "calibration_type": "manual_rubric",
-  "scope": "2026-09-09 Hy3 external benchmark（60 道 MBPP+/EvalPlus 题）",
+  "scope": "2026-09-09 Hy3 external benchmark（60 道 MBPP+ 题 + 5 道 TACO/CodeWars hard 补充题）",
   "benchmark_file": "reports/hy3_external_20260909.json",
   "status": "ai_assisted_draft_pending_spot_check",
   "prepared_by": "AI-assisted draft (WorkBuddy)；提交前需人工抽查复核",
@@ -902,6 +902,76 @@
       "total": 1,
       "calibrated_difficulty": "easy",
       "evidence": "zip 三列表同位比较计数。"
+    },
+    {
+      "problem_id": "taco_converter",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": 3,
+        "state_invariant": 2,
+        "proof_burden": 3,
+        "boundary_traps": 2,
+        "complexity_pressure": 1
+      },
+      "total": 11,
+      "calibrated_difficulty": "hard",
+      "evidence": "无理数进制（base π）表示的贪心构造与进位逻辑非平凡；负数、零与小数位精度是主要边界。"
+    },
+    {
+      "problem_id": "taco_mix",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": 2,
+        "state_invariant": 1,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 1
+      },
+      "total": 7,
+      "calibrated_difficulty": "medium",
+      "evidence": "双串字母频率对比与自定义格式输出；仅小写、计数>1 与并列处理是主要陷阱。"
+    },
+    {
+      "problem_id": "taco_count_change",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 2
+      },
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "经典硬币兑换计数递推；朴素递归在大金额下指数膨胀，需要记忆化或 DP。"
+    },
+    {
+      "problem_id": "taco_simplify",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 1,
+        "boundary_traps": 3,
+        "complexity_pressure": 1
+      },
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "多项式解析状态机与规范输出排序；隐式系数 1、负号项与零系数项删除均为隐蔽陷阱。"
+    },
+    {
+      "problem_id": "taco_bowling_score",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 3,
+        "complexity_pressure": 0
+      },
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "保龄球逐帧模拟与全中/补中奖励前瞻；第 10 帧补投规则是著名易错点。"
     }
   ]
 }

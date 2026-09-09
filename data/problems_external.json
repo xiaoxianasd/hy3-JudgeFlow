@@ -10563,5 +10563,587 @@
     },
     "boundary_cases": [],
     "source": "mbpp (EvalPlus, Apache-2.0) 自动导入；原始测试与参考实现已沙盒验证"
+  },
+  {
+    "id": "taco_converter",
+    "tier": "external",
+    "title": "I started this as a joke among friends, telling that convert",
+    "difficulty": "hard",
+    "difficulty_basis": "TACO 标签 MEDIUM_HARD（CodeWars 函数级，约 2-3 kyu）；AST 复杂度启发式初值，需五维量表人工校准",
+    "statement": "I started this as a joke among friends, telling that converting numbers to other integer bases is for n00bs, while an actual coder at least converts numbers to more complex bases like [pi (or π or however you wish to spell it in your language)](http://en.wikipedia.org/wiki/Pi), so they dared me proving I was better.\n\nAnd I did it in few hours, discovering that what I started as a joke actually has [some math ground and application (particularly the conversion to base pi, it seems)](http://en.wikipedia.org/wiki/Non-integer_representation).\n\nThat said, now I am daring you to do the same, that is to build a function so that it takes a **number** (any number, you are warned!) and optionally the **number of decimals** (default: 0) and a **base** (default: pi), returning the proper conversion **as a string**:\n\n#Note\nIn Java there is no easy way with optional parameters so all three parameters will be given; the same in C# because, as of now, the used version is not known. \n\n```python\nconverter(13) #returns '103'\nconverter(13,3) #returns '103.010'\nconverter(-13,0,2) #returns '-1101'\n```\n\nI know most of the world uses a comma as a [decimal mark](http://en.wikipedia.org/wiki/Decimal_mark), but as English language and culture are *de facto* the Esperanto of us coders, we will stick to our common glorious traditions and uses, adopting the trivial dot (\".\") as decimal separator; if the absolute value of the result is <1, you have of course to put one (and only one) leading 0 before the decimal separator.\n\nFinally, you may assume that decimals if provided will always be >= 0 and that no test base will be smaller than 2 (because, you know, converting to base 1 is pretty lame) or greater than 36; as usual, for digits greater than 9 you can use uppercase alphabet letter, so your base of numeration is going to be: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.\n\nThat is my first 3-languages-kata, so I count on you all to give me extensive feedback, no matter how harsh it may sound, so to im",
+    "function_name": "solve_case",
+    "input_schema": {
+      "n": "int",
+      "decimals": "int（可选，默认 0）",
+      "base": "float（可选，默认 π）"
+    },
+    "constraints": [
+      "TACO/CodeWars 原题未提供显式约束；规模以测试用例为准"
+    ],
+    "public_tests": [
+      {
+        "name": "case_01",
+        "input": {
+          "n": 13
+        },
+        "expected": "103"
+      },
+      {
+        "name": "case_02",
+        "input": {
+          "n": 10
+        },
+        "expected": "100"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "case_03",
+        "input": {
+          "n": 13,
+          "decimals": 3
+        },
+        "expected": "103.010"
+      },
+      {
+        "name": "case_04",
+        "input": {
+          "n": 13,
+          "decimals": 0,
+          "base": 8
+        },
+        "expected": "15"
+      },
+      {
+        "name": "case_05",
+        "input": {
+          "n": 10,
+          "decimals": 0,
+          "base": 16
+        },
+        "expected": "A"
+      },
+      {
+        "name": "case_06",
+        "input": {
+          "n": 10000,
+          "decimals": 4,
+          "base": 13
+        },
+        "expected": "4723.0000"
+      },
+      {
+        "name": "case_07",
+        "input": {
+          "n": 7,
+          "decimals": 0,
+          "base": 19
+        },
+        "expected": "7"
+      },
+      {
+        "name": "case_08",
+        "input": {
+          "n": 13.5,
+          "decimals": 4,
+          "base": 16
+        },
+        "expected": "D.8000"
+      },
+      {
+        "name": "case_09",
+        "input": {
+          "n": 10.81,
+          "decimals": 0,
+          "base": 16
+        },
+        "expected": "A"
+      },
+      {
+        "name": "case_10",
+        "input": {
+          "n": 1,
+          "decimals": 2,
+          "base": 2
+        },
+        "expected": "1.00"
+      }
+    ],
+    "reference_solution": "from math import pi\nfrom math import log\n\ndef converter(n, decimals=0, base=pi):\n\tDIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'\n\trepresentation = []\n\tif n < 0:\n\t\trepresentation.append('-')\n\t\tn *= -1\n\tif n == 0:\n\t\tdecimalCount = 0\n\telse:\n\t\tdecimalCount = int(log(n, base))\n\tfor dplace in [pow(base, power) for power in range(decimalCount, -1 - decimals, -1)]:\n\t\trNumber = int(n / dplace)\n\t\tn -= rNumber * dplace\n\t\trepresentation.append(DIGITS[rNumber])\n\t\tif dplace == 1 and decimals > 0:\n\t\t\trepresentation.append('.')\n\treturn ''.join(representation)\n\n\n\ndef solve_case(case):\n    return converter(**case)\n",
+    "fault": null,
+    "gold_steps": [],
+    "rubric": [],
+    "expected_complexity": {
+      "time": "未标注",
+      "space": "未标注"
+    },
+    "boundary_cases": [],
+    "source": "taco_codewars (TACO test split, source=codewars, TACO difficulty=MEDIUM_HARD; Apache-2.0/CC-BY-4.0 per TACO license) 自动导入；参考实现已在沙盒通过 24 组 TACO 金标测试交叉验证"
+  },
+  {
+    "id": "taco_mix",
+    "tier": "external",
+    "title": "Given two strings s1 and s2, we want to visualize how differ",
+    "difficulty": "hard",
+    "difficulty_basis": "TACO 标签 MEDIUM_HARD（CodeWars 函数级，约 2-3 kyu）；AST 复杂度启发式初值，需五维量表人工校准",
+    "statement": "Given two strings s1 and s2, we want to visualize how different the two strings are.\nWe will only take into account the *lowercase* letters (a to z).\nFirst let us count the frequency of each *lowercase* letters in s1 and s2.\n\n`s1 = \"A aaaa bb c\"`\n\n`s2 = \"& aaa bbb c d\"`\n\n`s1 has 4 'a', 2 'b', 1 'c'`\n\n`s2 has 3 'a', 3 'b', 1 'c', 1 'd'`\n\nSo the maximum for 'a' in s1 and s2 is 4 from s1; the maximum for 'b' is 3 from s2.\nIn the following we will not consider letters when the maximum of their occurrences\nis less than or equal to 1.\n\nWe can resume the differences between s1 and s2 in the following string:\n`\"1:aaaa/2:bbb\"`\nwhere `1` in `1:aaaa` stands for string s1 and `aaaa` because the maximum for `a` is 4.\nIn the same manner `2:bbb` stands for string s2 and `bbb` because the maximum for `b` is 3.\n\nThe task is to produce a string in which each *lowercase* letters of s1 or s2 appears as many times as\nits maximum if this maximum is *strictly greater than 1*; these letters will be prefixed by the \nnumber of the string where they appear with their maximum value and `:`. \nIf the maximum is in s1 as well as in s2 the prefix is `=:`.\n\nIn the result, substrings (a substring is for example 2:nnnnn or 1:hhh; it contains the prefix) will be in decreasing order of their length and when they have the same length sorted in ascending lexicographic order (letters and digits - more precisely sorted by codepoint); the different groups will be separated by '/'. See examples and \"Example Tests\".\n\nHopefully other examples can make this clearer.\n\n```\ns1 = \"my&friend&Paul has heavy hats! &\"\ns2 = \"my friend John has many many friends &\"\nmix(s1, s2) --> \"2:nnnnn/1:aaaa/1:hhh/2:mmm/2:yyy/2:dd/2:ff/2:ii/2:rr/=:ee/=:ss\"\n\ns1 = \"mmmmm m nnnnn y&friend&Paul has heavy hats! &\"\ns2 = \"my frie n d Joh n has ma n y ma n y frie n ds n&\"\nmix(s1, s2) --> \"1:mmmmmm/=:nnnnnn/1:aaaa/1:hhh/2:yyy/2:dd/2:ff/2:ii/2:rr/=:ee/=:ss\"\n\ns1=\"Are the kids at home? aaaaa fffff\"\ns2=\"Yes they are here! aaaaa fffff\"\nmix(s1, s2",
+    "function_name": "solve_case",
+    "input_schema": {
+      "s1": "str",
+      "s2": "str"
+    },
+    "constraints": [
+      "TACO/CodeWars 原题未提供显式约束；规模以测试用例为准"
+    ],
+    "public_tests": [
+      {
+        "name": "case_01",
+        "input": {
+          "s1": "Are they here",
+          "s2": "yes, they are here"
+        },
+        "expected": "2:eeeee/2:yy/=:hh/=:rr"
+      },
+      {
+        "name": "case_02",
+        "input": {
+          "s1": "looping is fun but dangerous",
+          "s2": "less dangerous than coding"
+        },
+        "expected": "1:ooo/1:uuu/2:sss/=:nnn/1:ii/2:aa/2:dd/2:ee/=:gg"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "case_03",
+        "input": {
+          "s1": " In many languages",
+          "s2": " there's a pair of functions"
+        },
+        "expected": "1:aaa/1:nnn/1:gg/2:ee/2:ff/2:ii/2:oo/2:rr/2:ss/2:tt"
+      },
+      {
+        "name": "case_04",
+        "input": {
+          "s1": "Lords of the Fallen",
+          "s2": "gamekult"
+        },
+        "expected": "1:ee/1:ll/1:oo"
+      },
+      {
+        "name": "case_05",
+        "input": {
+          "s1": "codewars",
+          "s2": "codewars"
+        },
+        "expected": ""
+      },
+      {
+        "name": "case_06",
+        "input": {
+          "s1": "A generation must confront the looming ",
+          "s2": "codewarrs"
+        },
+        "expected": "1:nnnnn/1:ooooo/1:tttt/1:eee/1:gg/1:ii/1:mm/=:rr"
+      },
+      {
+        "name": "case_07",
+        "input": {
+          "s1": "Are they here",
+          "s2": "yes, they are here"
+        },
+        "expected": "2:eeeee/2:yy/=:hh/=:rr"
+      },
+      {
+        "name": "case_08",
+        "input": {
+          "s1": "looping is fun but dangerous",
+          "s2": "less dangerous than coding"
+        },
+        "expected": "1:ooo/1:uuu/2:sss/=:nnn/1:ii/2:aa/2:dd/2:ee/=:gg"
+      },
+      {
+        "name": "case_09",
+        "input": {
+          "s1": "my&friend&Paul has heavy hats! &",
+          "s2": "my friend John has many many friends &"
+        },
+        "expected": "2:nnnnn/1:aaaa/1:hhh/2:mmm/2:yyy/2:dd/2:ff/2:ii/2:rr/=:ee/=:ss"
+      },
+      {
+        "name": "case_10",
+        "input": {
+          "s1": "mmmmm m nnnnn y&friend&Paul has heavy hats! &",
+          "s2": "my frie n d Joh n has ma n y ma n y frie n ds n&"
+        },
+        "expected": "1:mmmmmm/=:nnnnnn/1:aaaa/1:hhh/2:yyy/2:dd/2:ff/2:ii/2:rr/=:ee/=:ss"
+      }
+    ],
+    "reference_solution": "def mix(s1, s2):\n\thist = {}\n\tfor ch in 'abcdefghijklmnopqrstuvwxyz':\n\t\t(val1, val2) = (s1.count(ch), s2.count(ch))\n\t\tif max(val1, val2) > 1:\n\t\t\twhich = '1' if val1 > val2 else '2' if val2 > val1 else '='\n\t\t\thist[ch] = (-max(val1, val2), which + ':' + ch * max(val1, val2))\n\treturn '/'.join((hist[ch][1] for ch in sorted(hist, key=lambda x: hist[x])))\n\n\n\ndef solve_case(case):\n    return mix(**case)\n",
+    "fault": null,
+    "gold_steps": [],
+    "rubric": [],
+    "expected_complexity": {
+      "time": "未标注",
+      "space": "未标注"
+    },
+    "boundary_cases": [],
+    "source": "taco_codewars (TACO test split, source=codewars, TACO difficulty=MEDIUM_HARD; Apache-2.0/CC-BY-4.0 per TACO license) 自动导入；参考实现已在沙盒通过 24 组 TACO 金标测试交叉验证"
+  },
+  {
+    "id": "taco_count_change",
+    "tier": "external",
+    "title": "Write a function that counts how many different ways you can",
+    "difficulty": "hard",
+    "difficulty_basis": "TACO 标签 MEDIUM_HARD（CodeWars 函数级，约 2-3 kyu）；AST 复杂度启发式初值，需五维量表人工校准",
+    "statement": "Write a function that counts how many different ways you can make change for an amount of money, given an array of coin denominations. For example, there are 3 ways to give change for 4 if you have coins with denomination 1 and 2: \n```\n1+1+1+1, 1+1+2, 2+2.\n```\nThe order of coins does not matter:\n```\n1+1+2 == 2+1+1\n```\nAlso, assume that you have an infinite amount of coins.\n\nYour function should take an amount to change and an array of unique denominations for the coins:\n\n```python\n  count_change(4, [1,2]) # => 3\n  count_change(10, [5,2,3]) # => 4\n  count_change(11, [5,7]) # => 0\n```",
+    "function_name": "solve_case",
+    "input_schema": {
+      "money": "int",
+      "coins": "list[int]"
+    },
+    "constraints": [
+      "TACO/CodeWars 原题未提供显式约束；规模以测试用例为准"
+    ],
+    "public_tests": [
+      {
+        "name": "case_01",
+        "input": {
+          "money": 4,
+          "coins": [
+            1,
+            2
+          ]
+        },
+        "expected": 3
+      },
+      {
+        "name": "case_02",
+        "input": {
+          "money": 10,
+          "coins": [
+            5,
+            2,
+            3
+          ]
+        },
+        "expected": 4
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "case_03",
+        "input": {
+          "money": 11,
+          "coins": [
+            5,
+            7
+          ]
+        },
+        "expected": 0
+      },
+      {
+        "name": "case_04",
+        "input": {
+          "money": 98,
+          "coins": [
+            3,
+            14,
+            8
+          ]
+        },
+        "expected": 19
+      },
+      {
+        "name": "case_05",
+        "input": {
+          "money": 199,
+          "coins": [
+            3,
+            5,
+            9,
+            15
+          ]
+        },
+        "expected": 760
+      },
+      {
+        "name": "case_06",
+        "input": {
+          "money": 300,
+          "coins": [
+            5,
+            10,
+            20,
+            50,
+            100,
+            200,
+            500
+          ]
+        },
+        "expected": 1022
+      },
+      {
+        "name": "case_07",
+        "input": {
+          "money": 301,
+          "coins": [
+            5,
+            10,
+            20,
+            50,
+            100,
+            200,
+            500
+          ]
+        },
+        "expected": 0
+      },
+      {
+        "name": "case_08",
+        "input": {
+          "money": 419,
+          "coins": [
+            2,
+            5,
+            10,
+            20,
+            50
+          ]
+        },
+        "expected": 18515
+      },
+      {
+        "name": "case_09",
+        "input": {
+          "money": 0,
+          "coins": [
+            7,
+            2,
+            3
+          ]
+        },
+        "expected": 1
+      },
+      {
+        "name": "case_10",
+        "input": {
+          "money": 10,
+          "coins": [
+            1,
+            5
+          ]
+        },
+        "expected": 3
+      }
+    ],
+    "reference_solution": "def count_change(money, coins):\n\tif money < 0:\n\t\treturn 0\n\tif money == 0:\n\t\treturn 1\n\tif money > 0 and (not coins):\n\t\treturn 0\n\treturn count_change(money - coins[-1], coins) + count_change(money, coins[:-1])\n\n\n\ndef solve_case(case):\n    return count_change(**case)\n",
+    "fault": null,
+    "gold_steps": [],
+    "rubric": [],
+    "expected_complexity": {
+      "time": "未标注",
+      "space": "未标注"
+    },
+    "boundary_cases": [],
+    "source": "taco_codewars (TACO test split, source=codewars, TACO difficulty=MEDIUM_HARD; Apache-2.0/CC-BY-4.0 per TACO license) 自动导入；参考实现已在沙盒通过 24 组 TACO 金标测试交叉验证"
+  },
+  {
+    "id": "taco_simplify",
+    "tier": "external",
+    "title": "When we attended middle school were asked to simplify mathem",
+    "difficulty": "hard",
+    "difficulty_basis": "TACO 标签 MEDIUM_HARD（CodeWars 函数级，约 2-3 kyu）；AST 复杂度启发式初值，需五维量表人工校准",
+    "statement": "When we attended middle school were asked to simplify mathematical expressions like \"3x-yx+2xy-x\" (or usually bigger), and that was easy-peasy (\"2x+xy\"). But tell that to your pc and we'll see! \n\nWrite a function: `simplify`, that takes a string in input, representing a *multilinear non-constant polynomial in integers coefficients* (like `\"3x-zx+2xy-x\"`), and returns another string as output where the same expression has been simplified in the following way ( `->` means application of `simplify`):\n\n- All possible sums and subtraction of equivalent monomials (\"xy==yx\") has been done, e.g.: `\"cb+cba\" -> \"bc+abc\"`, `\"2xy-yx\" -> \"xy\"`, `\"-a+5ab+3a-c-2a\" -> \"-c+5ab\"`\n\n- All monomials appears in order of increasing number of variables, e.g.: `\"-abc+3a+2ac\" -> \"3a+2ac-abc\"`, `\"xyz-xz\" -> \"-xz+xyz\"`\n \n- If two monomials have the same number of variables, they appears in lexicographic order, e.g.: `\"a+ca-ab\" -> \"a-ab+ac\"`, `\"xzy+zby\" ->\"byz+xyz\"`\n  \n- There is no leading `+` sign if the first coefficient is positive, e.g.: `\"-y+x\" -> \"x-y\"`, but no restrictions for `-`:  `\"y-x\" ->\"-x+y\"`\n\n---\n\n__N.B.__ to keep it simplest, the string in input is restricted to represent only *multilinear non-constant polynomials*, so you won't find something like `-3+yx^2'. **Multilinear** means in this context: **of degree 1 on each variable**.\n\n**Warning**: the string in input can contain arbitrary variables represented by lowercase characters in the english alphabet.\n\n__Good Work :)__",
+    "function_name": "solve_case",
+    "input_schema": {
+      "poly": "str"
+    },
+    "constraints": [
+      "TACO/CodeWars 原题未提供显式约束；规模以测试用例为准"
+    ],
+    "public_tests": [
+      {
+        "name": "case_01",
+        "input": {
+          "poly": "dc+dcba"
+        },
+        "expected": "cd+abcd"
+      },
+      {
+        "name": "case_02",
+        "input": {
+          "poly": "2xy-yx"
+        },
+        "expected": "xy"
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "case_03",
+        "input": {
+          "poly": "-a+5ab+3a-c-2a"
+        },
+        "expected": "-c+5ab"
+      },
+      {
+        "name": "case_04",
+        "input": {
+          "poly": "-abc+3a+2ac"
+        },
+        "expected": "3a+2ac-abc"
+      },
+      {
+        "name": "case_05",
+        "input": {
+          "poly": "xyz-xz"
+        },
+        "expected": "-xz+xyz"
+      },
+      {
+        "name": "case_06",
+        "input": {
+          "poly": "a+ca-ab"
+        },
+        "expected": "a-ab+ac"
+      },
+      {
+        "name": "case_07",
+        "input": {
+          "poly": "xzy+zby"
+        },
+        "expected": "byz+xyz"
+      },
+      {
+        "name": "case_08",
+        "input": {
+          "poly": "-y+x"
+        },
+        "expected": "x-y"
+      },
+      {
+        "name": "case_09",
+        "input": {
+          "poly": "y-x"
+        },
+        "expected": "-x+y"
+      },
+      {
+        "name": "case_10",
+        "input": {
+          "poly": "3a+b+4ac+bc-ab+3a-cb-a-a"
+        },
+        "expected": "4a+b-ab+4ac"
+      }
+    ],
+    "reference_solution": "def simplify(poly):\n\ti = 0\n\teq = {}\n\tlength = len(poly)\n\twhile i < length:\n\t\tif poly[i] in '+-':\n\t\t\tconst = poly[i]\n\t\t\ti += 1\n\t\telse:\n\t\t\tconst = '+'\n\t\twhile poly[i].isnumeric():\n\t\t\tconst += poly[i]\n\t\t\ti += 1\n\t\tif not const[-1].isnumeric():\n\t\t\tconst += '1'\n\t\tvar = ''\n\t\twhile i < length and poly[i] not in '-+':\n\t\t\tvar += poly[i]\n\t\t\ti += 1\n\t\tvar = ''.join(sorted(var))\n\t\teq[var] = eq.get(var, 0) + int(const)\n\toutput = ''\n\tfor term in sorted(eq, key=lambda x: (len(x), x)):\n\t\tif eq[term] > 1:\n\t\t\toutput += '+' + str(eq[term]) + term\n\t\telif eq[term] == 1:\n\t\t\toutput += '+' + term\n\t\telif eq[term] == -1:\n\t\t\toutput += '-' + term\n\t\telif eq[term] < 0:\n\t\t\toutput += str(eq[term]) + term\n\tif output.startswith('+'):\n\t\treturn output[1:]\n\telse:\n\t\treturn output\n\n\n\ndef solve_case(case):\n    return simplify(**case)\n",
+    "fault": null,
+    "gold_steps": [],
+    "rubric": [],
+    "expected_complexity": {
+      "time": "未标注",
+      "space": "未标注"
+    },
+    "boundary_cases": [],
+    "source": "taco_codewars (TACO test split, source=codewars, TACO difficulty=MEDIUM_HARD; Apache-2.0/CC-BY-4.0 per TACO license) 自动导入；参考实现已在沙盒通过 24 组 TACO 金标测试交叉验证"
+  },
+  {
+    "id": "taco_bowling_score",
+    "tier": "external",
+    "title": "Ten-Pin Bowling",
+    "difficulty": "hard",
+    "difficulty_basis": "TACO 标签 MEDIUM_HARD（CodeWars 函数级，约 2-3 kyu）；AST 复杂度启发式初值，需五维量表人工校准",
+    "statement": "# Ten-Pin Bowling\n\nIn the game of ten-pin bowling, a player rolls a bowling ball down a lane to knock over pins. There are ten pins set at the end of the bowling lane. Each player has 10 frames to roll a bowling ball down a lane and knock over as many pins as possible. The first nine frames are ended after two rolls or when the player knocks down all the pins. The last frame a player will receive an extra roll every time they knock down all ten pins; up to a maximum of three total rolls. \n\n## The Challenge\n\nIn this challenge you will be given a string representing a player's ten frames. It will look something like this: `'X X 9/ 80 X X 90 8/ 7/ 44'` (in Java: `\"X X 9/ 80 X X 90 8/ 7/ 44\"`), where each frame is space-delimited, `'X'` represents strikes, and `'/'` represents spares. Your goal is take in this string of frames into a function called `bowlingScore` and return the players total score.\n\n## Scoring\n\nThe scoring for ten-pin bowling can be difficult to understand, and if you're like most people, easily forgotten if you don't play often. Here is a quick breakdown:\n\n### Frames\n\nIn Ten-Pin Bowling there are ten frames per game. Frames are the players turn to bowl, which can be multiple rolls. The first 9 frames you get 2 rolls maximum to try to get all 10 pins down. **On the 10th or last frame a player will receive an extra roll each time they get all ten pins down to a maximum of three total rolls. Also on the last frame bonuses are not awarded for strikes and spares moving forward.**\n\nIn this challenge, three frames might be represented like this: `54 72 44`. In this case, the player has had three frames. On their first frame they scored 9 points (5 + 4), on their second frame they scored 9 points (7 + 2) and on their third frame they scored 8 points (4 + 4). This is a very simple example of bowling scoring. It gets more complicated when we introduce strikes and spares.\n\n### Strikes \nRepresented in this challenge as `'X'`\n\nA strike is scored when a player knoc",
+    "function_name": "solve_case",
+    "input_schema": {
+      "frames": "str"
+    },
+    "constraints": [
+      "TACO/CodeWars 原题未提供显式约束；规模以测试用例为准"
+    ],
+    "public_tests": [
+      {
+        "name": "case_01",
+        "input": {
+          "frames": "11 11 11 11 11 11 11 11 11 11"
+        },
+        "expected": 20
+      },
+      {
+        "name": "case_02",
+        "input": {
+          "frames": "X X X X X X X X X XXX"
+        },
+        "expected": 300
+      }
+    ],
+    "hidden_tests": [
+      {
+        "name": "case_03",
+        "input": {
+          "frames": "00 5/ 4/ 53 33 22 4/ 5/ 45 XXX"
+        },
+        "expected": 115
+      },
+      {
+        "name": "case_04",
+        "input": {
+          "frames": "5/ 4/ 3/ 2/ 1/ 0/ X 9/ 4/ 8/8"
+        },
+        "expected": 150
+      },
+      {
+        "name": "case_05",
+        "input": {
+          "frames": "5/ 4/ 3/ 2/ 1/ 0/ X 9/ 4/ 7/2"
+        },
+        "expected": 143
+      },
+      {
+        "name": "case_06",
+        "input": {
+          "frames": "X X 9/ 80 X X 90 8/ 7/ 44"
+        },
+        "expected": 171
+      },
+      {
+        "name": "case_07",
+        "input": {
+          "frames": "6/ 5/ 6/ 2/ 3/ 0/ 1/ 8/ 3/ 6/5"
+        },
+        "expected": 139
+      },
+      {
+        "name": "case_08",
+        "input": {
+          "frames": "00 00 00 00 00 00 00 00 00 0/X"
+        },
+        "expected": 20
+      },
+      {
+        "name": "case_09",
+        "input": {
+          "frames": "00 00 00 00 00 00 00 00 X 0/X"
+        },
+        "expected": 40
+      },
+      {
+        "name": "case_10",
+        "input": {
+          "frames": "X X X X X X X X X X 11 11"
+        },
+        "expected": 273
+      }
+    ],
+    "reference_solution": "def bowling_score(frames):\n\trolls = list(frames.replace(' ', ''))\n\tfor (i, hit) in enumerate(rolls):\n\t\tif hit == 'X':\n\t\t\trolls[i] = 10\n\t\telif hit == '/':\n\t\t\trolls[i] = 10 - rolls[i - 1]\n\t\telse:\n\t\t\trolls[i] = int(hit)\n\tscore = 0\n\tfor i in range(10):\n\t\tframe = rolls.pop(0)\n\t\tif frame == 10:\n\t\t\tscore += frame + rolls[0] + rolls[1]\n\t\telse:\n\t\t\tframe += rolls.pop(0)\n\t\t\tscore += frame\n\t\t\tif frame == 10:\n\t\t\t\tscore += rolls[0]\n\treturn score\n\n\n\ndef solve_case(case):\n    return bowling_score(**case)\n",
+    "fault": null,
+    "gold_steps": [],
+    "rubric": [],
+    "expected_complexity": {
+      "time": "未标注",
+      "space": "未标注"
+    },
+    "boundary_cases": [],
+    "source": "taco_codewars (TACO test split, source=codewars, TACO difficulty=MEDIUM_HARD; Apache-2.0/CC-BY-4.0 per TACO license) 自动导入；参考实现已在沙盒通过 24 组 TACO 金标测试交叉验证"
   }
 ]

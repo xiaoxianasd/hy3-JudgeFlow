@@ -5,11 +5,12 @@
     {
       "name": "TACO",
       "kind": "algorithm_problem",
-      "role": "主训练/开发题源，带标准程序与测试",
+      "role": "主训练/开发题源；已接入 test split 的 CodeWars 函数级 MEDIUM_HARD 题 5 道（补充 hard 档）",
       "repository": "https://github.com/FlagOpen/TACO",
       "dataset": "https://huggingface.co/datasets/BAAI/TACO",
       "planned_subset": {"dev": 45, "test": 150},
-      "license": "Apache-2.0 repository; individual scraped problem statements may carry source-specific terms",
+      "integrated_subset": {"test_call_based_medium_hard": 5, "note": "参考实现经沙盒 24 组 TACO 金标测试交叉验证；导入脚本 scripts/import_taco.py"},
+      "license": "Apache-2.0 repository; individual scraped problem statements may carry source-specific terms (CodeWars 内容按 TACO 声明为 CC BY 4.0)",
       "review_required": true
     },
     {
