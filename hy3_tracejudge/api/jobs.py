@@ -6,12 +6,13 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from datetime import datetime, timezone
 from typing import Any, Callable
 
 from ..catalog import get_problem
 from ..evaluator import evaluate_answer
-from ..hy3_client import Hy3APIError, Hy3Client
+from ..hy3_client import Hy3APIError, Hy3Client, Hy3Config, public_model_error
 from ..submissions import SubmissionSandboxRequired
 
 
@@ -41,13 +42,28 @@ def run_evaluation_job(
     update_phase: Callable[[str], None],
     *,
     submission: dict[str, Any] | None = None,
+    runtime: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     problem = get_problem(problem_id)
+    if submission is not None and runtime is None:
+        from ..submissions import evaluate_submission
+
+        return evaluate_submission(
+            problem, submission, hypothesis_examples=hypothesis_examples, update_phase=update_phase
+        )
+    base_config = Hy3Config.from_env()
+    client = Hy3Client(replace(
+        base_config,
+        model=str((runtime or {}).get("model") or base_config.model),
+        api_key=str((runtime or {}).get("api_key") or base_config.api_key),
+    ))
     if submission is not None:
         from ..submissions import evaluate_submission
 
-        return evaluate_submission(problem, submission, hypothesis_examples=hypothesis_examples, update_phase=update_phase)
-    client = Hy3Client()
+        return evaluate_submission(
+            problem, submission, hypothesis_examples=hypothesis_examples,
+            update_phase=update_phase, hy3_client=client,
+        )
     update_phase("hy3_generation")
     answer, generation = client.solve(problem)
     update_phase("process_evaluation")
@@ -101,7 +117,11 @@ class EvaluationJobManager:
     def start(self) -> None:
         """Memory backend is ready immediately; kept for manager protocol parity."""
 
-    def submit(self, problem_id: str, hypothesis_examples: int, review_mode: str, *, submission: dict[str, Any] | None = None) -> dict[str, Any]:
+    def submit(
+        self, problem_id: str, hypothesis_examples: int, review_mode: str, *,
+        submission: dict[str, Any] | None = None,
+        runtime: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         with self._lock:
             if self._closed:
                 raise JobQueueFull("evaluation service is shutting down")
@@ -115,6 +135,7 @@ class EvaluationJobManager:
             "phase": "queued",
             "problem_id": problem_id,
             "kind": "code_submission" if submission is not None else "hy3_generation",
+            "requested_model": (runtime or {}).get("model") or Hy3Config.from_env().model,
             "created_at": timestamp,
             "updated_at": timestamp,
             "finished_monotonic": None,
@@ -132,6 +153,7 @@ class EvaluationJobManager:
                 hypothesis_examples,
                 review_mode,
                 copy.deepcopy(submission),
+                copy.deepcopy(runtime),
             )
         except BaseException:
             with self._lock:
@@ -178,11 +200,14 @@ class EvaluationJobManager:
         hypothesis_examples: int,
         review_mode: str,
         submission: dict[str, Any] | None = None,
+        runtime: dict[str, Any] | None = None,
     ) -> None:
         self._set(job_id, status="running", phase="starting")
         update_phase = lambda phase: self._set(job_id, phase=phase)
         try:
             options = {"submission": submission} if submission is not None else {}
+            if runtime is not None:
+                options["runtime"] = runtime
             result = self._runner(problem_id, hypothesis_examples, review_mode, update_phase, **options)
             self._set(
                 job_id,
@@ -194,16 +219,17 @@ class EvaluationJobManager:
         except SubmissionSandboxRequired:
             self._set(
                 job_id, status="failed", phase="failed",
-                error={"code": "submission_sandbox_required", "message": "用户代码任务需要 Docker 安全沙盒，请检查配置后重新提交"},
+                error={"code": "submission_sandbox_required", "message": "用户代码任务需要 Docker 安全沙盒，请检查配置后重新提交",
+                       "failure_owner": "infrastructure", "failure_owner_status": "provisional"},
                 finished_monotonic=time.monotonic(),
             )
-        except Hy3APIError:
-            LOGGER.exception("Hy3 evaluation job %s failed", job_id)
+        except Hy3APIError as exc:
+            LOGGER.exception("Model evaluation job %s failed", job_id)
             self._set(
                 job_id,
                 status="failed",
                 phase="failed",
-                error={"code": "upstream_error", "message": "Hy3 服务调用失败，请稍后重试"},
+                error=public_model_error(exc, str((runtime or {}).get("model") or Hy3Config.from_env().model)),
                 finished_monotonic=time.monotonic(),
             )
         except Exception:
@@ -212,7 +238,8 @@ class EvaluationJobManager:
                 job_id,
                 status="failed",
                 phase="failed",
-                error={"code": "evaluation_failed", "message": "评估执行失败，请联系管理员并提供任务编号"},
+                error={"code": "evaluation_failed", "message": "评估执行失败，请联系管理员并提供任务编号",
+                       "failure_owner": "evaluator", "failure_owner_status": "provisional"},
                 finished_monotonic=time.monotonic(),
             )
         finally:

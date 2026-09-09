@@ -36,20 +36,21 @@ def reviews_for(values):
 
 
 class ReviewClient:
-    def __init__(self, *, fail=False, valid=True, confidence=0.9, location=None, covered=True):
+    def __init__(self, *, fail=False, failure_owner="infrastructure", valid=True, confidence=0.9, location=None, covered=True):
         self.fail, self.valid, self.confidence = fail, valid, confidence
+        self.failure_owner = failure_owner
         self.location, self.covered = location, covered
 
     def review_stage(self, problem, answer, evidence, *, agent_name, stage, responsibility):
         if self.fail:
-            raise Hy3APIError("simulated unavailable reviewer")
+            raise Hy3APIError("simulated unavailable reviewer", failure_owner=self.failure_owner)
         return {"valid": self.valid, "confidence": self.confidence, "reason": "Test review evidence",
                 "reviewed_steps": [s["id"] for s in answer["reasoning_steps"] if s["stage"] == stage] if self.covered else [],
                 "first_error_step": self.location, "error_type": "algorithm_error" if self.valid is False else None}, {}
 
     def review(self, problem, answer, evidence):
         if self.fail:
-            raise Hy3APIError("simulated unavailable reviewer")
+            raise Hy3APIError("simulated unavailable reviewer", failure_owner=self.failure_owner)
         return {"process_correct": self.valid, "confidence": self.confidence, "rationale": "Test review evidence",
                 "first_error_step": self.location, "error_types": ["algorithm_error"] if self.valid is False else [],
                 "step_reviews": [{"step": s["id"], "valid": self.valid} for s in answer["reasoning_steps"]] if self.covered else []}, {}
@@ -70,6 +71,7 @@ class VerdictTests(unittest.TestCase):
                 result = self.evaluate(ReviewClient(), mode)
                 self.assertIs(result["process_correct"], True)
                 self.assertEqual(result["process_status"], "valid")
+                self.assertIsNone(result["failure_owner"])
                 self.assertEqual(result["review_coverage"]["completed"], 1 if mode == "single" else 5)
 
     def test_no_review_or_empty_rubric_cannot_establish_process(self):
@@ -97,6 +99,12 @@ class VerdictTests(unittest.TestCase):
         self.assertIsNone(result["process_correct"])
         self.assertEqual(result["review_coverage"], {"expected": 5, "completed": 4, "conclusive": 4})
 
+    def test_malformed_reviewer_output_is_owned_by_evaluator(self):
+        for mode in ("single", "supervisor"):
+            result = self.evaluate(ReviewClient(fail=True, failure_owner="evaluator"), mode)
+            self.assertIsNone(result["process_correct"])
+            self.assertEqual(result["failure_owner"], "evaluator")
+
     def test_confirmed_error_does_not_require_a_valid_location(self):
         for mode in ("single", "supervisor"):
             for location in (None, 0, -1, 99, True, "2", 2.0):
@@ -111,12 +119,31 @@ class VerdictTests(unittest.TestCase):
         result = self.evaluate(ReviewClient(valid=False, location=2))
         self.assertIs(result["process_correct"], False)
         self.assertEqual(result["first_error_step"], 2)
+        self.assertTrue(result["reasoning_evidence"])
+        self.assertEqual(result["reasoning_evidence"][0]["step"], 2)
+        self.assertEqual(result["reasoning_evidence"][0]["reason"], "Test review evidence")
+
+    def test_reasoning_evidence_only_contains_reviews_supporting_the_first_error(self):
+        reviews = reviews_for([True, True, True, True, False])
+        decision, _ = _build_decision(PROBLEM, ANSWER, EVIDENCE, reviews)
+        self.assertEqual(decision["first_error_step"], 5)
+        self.assertEqual(decision["supporting_sources"], ["boundary_agent"])
+        self.assertEqual(decision["reasoning_evidence"], [{
+            "step": 5,
+            "error_type": "algorithm_error",
+            "source": "boundary_agent",
+            "stage": "boundary",
+            "confidence": 0.9,
+            "reason": "Deterministic test evidence",
+            "evidence": ["test evidence"],
+        }])
 
     def test_execution_failure_survives_reviewer_outage(self):
         result = self.evaluate(ReviewClient(fail=True), execution=ExecutionResult(0, 1, False, []))
         self.assertIs(result["final_correct"], False)
         self.assertIs(result["process_correct"], False)
         self.assertIn("implementation_error", result["error_types"])
+        self.assertEqual(result["failure_owner"], "model")
 
     def test_broken_verifier_and_zero_checks_are_not_algorithm_failure_or_success(self):
         for execution in (ExecutionResult(0, 1, False, [], "SandboxBackendUnavailable:docker"), ExecutionResult(0, 0, True, [])):
@@ -124,6 +151,7 @@ class VerdictTests(unittest.TestCase):
             self.assertIsNone(result["final_correct"])
             self.assertIsNone(result["process_correct"])
             self.assertNotIn("implementation_error", result["error_types"])
+            self.assertEqual(result["failure_owner"], "infrastructure")
         result = self.evaluate(ReviewClient(), property_result={"enabled": True, "found": False, "status": "error", "error": "oracle unavailable"})
         self.assertIsNone(result["final_correct"])
         self.assertIsNone(result["process_correct"])

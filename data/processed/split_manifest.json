@@ -1,7 +1,7 @@
 {
   "version": "tracejudge_seed_v1",
   "construction": "原创参数化题；按固定奇偶序号划分 dev/test，仅供工程验收",
-  "difficulty_basis": "状态/算法复杂度、证明负担、边界与反例强度",
+  "difficulty_basis": "五维人工量表：算法识别、状态/不变量、证明、边界陷阱、复杂度约束各 0-3 分；总分 0-6 为 easy、7-10 为 medium、11-15 为 hard。",
   "counts": {
     "all": 6,
     "dev": 3,

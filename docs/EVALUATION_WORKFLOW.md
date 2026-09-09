@@ -10,6 +10,8 @@
 - Swarm 的正面仲裁须明确覆盖全部步骤、没有缺失检查，而且没有确定性反例，才可撤回专家负面意见。执行失败不能被仲裁抹去。
 - 差分验证检查参考程序的逐用例异常和结果完整性；参考程序异常不会变成期望值 `null`。合法返回 `None` 仍可比较。
 - 服务连接检查要求模型列表包含所配置的模型，其他模型可用不会再使 Hy3 状态显示成功。
+- 生成提示与沙盒共用同一份安全导入契约。候选代码可导入白名单标准库及白名单成员，其他模块、星号导入、相对导入和直接调用 `__import__` 仍会被拒绝。
+- 在线结果的 `failure_owner_status=provisional` 只表示自动暂定归属；人工复核后的 `adjudicated_records` 才标记为 `adjudicated`，并能把模型失败、评估器误报和基础设施失败分开。
 
 上述调整不增加依赖、Agent 数量或数据库迁移。运行中的 Web 与独立 Worker 需重启以加载 Python 代码；历史任务不会自动改判。
 
@@ -39,7 +41,7 @@ tracejudge benchmark --source hy3 --tier seed --per-difficulty 2 --review-mode s
 
 每层选 2 题，共 6 题；按题库固定顺序选择并记录实际题目 ID。题数不足会在生成前报错。`--limit` 与 `--per-difficulty` 互斥；`--tier all` 包含外部题。外部题仍是未人工校准的 AST 难度，不能直接据其分层断言模型临界点。
 
-输出包含题面快照、实际答案、评估、调用元数据、JSON/JSONL/CSV，以及按难度统计的准确率、覆盖率和 Wilson 95% 区间。CSV 保留 `run_error`，失败调用不再成为无法辨认的空行。区间依赖抽样与样本独立性，应与覆盖率一起解释；本程序不会自动宣布模型临界点。
+输出包含题面快照、实际答案、评估、调用元数据、JSON/JSONL/CSV，以及按难度统计的准确率、覆盖率和 Wilson 95% 区间。CSV 保留 `run_error`、`failure_owner` 和归属状态；生成内容不合协议记为模型失败，评审输出不合协议记为评估器失败，网络、上游服务或验证环境不可用记为基础设施失败。区间依赖抽样与样本独立性，应与覆盖率一起解释；本程序不会自动宣布模型临界点。
 
 真实评测会在每道题的答案生成和验证阶段后原子更新主 JSON。进程中断后，使用完全相同的题目范围与参数续跑：
 
@@ -76,7 +78,7 @@ tracejudge audit-export --benchmark reports/hy3_seed.json --output reports/hy3_s
 tracejudge audit-summary --benchmark reports/hy3_seed.json --annotations reports/hy3_seed_audit.jsonl --output reports/hy3_seed_validity.json
 ```
 
-汇总报告给出首错定位准确率、过程问题检出率、正确过程上的误报率、被标记正确答案中的真实问题/误报比例，并同时报告总体复核覆盖率和重点样本覆盖率。
+汇总报告给出首错定位准确率、过程问题检出率、正确过程上的误报率、被标记正确答案中的真实问题/误报比例，并同时报告总体复核覆盖率和重点样本覆盖率。`automated_*` 字段只描述自动预测，`human_confirmed_*` 字段只描述人工金标；`failure_owner_distribution` 与 `adjudicated_records` 给出人工裁决后的失败归属，避免混用两个口径。
 
 未完成、未提交的记录不进入指标分母；没有有效样本时显示 `null`。重复 ID、错误指纹、非布尔判定、无效步骤和缺少人工声明/依据的完成记录会被拒绝。汇总只描述已复核样本，不能自动代表全体模型输出。
 

@@ -1,0 +1,7 @@
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,failure_owner,failure_owner_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error,status,attempts
+two_sum_exists-correct_code_wrong_proof,two_sum_exists,easy,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+bracket_balance-correct_code_wrong_proof,bracket_balance,easy,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,,
+max_subarray-correct_code_wrong_proof,max_subarray,medium,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,,
+grid_shortest_path-correct_code_wrong_proof,grid_shortest_path,medium,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+coin_change-correct_code_wrong_proof,coin_change,hard,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+lis_length-correct_code_wrong_proof,lis_length,hard,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,

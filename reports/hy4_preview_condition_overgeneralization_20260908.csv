@@ -1,0 +1,7 @@
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,failure_owner,failure_owner_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error,status,attempts
+two_sum_exists-condition_overgeneralization,two_sum_exists,easy,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+bracket_balance-condition_overgeneralization,bracket_balance,easy,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 5。,True,5,concept_error,,,
+max_subarray-condition_overgeneralization,max_subarray,medium,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 5。,True,5,condition_omission,,,
+grid_shortest_path-condition_overgeneralization,grid_shortest_path,medium,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+coin_change-condition_overgeneralization,coin_change,hard,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+lis_length-condition_overgeneralization,lis_length,hard,True,,uncertain,evaluator,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,

@@ -60,6 +60,8 @@ def test_transient_generation_failure_retries_but_auth_error_does_not(tmp_path):
     assert completed["completed"] == 1
     assert completed["failed_runs"] == 1
     assert completed["records"][0]["attempt_history"][0]["stage"] == "generation"
+    assert completed["records"][1]["failure_owner"] == "infrastructure"
+    assert completed["records"][1]["failure_owner_status"] == "provisional"
 
 
 def test_retry_failed_is_explicit_and_does_not_regenerate_answer(tmp_path):

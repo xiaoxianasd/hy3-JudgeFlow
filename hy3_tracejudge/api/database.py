@@ -7,6 +7,7 @@ from typing import Any
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     DateTime,
     Index,
     Integer,
@@ -51,6 +52,8 @@ class EvaluationJob(Base):
     problem_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     hypothesis_examples: Mapped[int] = mapped_column(Integer, nullable=False)
     review_mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    requested_model: Mapped[str] = mapped_column(String(32), nullable=False, default="hy3")
+    requires_transient_credentials: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     submission_json: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True), nullable=True)
     priority: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
     attempts: Mapped[int] = mapped_column(SmallInteger, nullable=False, default=0)
@@ -89,6 +92,7 @@ def public_job(job: EvaluationJob) -> dict[str, Any]:
         "problem_id": job.problem_id,
         "hypothesis_examples": job.hypothesis_examples,
         "review_mode": job.review_mode,
+        "requested_model": job.requested_model,
         "kind": "code_submission" if job.submission_json is not None else "hy3_generation",
         "attempts": job.attempts,
         "max_attempts": job.max_attempts,
@@ -203,7 +207,12 @@ class MySQLJobStore:
         except SQLAlchemyError as exc:
             raise DatabaseUnavailable("could not read queue statistics") from exc
 
-    def enqueue(self, problem_id: str, hypothesis_examples: int, review_mode: str, *, submission: dict[str, Any] | None = None) -> dict[str, Any]:
+    def enqueue(
+        self, problem_id: str, hypothesis_examples: int, review_mode: str, *,
+        submission: dict[str, Any] | None = None,
+        requested_model: str = "hy3",
+        requires_transient_credentials: bool = False,
+    ) -> dict[str, Any]:
         try:
             with self._sessions() as session, session.begin():
                 lock_acquired = False
@@ -230,6 +239,8 @@ class MySQLJobStore:
                         problem_id=problem_id,
                         hypothesis_examples=hypothesis_examples,
                         review_mode=review_mode,
+                        requested_model=requested_model,
+                        requires_transient_credentials=requires_transient_credentials,
                         submission_json=submission,
                         priority=0,
                         attempts=0,
@@ -293,7 +304,11 @@ class MySQLJobStore:
                 job.started_at = job.started_at or now
                 job.updated_at = now
                 session.flush()
-                return {**public_job(job), "submission": job.submission_json}
+                return {
+                    **public_job(job),
+                    "submission": job.submission_json,
+                    "requires_transient_credentials": job.requires_transient_credentials,
+                }
         except SQLAlchemyError as exc:
             raise DatabaseUnavailable("could not claim evaluation job") from exc
 
@@ -369,6 +384,7 @@ class MySQLJobStore:
         error_json: dict[str, Any],
         *,
         retryable: bool,
+        retry_after_seconds: float | None = None,
     ) -> str:
         try:
             with self._sessions() as session, session.begin():
@@ -384,7 +400,8 @@ class MySQLJobStore:
                 if job is None:
                     return "lost"
                 if retryable and job.attempts < job.max_attempts:
-                    delay = min(60, 5 * (2 ** max(0, job.attempts - 1)))
+                    backoff = 5 * (2 ** max(0, job.attempts - 1))
+                    delay = min(300, max(backoff, retry_after_seconds or 0))
                     job.status = "queued"
                     job.phase = "retry_queued"
                     job.available_at = now + timedelta(seconds=delay)

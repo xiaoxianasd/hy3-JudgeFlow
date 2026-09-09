@@ -135,6 +135,38 @@ class SubmissionTests(unittest.TestCase):
             ready.set()
             manager.shutdown()
 
+    def test_memory_queue_does_not_expose_provider_credentials(self):
+        received = []
+        release = threading.Event()
+
+        def runner(problem_id, examples, mode, update_phase, *, runtime):
+            received.append(runtime)
+            release.wait(timeout=1)
+            return {"model": runtime["model"]}
+
+        manager = EvaluationJobManager(
+            workers=1, queue_size=1, ttl_seconds=60, max_stored_jobs=10, runner=runner
+        )
+        secret = "queue-provider-secret"
+        try:
+            job = manager.submit(
+                "two_sum_exists", 1, "single",
+                runtime={"model": "hy4-preview", "api_key": secret},
+            )
+            self.assertEqual(job["requested_model"], "hy4-preview")
+            self.assertNotIn(secret, repr(job))
+            release.set()
+            deadline = time.monotonic() + 2
+            snapshot = manager.snapshot(job["id"])
+            while snapshot["status"] not in {"succeeded", "failed"} and time.monotonic() < deadline:
+                time.sleep(0.01)
+                snapshot = manager.snapshot(job["id"])
+            self.assertEqual(received, [{"model": "hy4-preview", "api_key": secret}])
+            self.assertNotIn(secret, repr(snapshot))
+        finally:
+            release.set()
+            manager.shutdown()
+
 
 if __name__ == "__main__":
     unittest.main()

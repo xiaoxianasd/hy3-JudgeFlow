@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from typing import Any
 
 from .evaluator import validate_evaluator
+from .detection import summarize_detection
 
 
 def record_hash(record: dict[str, Any]) -> str:
@@ -46,6 +48,7 @@ def build_audit_queue(benchmark: dict[str, Any]) -> list[dict[str, Any]]:
 def summarize_audits(benchmark: dict[str, Any], annotations: list[dict[str, Any]]) -> dict[str, Any]:
     records = indexed_records(benchmark)
     reviewed = []
+    completed_annotations: dict[str, dict[str, Any]] = {}
     seen = set()
     for annotation in annotations:
         sample_id = annotation.get("sample_id")
@@ -76,14 +79,55 @@ def summarize_audits(benchmark: dict[str, Any], annotations: list[dict[str, Any]
         if not valid and (type(step) is not int or not 1 <= step <= max_step):
             raise ValueError(f"{sample_id}: 过程有错时需提供实际首错；未定位请保留 pending")
         reviewed.append({
+            "sample_id": sample_id,
+            "sample_origin": record.get("sample_origin", {
+                "hy3_model_evaluation": "natural", "hy3_model_benchmark": "natural",
+                "evaluator_validation_fixtures": "controlled",
+            }.get(benchmark.get("run_type"), "unknown")),
             "evaluation": record["evaluation"],
             "ground_truth": {"final_correct": annotation["final_answer_correct"],
                              "process_valid": valid, "first_error_step": step},
         })
+        completed_annotations[sample_id] = annotation
     completed_records = [r for r in records.values() if "evaluation" in r]
-    flagged = {sid for sid, r in records.items() if r.get("evaluation", {}).get("final_correct") is True
-               and r["evaluation"].get("process_correct") is False}
+    automated_flagged = {
+        sid for sid, r in records.items()
+        if r.get("evaluation", {}).get("final_correct") is True
+        and r["evaluation"].get("process_correct") is False
+    }
     finished = {a["sample_id"] for a in annotations if a.get("status") == "completed"}
+    human_confirmed_flagged = {
+        sid for sid, annotation in completed_annotations.items()
+        if annotation["final_answer_correct"] is True
+        and records[sid]["evaluation"].get("process_correct") is False
+    }
+    adjudicated_records = []
+    for sid, annotation in completed_annotations.items():
+        evaluation = records[sid]["evaluation"]
+        if annotation["final_answer_correct"] is False or annotation["human_process_valid"] is False:
+            owner = "model"
+            basis = "人工复核确认答案或过程存在问题"
+        elif evaluation.get("final_correct") is False or evaluation.get("process_correct") is False:
+            owner = "evaluator"
+            basis = "人工确认答案与过程成立，但自动评估给出否定结论"
+        elif evaluation.get("failure_owner") == "infrastructure" or (
+            evaluation.get("final_correct") is None or evaluation.get("process_correct") is None
+        ):
+            owner = "infrastructure"
+            basis = "自动评估因服务或验证证据不完整而未能给出结论"
+        else:
+            owner = None
+            basis = "人工与自动结论一致且未发现失败"
+        adjudicated_records.append({
+            "sample_id": sid,
+            "automated_final_correct": evaluation.get("final_correct"),
+            "automated_process_correct": evaluation.get("process_correct"),
+            "human_final_answer_correct": annotation["final_answer_correct"],
+            "human_process_valid": annotation["human_process_valid"],
+            "failure_owner": owner,
+            "failure_owner_status": "adjudicated",
+            "failure_owner_basis": basis,
+        })
     metrics = validate_evaluator(reviewed)
     # Empty cohorts provide no estimate, not a measured zero error rate.
     if not metrics["wrong_answer_samples"]:
@@ -99,9 +143,33 @@ def summarize_audits(benchmark: dict[str, Any], annotations: list[dict[str, Any]
         "reviewed_samples": len(reviewed),
         "pending_or_unreviewed_samples": len(completed_records) - len(reviewed),
         "audit_coverage": len(reviewed) / len(completed_records) if completed_records else 0.0,
-        "predicted_flagged_correct_samples": len(flagged),
-        "reviewed_predicted_flagged_samples": len(flagged & finished),
-        "flagged_audit_coverage": len(flagged & finished) / len(flagged) if flagged else None,
+        "automated_final_correct_and_process_flagged_samples": len(automated_flagged),
+        "reviewed_automated_flagged_samples": len(automated_flagged & finished),
+        "automated_flagged_audit_coverage": (
+            len(automated_flagged & finished) / len(automated_flagged) if automated_flagged else None
+        ),
+        "human_confirmed_answer_correct_and_process_flagged_samples": len(human_confirmed_flagged),
+        "reviewed_human_confirmed_flagged_samples": len(human_confirmed_flagged),
+        "failure_owner_distribution": dict(sorted(Counter(
+            item["failure_owner"] for item in adjudicated_records if item["failure_owner"] is not None
+        ).items())),
+        "adjudicated_records": adjudicated_records,
+        # Backward-compatible aliases. New consumers should use the explicit automated-prefixed fields.
+        "predicted_flagged_correct_samples": len(automated_flagged),
+        "reviewed_predicted_flagged_samples": len(automated_flagged & finished),
+        "flagged_audit_coverage": (
+            len(automated_flagged & finished) / len(automated_flagged) if automated_flagged else None
+        ),
         "metrics": metrics,
-        "note": "指标仅适用于已完成人工复核的样本；未复核与缺失样本不算正确或误报。",
+        "process_detection": summarize_detection(reviewed + [
+            {"sample_origin": record.get("sample_origin", {
+                "hy3_model_benchmark": "natural", "hy3_model_evaluation": "natural",
+                "evaluator_validation_fixtures": "controlled",
+            }.get(benchmark.get("run_type"), "unknown")), "evaluation": record.get("evaluation", {})}
+            for sid, record in records.items() if sid not in completed_annotations
+        ]),
+        "note": (
+            "automated_* 字段只使用自动结论；human_confirmed_* 与 metrics 使用人工最终答案。"
+            "指标仅适用于已完成人工复核的样本；未复核与缺失样本不算正确或误报。"
+        ),
     }

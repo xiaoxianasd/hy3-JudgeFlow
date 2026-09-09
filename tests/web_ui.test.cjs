@@ -32,7 +32,7 @@ before(async () => {
 });
 after(async () => { await browser?.close(); });
 
-async function openPage(t, { problems = catalog, jobHandler, submissionEnabled = true, viewport = { width: 1440, height: 1080 } } = {}) {
+async function openPage(t, { problems = catalog, jobHandler, healthHandler, submissionEnabled = true, viewport = { width: 1440, height: 1080 }, pagePath = '/' } = {}) {
   const context = await browser.newContext({ viewport });
   t.after(() => context.close());
   const page = await context.newPage();
@@ -44,6 +44,7 @@ async function openPage(t, { problems = catalog, jobHandler, submissionEnabled =
     if (url.origin !== 'http://judgeflow.test') return route.abort();
     const files = {
       '/': ['index.html', 'text/html; charset=utf-8'],
+      '/submit': ['submission.html', 'text/html; charset=utf-8'],
       '/assets/styles.css': ['styles.css', 'text/css'],
       '/assets/app.js': ['app.js', 'text/javascript'],
     };
@@ -51,22 +52,51 @@ async function openPage(t, { problems = catalog, jobHandler, submissionEnabled =
       const [file, contentType] = files[url.pathname];
       return route.fulfill({ contentType, body: readFileSync(path.join(assets, file)) });
     }
-    if (url.pathname === '/api/v1/config') return route.fulfill({ json: { authentication_required: false, code_submission: { enabled: submissionEnabled, max_request_bytes: 65536 } } });
+    if (url.pathname === '/api/v1/config') return route.fulfill({ json: { authentication_required: false, model_runtime: { models: ['hy3', 'hy4-preview'], default_model: 'hy3', per_job_credentials: true }, code_submission: { enabled: submissionEnabled, max_request_bytes: 65536 } } });
     if (url.pathname === '/api/v1/problems') return route.fulfill({ json: problems });
     if (url.pathname === '/api/v1/health/hy3') {
       return route.fulfill({ json: { ok: true, requested_model: 'hy3 (UI test)', latency_ms: 0 } });
     }
+    if (url.pathname === '/api/v1/health/model') {
+      if (healthHandler) return healthHandler(route);
+      const model = route.request().postDataJSON().model;
+      return route.fulfill({ json: { ok: true, requested_model: model, latency_ms: 0, probe: 'inference' } });
+    }
     if ((url.pathname.startsWith('/api/v1/evaluations') || url.pathname === '/api/v1/code-submissions') && jobHandler) return jobHandler(route);
     return route.fulfill({ status: 404, json: {} });
   });
-  await page.goto('http://judgeflow.test/');
+  await page.goto(`http://judgeflow.test${pagePath}`);
   await page.locator('#problemContent').waitFor({ state: 'visible' });
+  await page.click('#checkModel');
+  await page.locator('#health').getByText(/已通过真实推理检查/).waitFor();
   return page;
 }
 
+test('model selector checks hy4-preview with a session-scoped provider key', async t => {
+  const requests = [];
+  const page = await openPage(t, { healthHandler: route => {
+    const payload = route.request().postDataJSON();
+    requests.push(payload);
+    return route.fulfill({ json: { ok: true, requested_model: payload.model, latency_ms: 1, probe: 'inference' } });
+  } });
+  await page.selectOption('#modelName', 'hy4-preview');
+  assert.equal(await page.locator('#reviewMode').inputValue(), 'single');
+  await page.fill('#modelApiKey', 'browser-provider-key');
+  const checked = page.waitForResponse(response => response.url().endsWith('/api/v1/health/model'));
+  await page.click('#checkModel');
+  await checked;
+  assert.deepEqual(requests.at(-1), { model: 'hy4-preview', provider_api_key: 'browser-provider-key' });
+  assert.match(await page.locator('#health').textContent(), /hy4-preview 已通过真实推理检查/);
+  assert.equal(await page.evaluate(() => localStorage.getItem('tracejudge_model_api_key')), null);
+  assert.equal(await page.evaluate(() => sessionStorage.getItem('tracejudge_model_api_key')), 'browser-provider-key');
+});
+
 test('professional heading and complete public problem details', async t => {
   const page = await openPage(t);
-  assert.equal(await page.locator('h1').textContent(), '代码解题与过程评估平台');
+  assert.equal(await page.locator('h1').textContent(), 'Hy3 推理过程评估与首错定位平台');
+  assert.equal(await page.locator('.journey li').count(), 3);
+  assert.equal(await page.locator('#submissionPanel').count(), 0);
+  assert.equal(await page.locator('.advanced-settings').getAttribute('open'), null);
   assert.match(await page.title(), /Hy3 JudgeFlow/);
   assert.equal(await page.locator('#statement').textContent(), catalog[0].source_statement);
   assert.match(await page.locator('#inputSchema').textContent(), /nums.*list\[int\].*target.*int/s);
@@ -163,11 +193,49 @@ test('problem stays visible and locked while evaluating; switching clears stale 
   assert.equal(await page.locator('#statement').textContent(), statement);
   releaseResult();
   await page.locator('#result .metrics').waitFor();
+  assert.equal(await page.locator('#result .code-evidence').isVisible(), true);
+  assert.equal(await page.locator('#result .reasoning-evidence').isVisible(), true);
+  assert.equal(await page.locator('#result .result-details').first().getAttribute('open'), null);
   assert.equal(await page.locator('#statement').textContent(), statement);
   assert.equal(await page.locator('#problem').isEnabled(), true);
   await page.selectOption('#problem', catalog[0].id);
   assert.equal(await page.locator('#result .metrics').count(), 0);
-  assert.match(await page.locator('#result').textContent(), /尚未开始评估/);
+  assert.match(await page.locator('#result').textContent(), /等待评估结果/);
+});
+
+test('first-error counterexample is shown below the verdict and before collapsed details', async t => {
+  const job = { id: 'e'.repeat(32), phase: 'completed', status: 'succeeded', result: {
+    answer: { reasoning_steps: [
+      {id: 5, title: '边界', content: '只要 coins 中包含 1，结果就等于 amount。'},
+    ], code: 'def solve_case(case): return 0' },
+    evaluation: {
+      final_correct: true, process_correct: false, first_error_step: 5,
+      assessment_note: '当前最早定位的错误证据出现在步骤 5。',
+      hypothesis: {enabled: true, status: 'passed', found: false, examples_checked: 60, max_examples: 60},
+      execution: {passed: 6, total: 6}, error_types: ['concept_error'], error_labels: ['概念理解错误'],
+      reasoning_evidence: [{
+        step: 5, source: 'boundary_agent', confidence: 0.95,
+        reason: 'coins=[1,5]、amount=10 时最优答案是 2，不是 10。',
+        evidence: ['步骤 5 将可达性错误地当成了最优硬币数。'],
+      }],
+    },
+  } };
+  const page = await openPage(t, {jobHandler: route => route.request().method() === 'POST'
+    ? route.fulfill({status: 202, json: {job: {id: job.id}, status_url: `/api/v1/evaluations/${job.id}`}})
+    : route.fulfill({json: {job}})});
+  await page.selectOption('#problem', 'coin_change');
+  await page.click('#run');
+  await page.locator('#result .reasoning-finding').waitFor();
+  assert.match(await page.locator('#result .code-evidence').textContent(), /固定测试 6\/6.*实际检查 60 次/s);
+  assert.match(await page.locator('#result .reasoning-evidence').textContent(), /步骤 5.*coins=\[1,5\].*最优答案是 2/s);
+  const positions = await page.locator('#result').evaluate(result => ({
+    verdict: result.querySelector('.assessment-note').getBoundingClientRect().bottom,
+    reasoning: result.querySelector('.reasoning-evidence').getBoundingClientRect().top,
+    details: result.querySelector('.result-details').getBoundingClientRect().top,
+  }));
+  assert.ok(positions.verdict <= positions.reasoning);
+  assert.ok(positions.reasoning < positions.details);
+  await page.screenshot({path: path.join(root, 'tmp', 'judgeflow-reasoning-evidence.png'), fullPage: true});
 });
 
 test('failed submissions unlock selectors without removing the question', async t => {
@@ -193,9 +261,11 @@ test('narrow layouts keep question details readable without horizontal page over
 test('manual workspace is separate and code drafts are bound to their problem', async t => {
   const page = await openPage(t);
   await page.click('#submissionMode');
+  await page.locator('#submissionPanel').waitFor();
+  assert.equal(new URL(page.url()).pathname, '/submit');
   assert.equal(await page.locator('#submissionPanel').isVisible(), true);
-  assert.equal(await page.locator('#generationOptions').isVisible(), false);
-  assert.equal(await page.locator('#run').isVisible(), false);
+  assert.equal(await page.locator('#generationOptions').count(), 0);
+  assert.equal(await page.locator('#run').count(), 0);
   assert.equal(await page.locator('#problemDetails').isVisible(), true);
   await page.fill('#userCode', 'def solve_case(case):\n    return True');
   await page.fill('#userSteps', '我的步骤');
@@ -205,13 +275,13 @@ test('manual workspace is separate and code drafts are bound to their problem', 
   assert.match(await page.locator('#userCode').inputValue(), /return True/);
   assert.equal(await page.locator('#userSteps').inputValue(), '我的步骤');
   await page.click('#generateMode');
-  assert.equal(await page.locator('#submissionPanel').isVisible(), false);
-  assert.equal(await page.locator('#run').isVisible(), true);
+  await page.locator('#run').waitFor();
+  assert.equal(new URL(page.url()).pathname, '/');
+  assert.equal(await page.locator('#submissionPanel').count(), 0);
 });
 
 test('manual submission validates empty code and step limits before making a request', async t => {
-  const page = await openPage(t);
-  await page.click('#submissionMode');
+  const page = await openPage(t, { pagePath: '/submit' });
   await page.click('#submitCode');
   assert.match(await page.locator('#submissionValidation').textContent(), /填写 Python 代码/);
   await page.fill('#userCode', 'pass');
@@ -224,11 +294,11 @@ test('manual submission validates empty code and step limits before making a req
 });
 
 test('manual workspace fails closed when Docker is not configured', async t => {
-  const page = await openPage(t, { submissionEnabled: false });
-  await page.click('#submissionMode');
+  const page = await openPage(t, { submissionEnabled: false, pagePath: '/submit' });
   assert.equal(await page.locator('#submissionSafety').isVisible(), true);
   assert.equal(await page.locator('#submitCode').isDisabled(), true);
   await page.click('#generateMode');
+  await page.locator('#run').waitFor();
   assert.equal(await page.locator('#run').isEnabled(), true);
 });
 
@@ -245,7 +315,7 @@ test('submitted code reaches its own API and reports code lines separately from 
       submission_review: {confidence: 0.9, reason: '无条件返回 True', findings: [{scope: 'code', line: 2, step: null, reason: '忽略输入条件', suggestion: '比较数组中的两个不同下标'}]},
       execution: {passed: 1, total: 6, tests: [], harness_error: null}, hypothesis: {enabled: false}, error_labels: ['实现逻辑错误']},
   }};
-  const page = await openPage(t, {jobHandler: async route => {
+  const page = await openPage(t, {pagePath: '/submit', jobHandler: async route => {
     if (route.request().method() === 'POST') {
       assert.equal(new URL(route.request().url()).pathname, '/api/v1/code-submissions');
       payload = route.request().postDataJSON();
@@ -254,7 +324,6 @@ test('submitted code reaches its own API and reports code lines separately from 
     await released;
     return route.fulfill({json: {job}});
   }});
-  await page.click('#submissionMode');
   await page.fill('#userCode', code);
   const response = page.waitForResponse(res => res.request().method() === 'POST');
   await page.click('#submitCode');
@@ -263,7 +332,7 @@ test('submitted code reaches its own API and reports code lines separately from 
   assert.deepEqual(payload.reasoning_steps, []);
   assert.equal(payload.problem_id, catalog[0].id);
   assert.equal(payload.review_mode, undefined);
-  for (const id of ['userCode', 'userSteps', 'submitCode', 'problem', 'generateMode', 'submissionMode']) {
+  for (const id of ['userCode', 'userSteps', 'submitCode', 'problem']) {
     assert.equal(await page.locator(`#${id}`).isDisabled(), true, id);
   }
   release();
@@ -279,11 +348,10 @@ test('submitted code reaches its own API and reports code lines separately from 
 
 test('manual mode sends only the user supplied steps and recovers from API failure', async t => {
   let payload;
-  const page = await openPage(t, {jobHandler: route => {
+  const page = await openPage(t, {pagePath: '/submit', jobHandler: route => {
     payload = route.request().postDataJSON();
     return route.fulfill({status: 503, json: {error: {message: 'Docker 沙盒不可用'}}});
   }});
-  await page.click('#submissionMode');
   await page.fill('#userCode', 'def solve_case(case):\n    return True');
   await page.fill('#userSteps', '  步骤一\n\n步骤二  ');
   await page.click('#submitCode');
@@ -294,8 +362,7 @@ test('manual mode sends only the user supplied steps and recovers from API failu
 });
 
 test('manual code editor does not overflow the mobile viewport', async t => {
-  const page = await openPage(t, { viewport: { width: 390, height: 844 } });
-  await page.click('#submissionMode');
+  const page = await openPage(t, { viewport: { width: 390, height: 844 }, pagePath: '/submit' });
   await page.fill('#userCode', 'def solve_case(case):\n    # ' + 'long-code-line'.repeat(50));
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
   await page.screenshot({path: path.join(root, 'tmp', 'judgeflow-submission-mobile.png'), fullPage: true});

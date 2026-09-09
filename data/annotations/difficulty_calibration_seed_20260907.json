@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "calibration_type": "manual_rubric",
+  "scope": "2026-09-07 Hy3 seed stratified benchmark",
+  "benchmark_file": "reports/hy3_seed_stratified_20260907.json",
+  "benchmark_sha256_before_calibration": "6daab3663ff3851cc169963b9ac8752877dcb42ec8f74a18498f80a4677d619b",
+  "status": "completed",
+  "prepared_by": "Codex assisted review",
+  "dimensions": [
+    {"id": "algorithm_recognition", "label": "算法识别", "range": [0, 3]},
+    {"id": "state_invariant", "label": "状态或不变量", "range": [0, 3]},
+    {"id": "proof_burden", "label": "正确性证明", "range": [0, 3]},
+    {"id": "boundary_traps", "label": "边界陷阱", "range": [0, 3]},
+    {"id": "complexity_pressure", "label": "复杂度约束", "range": [0, 3]}
+  ],
+  "thresholds": {"easy": [0, 6], "medium": [7, 10], "hard": [11, 15]},
+  "records": [
+    {
+      "problem_id": "two_sum_exists",
+      "scores": {"algorithm_recognition": 1, "state_invariant": 1, "proof_burden": 1, "boundary_traps": 1, "complexity_pressure": 1},
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "单次哈希扫描；主要检查先查询后插入、不同下标和重复值。"
+    },
+    {
+      "problem_id": "bracket_balance",
+      "scores": {"algorithm_recognition": 1, "state_invariant": 1, "proof_burden": 1, "boundary_traps": 2, "complexity_pressure": 1},
+      "total": 6,
+      "calibrated_difficulty": "easy",
+      "evidence": "标准栈模拟；边界包含非法前缀、括号类型错配、空串和未闭合。"
+    },
+    {
+      "problem_id": "max_subarray",
+      "scores": {"algorithm_recognition": 2, "state_invariant": 2, "proof_burden": 2, "boundary_traps": 2, "complexity_pressure": 1},
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "需定义以当前位置结尾的非空最优状态，证明二选一转移并避免全负数组被空段覆盖。"
+    },
+    {
+      "problem_id": "grid_shortest_path",
+      "scores": {"algorithm_recognition": 2, "state_invariant": 2, "proof_burden": 2, "boundary_traps": 2, "complexity_pressure": 2},
+      "total": 10,
+      "calibrated_difficulty": "medium",
+      "evidence": "需完成网格到无权图建模、BFS 分层最短性证明、访问时机和不可达边界处理。"
+    },
+    {
+      "problem_id": "coin_change",
+      "scores": {"algorithm_recognition": 3, "state_invariant": 3, "proof_burden": 2, "boundary_traps": 3, "complexity_pressure": 2},
+      "total": 13,
+      "calibrated_difficulty": "hard",
+      "evidence": "需排除一般币制上的贪心，建立完全背包最小值状态，并处理无限使用、不可达哨兵与金额零。"
+    },
+    {
+      "problem_id": "lis_length",
+      "scores": {"algorithm_recognition": 3, "state_invariant": 3, "proof_burden": 3, "boundary_traps": 2, "complexity_pressure": 3},
+      "total": 14,
+      "calibrated_difficulty": "hard",
+      "evidence": "O(n log n) 约束要求 tails 与 lower_bound；需证明最小结尾不变量并区分严格递增和非连续子序列。"
+    }
+  ],
+  "distribution": {"easy": 2, "medium": 2, "hard": 2},
+  "note": "该量表校准题目认知与实现负担；它独立于本轮模型答对与否，避免按结果反推难度。"
+}

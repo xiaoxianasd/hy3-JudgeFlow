@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import copy
 import logging
 import threading
 import time
 import uuid
 from typing import Any
 
-from ..hy3_client import Hy3APIError
+from ..hy3_client import Hy3APIError, Hy3Config, public_model_error
 from ..submissions import SubmissionSandboxRequired
 from .database import DatabaseUnavailable, MySQLJobStore
 from .jobs import JobRunner, run_evaluation_job
@@ -40,6 +41,8 @@ class DatabaseEvaluationJobManager:
         self._stop = threading.Event()
         self._threads: list[threading.Thread] = []
         self._lock = threading.Lock()
+        self._runtime_lock = threading.Lock()
+        self._runtime_by_job: dict[str, dict[str, Any]] = {}
         self._started = False
         self._closed = False
 
@@ -66,13 +69,35 @@ class DatabaseEvaluationJobManager:
                 self._threads.append(thread)
                 thread.start()
 
-    def submit(self, problem_id: str, hypothesis_examples: int, review_mode: str, *, submission: dict[str, Any] | None = None) -> dict[str, Any]:
+    def submit(
+        self, problem_id: str, hypothesis_examples: int, review_mode: str, *,
+        submission: dict[str, Any] | None = None,
+        runtime: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         with self._lock:
             if self._closed:
                 from .jobs import JobQueueFull
 
                 raise JobQueueFull("evaluation service is shutting down")
-        return self._store.enqueue(problem_id, hypothesis_examples, review_mode, submission=submission)
+        requested_model = str((runtime or {}).get("model") or Hy3Config.from_env().model)
+        requires_credentials = bool((runtime or {}).get("api_key"))
+        # Hold this lock across the database commit and registry write. A worker
+        # may claim the committed row immediately, but cannot read credentials
+        # until the in-memory entry is present.
+        with self._runtime_lock:
+            job = self._store.enqueue(
+                problem_id, hypothesis_examples, review_mode,
+                submission=submission,
+                requested_model=requested_model,
+                requires_transient_credentials=requires_credentials,
+            )
+            if runtime is not None:
+                self._runtime_by_job[job["id"]] = copy.deepcopy(runtime)
+        return job
+
+    def _discard_runtime(self, job_id: str) -> None:
+        with self._runtime_lock:
+            self._runtime_by_job.pop(job_id, None)
 
     def snapshot(self, job_id: str) -> dict[str, Any]:
         return self._store.get(job_id)
@@ -137,6 +162,22 @@ class DatabaseEvaluationJobManager:
 
         try:
             options = {"submission": job["submission"]} if job.get("submission") is not None else {}
+            with self._runtime_lock:
+                runtime = copy.deepcopy(self._runtime_by_job.get(job_id))
+            if job.get("requires_transient_credentials") and not (runtime or {}).get("api_key"):
+                self._store.fail_or_retry(
+                    job_id, worker_id,
+                    {"code": "transient_credentials_lost",
+                     "message": "浏览器提供的模型 API Key 已因服务重启失效，请重新提交任务",
+                     "failure_owner": "infrastructure", "failure_owner_status": "provisional"},
+                    retryable=False,
+                )
+                self._discard_runtime(job_id)
+                return
+            if runtime is None and job.get("requested_model") != Hy3Config.from_env().model:
+                runtime = {"model": job["requested_model"], "api_key": None}
+            if runtime is not None:
+                options["runtime"] = runtime
             result = self._runner(
                 job["problem_id"],
                 int(job["hypothesis_examples"]),
@@ -146,20 +187,33 @@ class DatabaseEvaluationJobManager:
             )
             if not self._store.complete(job_id, worker_id, result):
                 LOGGER.error("Completion ignored because lease was lost for job %s", job_id)
+            else:
+                self._discard_runtime(job_id)
         except SubmissionSandboxRequired:
             self._store.fail_or_retry(
                 job_id, worker_id,
-                {"code": "submission_sandbox_required", "message": "用户代码任务需要 Docker 安全沙盒，请检查配置后重新提交"},
+                {"code": "submission_sandbox_required", "message": "用户代码任务需要 Docker 安全沙盒，请检查配置后重新提交",
+                 "failure_owner": "infrastructure", "failure_owner_status": "provisional"},
                 retryable=False,
             )
-        except Hy3APIError:
-            LOGGER.exception("Hy3 evaluation job %s failed", job_id)
-            self._store.fail_or_retry(
+            self._discard_runtime(job_id)
+        except Hy3APIError as exc:
+            LOGGER.exception("Model evaluation job %s failed", job_id)
+            error = public_model_error(
+                exc,
+                str(job.get("requested_model") or Hy3Config.from_env().model),
+                attempts=int(job.get("attempts") or 1),
+                max_attempts=int(job.get("max_attempts") or 1),
+            )
+            outcome = self._store.fail_or_retry(
                 job_id,
                 worker_id,
-                {"code": "upstream_error", "message": "Hy3 服务调用失败，请稍后重试"},
-                retryable=True,
+                error,
+                retryable=exc.retryable,
+                retry_after_seconds=exc.retry_after_seconds,
             )
+            if outcome != "retrying":
+                self._discard_runtime(job_id)
         except Exception:
             LOGGER.exception("Evaluation job %s failed", job_id)
             self._store.fail_or_retry(
@@ -168,9 +222,12 @@ class DatabaseEvaluationJobManager:
                 {
                     "code": "evaluation_failed",
                     "message": "评估执行失败，请联系管理员并提供任务编号",
+                    "failure_owner": "evaluator",
+                    "failure_owner_status": "provisional",
                 },
                 retryable=False,
             )
+            self._discard_runtime(job_id)
         finally:
             heartbeat_stop.set()
             heartbeat.join(timeout=1)
@@ -183,4 +240,6 @@ class DatabaseEvaluationJobManager:
         self._stop.set()
         for thread in self._threads:
             thread.join(timeout=2)
+        with self._runtime_lock:
+            self._runtime_by_job.clear()
         self._store.engine.dispose()

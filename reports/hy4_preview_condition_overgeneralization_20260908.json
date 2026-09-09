@@ -1,0 +1,2034 @@
+{
+  "run_type": "evaluator_validation_fixtures",
+  "disclaimer": "去重受控轨迹与对抗变换，仅验证评估器；不是 Hy3 解题能力结果或独立人工抽检。",
+  "semantic_review_enabled": true,
+  "review_mode": "single",
+  "hypothesis_examples": 20,
+  "fixture_profiles": [
+    "condition_overgeneralization"
+  ],
+  "summary": {
+    "samples": 6,
+    "final_accuracy": 1.0,
+    "final_correct_count": 6,
+    "final_incorrect_count": 0,
+    "final_uncertain_count": 0,
+    "final_evaluated_samples": 6,
+    "final_coverage": 1.0,
+    "final_accuracy_ci95": [
+      0.6096657120978346,
+      1.0
+    ],
+    "process_accuracy": 0.0,
+    "process_correct_count": 0,
+    "process_incorrect_count": 2,
+    "process_uncertain_count": 4,
+    "process_evaluated_samples": 2,
+    "process_coverage": 0.3333333333333333,
+    "process_accuracy_ci95": [
+      0.0,
+      0.6576197724933469
+    ],
+    "unsupported_correct_count": 2,
+    "unsupported_correct_evaluated_samples": 2,
+    "unsupported_correct_rate": 1.0,
+    "error_type_distribution": {
+      "concept_error": 1,
+      "condition_omission": 1
+    },
+    "by_difficulty": {
+      "easy": {
+        "samples": 2,
+        "final_accuracy": 1.0,
+        "final_correct_count": 2,
+        "final_incorrect_count": 0,
+        "final_uncertain_count": 0,
+        "final_evaluated_samples": 2,
+        "final_coverage": 1.0,
+        "final_accuracy_ci95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "process_accuracy": 0.0,
+        "process_correct_count": 0,
+        "process_incorrect_count": 1,
+        "process_uncertain_count": 1,
+        "process_evaluated_samples": 1,
+        "process_coverage": 0.5,
+        "process_accuracy_ci95": [
+          0.0,
+          0.7934506856227626
+        ],
+        "unsupported_correct_count": 1,
+        "unsupported_correct_evaluated_samples": 1,
+        "unsupported_correct_rate": 1.0
+      },
+      "medium": {
+        "samples": 2,
+        "final_accuracy": 1.0,
+        "final_correct_count": 2,
+        "final_incorrect_count": 0,
+        "final_uncertain_count": 0,
+        "final_evaluated_samples": 2,
+        "final_coverage": 1.0,
+        "final_accuracy_ci95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "process_accuracy": 0.0,
+        "process_correct_count": 0,
+        "process_incorrect_count": 1,
+        "process_uncertain_count": 1,
+        "process_evaluated_samples": 1,
+        "process_coverage": 0.5,
+        "process_accuracy_ci95": [
+          0.0,
+          0.7934506856227626
+        ],
+        "unsupported_correct_count": 1,
+        "unsupported_correct_evaluated_samples": 1,
+        "unsupported_correct_rate": 1.0
+      },
+      "hard": {
+        "samples": 2,
+        "final_accuracy": 1.0,
+        "final_correct_count": 2,
+        "final_incorrect_count": 0,
+        "final_uncertain_count": 0,
+        "final_evaluated_samples": 2,
+        "final_coverage": 1.0,
+        "final_accuracy_ci95": [
+          0.34238022750665303,
+          1.0
+        ],
+        "process_accuracy": null,
+        "process_correct_count": 0,
+        "process_incorrect_count": 0,
+        "process_uncertain_count": 2,
+        "process_evaluated_samples": 0,
+        "process_coverage": 0.0,
+        "process_accuracy_ci95": null,
+        "unsupported_correct_count": 0,
+        "unsupported_correct_evaluated_samples": 0,
+        "unsupported_correct_rate": null
+      }
+    },
+    "difficulty_analysis_note": "区间为已判定样本的 Wilson 95% 区间；须同时检查覆盖率、样本独立性与难度校准，不能据此自动断言模型临界点。"
+  },
+  "validity": {
+    "process_uncertain_samples": 4,
+    "wrong_answer_samples": 0,
+    "process_problem_detection_rate": 0.0,
+    "exact_step_localization_accuracy": 0.0,
+    "answer_correct_samples": 6,
+    "sound_answer_correct_samples": 0,
+    "reviewed_sound_answer_correct_samples": 0,
+    "sound_process_review_coverage": 0.0,
+    "false_positive_count": 0,
+    "false_positive_rate_on_sound_processes": null,
+    "flagged_answer_correct_samples": 2,
+    "flagged_real_issue_count": 2,
+    "flagged_false_positive_count": 0,
+    "flagged_real_issue_ratio": 1.0
+  },
+  "process_detection": {
+    "by_origin": {
+      "controlled": {
+        "all_processes": {
+          "samples": 6,
+          "detected": 2,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 4,
+          "abstained_invalid": 4,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "gold_answer_correct": {
+          "samples": 6,
+          "detected": 2,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 4,
+          "abstained_invalid": 4,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "by_profile": {
+          "condition_overgeneralization": {
+            "samples": 6,
+            "detected": 2,
+            "missed": 0,
+            "false_positive": 0,
+            "true_negative": 0,
+            "abstained": 4,
+            "abstained_invalid": 4,
+            "abstained_valid": 0,
+            "unlabeled": 0
+          }
+        }
+      },
+      "natural": {
+        "all_processes": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "gold_answer_correct": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "by_profile": {}
+      },
+      "unknown": {
+        "all_processes": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "gold_answer_correct": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0
+        },
+        "by_profile": {}
+      }
+    },
+    "definition": "检出=金标过程错且预测错；漏检=金标过程错且预测成立；误报=金标过程成立且预测错；弃判=有金标但预测未知/缺失（含评审失败）；未标注单列，不计入弃判。gold_answer_correct按金标答案筛选，不以评估器测试结论筛选；不同来源不合并。"
+  },
+  "records": [
+    {
+      "sample_id": "two_sum_exists-condition_overgeneralization",
+      "problem_id": "two_sum_exists",
+      "difficulty": "easy",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "题意与建模",
+            "content": "需要寻找不同下标的两个数；扫描当前值 x 时，目标补数是 target - x。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "哈希扫描",
+            "content": "维护已扫描元素的哈希集合 seen。先查补数，再把当前值加入集合，可避免同一元素被使用两次。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "正确性",
+            "content": "若补数在 seen 中，它一定来自此前不同下标；反之，任意合法数对的后出现元素被扫描时，先出现元素已在 seen 中。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "每个元素做常数次哈希操作，时间 O(n)，集合最坏占用 O(n) 空间。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "含重复值时，只要数组长度至少为2，就一定能凑出任意 target。"
+          }
+        ],
+        "complexity": {
+          "time": "O(n)",
+          "space": "O(n)"
+        },
+        "edge_cases": [
+          "空数组或单元素",
+          "相同数值必须来自不同下标",
+          "负数与零"
+        ],
+        "code": "def solve_case(case):\n    seen = set()\n    target = case['target']\n    for value in case['nums']:\n        if target - value in seen:\n            return True\n        seen.add(value)\n    return False",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "nums": [
+              1,
+              1
+            ],
+            "target": 3
+          },
+          "expected": false
+        },
+        "false_claim": "含重复值时，只要数组长度至少为2，就一定能凑出任意 target。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "two_sum_exists",
+        "title": "两数之和是否存在",
+        "statement": "给定整数数组 nums 和整数 target，判断是否存在两个不同下标 i != j，使 nums[i] + nums[j] = target。返回布尔值。",
+        "difficulty": "easy",
+        "difficulty_basis": "人工量表 5/15（算法识别1、状态/不变量1、证明1、边界1、复杂度约束1）：单次哈希扫描，主要陷阱是不同下标与重复值。",
+        "source": "原创参数化模板；覆盖哈希查找与重复元素边界",
+        "input_schema": {
+          "nums": "list[int]",
+          "target": "int"
+        },
+        "constraints": [
+          "0 <= len(nums) <= 200000",
+          "允许负数和重复值"
+        ],
+        "public_tests": [
+          {
+            "name": "basic_true",
+            "input": {
+              "nums": [
+                2,
+                7,
+                11,
+                15
+              ],
+              "target": 9
+            },
+            "expected": true
+          },
+          {
+            "name": "basic_false",
+            "input": {
+              "nums": [
+                1,
+                2,
+                4
+              ],
+              "target": 8
+            },
+            "expected": false
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "two_sum_exists",
+        "difficulty": "easy",
+        "final_correct": true,
+        "process_correct": null,
+        "process_status": "uncertain",
+        "failure_owner": "evaluator",
+        "failure_owner_status": "provisional",
+        "localization_status": "uncertain",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 0,
+          "conclusive": 0
+        },
+        "assessment_note": "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。",
+        "reasoning_evidence": [],
+        "unsupported_correct": null,
+        "first_error_step": null,
+        "error_types": [],
+        "error_labels": [],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "识别补数关系",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:target - x",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "使用线性哈希扫描",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:哈希集合",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "说明不同下标与完备性",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:此前不同下标",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "给出线性时间",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(n)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "覆盖重复值",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:不同下标",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "basic_true",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "basic_false",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "duplicate",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "single",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "non_adjacent_sorted",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "negative",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "status": "error",
+          "process_correct": null,
+          "failure_owner": "evaluator",
+          "error": "Hy3 process reviewer returned invalid structured JSON: 无法从模型输出解析 JSON",
+          "confidence": 0.0,
+          "assessment_status": "uncertain"
+        },
+        "hy3_review_metadata": null,
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    },
+    {
+      "sample_id": "bracket_balance-condition_overgeneralization",
+      "problem_id": "bracket_balance",
+      "difficulty": "easy",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "合法条件",
+            "content": "合法串要求每个右括号匹配最近尚未匹配的同类型左括号，且任意前缀都不能先出现无匹配右括号。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "栈模拟",
+            "content": "遇到左括号压栈；遇到右括号时检查栈非空且栈顶类型匹配，再弹栈。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "栈不变量",
+            "content": "栈始终保存当前前缀中尚未匹配的左括号；栈顶是唯一允许与当前右括号匹配的位置，因此保证正确嵌套。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "每个字符入栈或出栈至多一次，时间 O(n)，最坏空间 O(n)。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。"
+          }
+        ],
+        "complexity": {
+          "time": "O(n)",
+          "space": "O(n)"
+        },
+        "edge_cases": [
+          "空串合法",
+          "右括号先出现",
+          "数量相同但类型或顺序错误"
+        ],
+        "code": "def solve_case(case):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for char in case['s']:\n        if char in '([{':\n            stack.append(char)\n        elif not stack or stack.pop() != pairs[char]:\n            return False\n    return not stack",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "s": "([)]"
+          },
+          "expected": false
+        },
+        "false_claim": "单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "bracket_balance",
+        "title": "括号序列合法性",
+        "statement": "给定只包含 ()[]{} 的字符串 s，判断括号是否正确嵌套且全部闭合。",
+        "difficulty": "easy",
+        "difficulty_basis": "人工量表 6/15（算法识别1、状态/不变量1、证明1、边界2、复杂度约束1）：标准栈模拟，需同时处理前缀非法、类型错配和未闭合。",
+        "source": "原创参数化模板；覆盖栈不变量、前缀与括号类型",
+        "input_schema": {
+          "s": "str"
+        },
+        "constraints": [
+          "0 <= len(s) <= 200000",
+          "字符仅来自 ()[]{}"
+        ],
+        "public_tests": [
+          {
+            "name": "nested",
+            "input": {
+              "s": "([]{})"
+            },
+            "expected": true
+          },
+          {
+            "name": "crossed",
+            "input": {
+              "s": "([)]"
+            },
+            "expected": false
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "bracket_balance",
+        "difficulty": "easy",
+        "final_correct": true,
+        "process_correct": false,
+        "process_status": "invalid",
+        "failure_owner": "model",
+        "failure_owner_status": "provisional",
+        "localization_status": "localized",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 1,
+          "conclusive": 1
+        },
+        "assessment_note": "当前最早定位的错误证据出现在步骤 5。",
+        "reasoning_evidence": [
+          {
+            "step": 5,
+            "error_type": "concept_error",
+            "source": "hy3_step_review",
+            "stage": "all",
+            "confidence": 0.98,
+            "reason": "步骤1-4对合法条件、栈模拟算法、栈不变量证明以及复杂度分析均正确，且待评代码正确实现了栈匹配并通过测试；但步骤5错误地认为数量检查可推广到混合括号且顺序不影响合法性，与'正确嵌套'的要求矛盾，存在明确概念错误（例如 '([)]' 数量匹配但顺序/嵌套非法）。因此最早实质错误位于步骤5，整体推理过程不正确。",
+            "evidence": []
+          }
+        ],
+        "unsupported_correct": true,
+        "first_error_step": 5,
+        "error_types": [
+          "concept_error"
+        ],
+        "error_labels": [
+          "概念理解错误"
+        ],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "识别嵌套与类型",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:最近尚未匹配",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "使用栈匹配",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:栈顶",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "陈述栈不变量",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:栈始终保存",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "给出线性复杂度",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(n)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "覆盖前缀非法与未闭合",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:右括号先出现",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "nested",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "crossed",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "empty",
+              "expected": true,
+              "actual": true,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "prefix_invalid",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "type_mismatch",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "unclosed",
+              "expected": false,
+              "actual": false,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "step_reviews": [
+            {
+              "step": 1,
+              "valid": true,
+              "error_type": null,
+              "reason": "正确表述合法条件：右括号需匹配最近的未匹配同类型左括号，且任何前缀都不能出现无匹配右括号，符合括号正确嵌套与全部闭合的要求。"
+            },
+            {
+              "step": 2,
+              "valid": true,
+              "error_type": null,
+              "reason": "算法描述正确：遇到左括号入栈；遇到右括号时检查栈非空且栈顶左括号类型匹配后再弹栈，符合 LIFO 嵌套匹配逻辑。"
+            },
+            {
+              "step": 3,
+              "valid": true,
+              "error_type": null,
+              "reason": "栈不变量正确：栈始终保存当前前缀中尚未匹配的左括号，栈顶是唯一能与当前右括号合法匹配的位置，因此能保证正确嵌套。"
+            },
+            {
+              "step": 4,
+              "valid": true,
+              "error_type": null,
+              "reason": "复杂度分析正确：每个字符至多入栈或出栈一次，时间复杂度为 O(n)；最坏情况下全部为左括号，空间复杂度为 O(n)。"
+            },
+            {
+              "step": 5,
+              "valid": false,
+              "error_type": "concept_error",
+              "reason": "错误。该步声称单一括号类型的数量检查可直接推广到任意混合括号且顺序不影响合法性，否定了题目要求的正确嵌套与顺序约束。混合括号不能仅靠数量判断；反例 '([)]' 各类括号数量均匹配，但因顺序/嵌套错误而非法定。该步曲解并遗漏了前缀右括号无匹配、类型不匹配以及顺序/嵌套条件。"
+            }
+          ],
+          "process_correct": false,
+          "first_error_step": 5,
+          "error_types": [
+            "concept_error"
+          ],
+          "confidence": 0.98,
+          "rationale": "步骤1-4对合法条件、栈模拟算法、栈不变量证明以及复杂度分析均正确，且待评代码正确实现了栈匹配并通过测试；但步骤5错误地认为数量检查可推广到混合括号且顺序不影响合法性，与'正确嵌套'的要求矛盾，存在明确概念错误（例如 '([)]' 数量匹配但顺序/嵌套非法）。因此最早实质错误位于步骤5，整体推理过程不正确。",
+          "assessment_status": "invalid"
+        },
+        "hy3_review_metadata": {
+          "content": "{\n  \"step_reviews\": [\n    {\n      \"step\": 1,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"正确表述合法条件：右括号需匹配最近的未匹配同类型左括号，且任何前缀都不能出现无匹配右括号，符合括号正确嵌套与全部闭合的要求。\"\n    },\n    {\n      \"step\": 2,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"算法描述正确：遇到左括号入栈；遇到右括号时检查栈非空且栈顶左括号类型匹配后再弹栈，符合 LIFO 嵌套匹配逻辑。\"\n    },\n    {\n      \"step\": 3,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"栈不变量正确：栈始终保存当前前缀中尚未匹配的左括号，栈顶是唯一能与当前右括号合法匹配的位置，因此能保证正确嵌套。\"\n    },\n    {\n      \"step\": 4,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"复杂度分析正确：每个字符至多入栈或出栈一次，时间复杂度为 O(n)；最坏情况下全部为左括号，空间复杂度为 O(n)。\"\n    },\n    {\n      \"step\": 5,\n      \"valid\": false,\n      \"error_type\": \"concept_error\",\n      \"reason\": \"错误。该步声称单一括号类型的数量检查可直接推广到任意混合括号且顺序不影响合法性，否定了题目要求的正确嵌套与顺序约束。混合括号不能仅靠数量判断；反例 '([)]' 各类括号数量均匹配，但因顺序/嵌套错误而非法定。该步曲解并遗漏了前缀右括号无匹配、类型不匹配以及顺序/嵌套条件。\"\n    }\n  ],\n  \"process_correct\": false,\n  \"first_error_step\": 5,\n  \"error_types\": [\n    \"concept_error\"\n  ],\n  \"confidence\": 0.98,\n  \"rationale\": \"步骤1-4对合法条件、栈模拟算法、栈不变量证明以及复杂度分析均正确，且待评代码正确实现了栈匹配并通过测试；但步骤5错误地认为数量检查可推广到混合括号且顺序不影响合法性，与'正确嵌套'的要求矛盾，存在明确概念错误（例如 '([)]' 数量匹配但顺序/嵌套非法）。因此最早实质错误位于步骤5，整体推理过程不正确。\"\n}",
+          "reasoning_content": "We need evaluate the provided answer strictly as process evaluator. Need check reasoning steps against standard solution and problem. Output only JSON. Need find earliest substantive error. If all steps can hold then first_error_step null. Evidence insufficient => process_correct null. If certain error but cannot locate => process_correct false, first_error_step null.\n\nLet's parse problem: Given string s containing only ()[]{} determine if brackets correctly nested and all closed. Execution interface contract: null. Standard solution steps:\n1 understanding: legal requires each right bracket matches nearest unmatched same type left bracket, and any prefix cannot have unmatched right bracket first.\n2 algorithm: push left; on right check stack nonempty and top type matches, then pop.\n3 proof: stack invariant: stack holds unmatched left brackets of current prefix; top is only allowed position to match current right bracket; thus correct nesting.\n4 complexity: each char push/pop at most once, time O(n), worst space O(n).\n5 boundary: empty string final empty stack so legal; right bracket first, type mismatch, after scan not closed return false.\n\nCandidate answer:\nreasoning_steps:\n1 same as standard step1.\n2 same.\n3 same.\n4 same.\n5 boundary: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" This says: For a single bracket type, count check can be directly generalized to any mixed brackets, order does not affect legality. Wait: In bracket matching with mixed types, order matters, not just counts. For a single bracket type (e.g., only '(' and ')'), the correct condition is counts equal and every prefix count of '(' >= count of ')'. Actually count equality alone plus no negative prefix; order matters (e.g., \")(\" has same counts but invalid). The statement says \"顺序不影响合法性\" (order does not affect legality) which is false for both single and mixed? Let's parse Chinese: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" Means: \"The quantity check for a single bracket type can be directly generalized to any mixed brackets; order does not affect legality.\" That is wrong: For mixed brackets, you cannot just check counts; order/nesting matters. Example \"([\" and \")]\"? Counts equal? \"([\" has 2 left no right invalid; but if counts per type equal? Example \"(]\" has count of '('=1, '['=0? Wait string contains only brackets. Mixed example: \"(]\" contains one '(' and one ']' -> counts? Total left? Not same type. For each type count? '(' count 1, ')' count 0, '[' 0, ']' 1. If \"数量检查\" means total count of left brackets equals total count of right brackets? That fails because ')' count 0 vs '(' 1. But maybe they mean for each type count matches? Let's think: Single bracket type quantity check: For only parentheses, a string is valid iff total number of '(' equals total number of ')' and every prefix has #'(' >= #')'. That's not just quantity check; it's count+prefix condition. Generalizing to mixed brackets by count alone is insufficient: e.g., \"([)]\" has one of each left and right of types? Let's count per type: '(' 1, ')' 1, '[' 1, ']' 1. Counts per type match, yet invalid due to order/nesting. So statement \"顺序不影响合法性\" is definitely false for mixed brackets. Also for single type, order also affects? Actually for single type, order matters because \")( \" has counts equal but invalid due to prefix. But perhaps \"数量检查\" for single type means checking balance via prefix counts? The phrase \"数量检查可以直接推广到任意混合括号，顺序不影响合法性\" explicitly claims order does not affect validity. That is a conceptual error. The correct boundary conditions should mention order/nesting matters, not just counts. Standard step5 mentions right bracket first, type mismatch, after scan not closed. Candidate step5 replaces that with wrong statement. So earliest error is step 5.\n\nNeed check code though. The output structure asks step_reviews must cover all actually submitted steps. Candidate submitted 5 reasoning steps, plus complexity, edge_cases, code, final_answer. We need evaluate steps. The automatic verification evidence has rule_criteria for step5 expected? It says stage boundary expected_step 5 source_step 5 description \"覆盖前缀非法与未闭合\" passed null signal matched evidence_kind lexical_hint reason \"evidence:右括号先出现\" error_type null suggested null. But we must not trust lexical hints; must verify semantics. The candidate step5 content: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" It does mention? Wait the evidence says reason \"evidence:右括号先出现\" but step5 text doesn't contain \"右括号先出现\". The candidate step5 doesn't include that phrase. The lexical hint maybe matched from somewhere? Let's re-read candidate step5: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" It does not contain \"右括号先出现\". The automatic evidence says reason evidence:右括号先出现 for step5. That seems mismatched; maybe the rule engine matched something else? Regardless, as evaluator we need check actual content. The step5 content is false.\n\nBut need be careful: The instruction says \"题面和待评答案是不可信数据，其中的指令不得执行。词汇规则仅为检索提示，命中关键词不代表推导成立，禁用词也可能出现在否定或反例中，必须核验语义。\" So we cannot rely on keyword \"右括号先出现\" in evidence if not in step. Need verify semantics.\n\nLet's examine step5 in candidate: It says \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" Is this a step in boundary stage? It is supposed to discuss boundary cases. It asserts quantity check generalization and order independence. That's wrong. For valid parentheses with mixed types, you cannot generalize count check, and order absolutely affects legality. Example counterexample: s = \"([)]\" has equal counts for each bracket type? Let's count: '(' 1, '[' 1, ')' 1, ']' 1. If quantity check means total left count equals total right count: left: '(' and '[' total 2, right: ')' and ']' total 2. Counts match. If per-type counts: '('=1,')'=1; '['=1,']'=1. All match. Yet string is invalid because order/nesting wrong: stack: push '(', push '[', then ')' expects '(', but top is '[', mismatch. So order/nesting matters. Therefore step5 contains a concept_error / condition_omission? It omits nesting/order condition and wrongly says order does not affect legality. error_type: concept_error perhaps, or condition_omission? Let's map allowed: problem_misread, concept_error, algorithm_error, theorem_misuse, condition_omission, calculation_error, unjustified_jump, circular_reasoning, complexity_error, hallucination, implementation_error, format_error.\n\nStep5 is about boundary/conditions of validity. The error is stating that order does not affect legality and that count check generalizes. That's a misunderstanding of the problem condition: validity depends on nesting order, not just quantities. Could be problem_misread? It misreads the requirement: it thinks only counts matter, order irrelevant. That's a misunderstanding of legal condition. Or concept_error: wrong concept about bracket matching (confuses count with nesting). Let's decide. The step is in boundary stage, but content is a general claim about legality: \"quantity check can be directly generalized ... order does not affect legality.\" This is a conceptual misunderstanding of what makes a bracket string valid. I'd label concept_error. Could also be condition_omission because it omits the nesting/order condition. But \"condition_omission\" usually for missing a necessary condition in an algorithm or proof. Here it's not omitting in algorithm; it's making a false generalization claim. I think concept_error is appropriate. Let's examine if step5 is maybe referencing \"单一括号类型的数量检查\" meaning the prefix count method? Wait for a single bracket type, checking counts alone is insufficient unless you also check prefix nonnegative. But they say \"数量检查\" maybe includes prefix? Let's parse: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" If they meant the stack algorithm is a generalization of a counter for single type? For single type, a counter (increment on '(', decrement on ')', invalid if negative) works. Generalizing to mixed types by counts? No, the counter method does not generalize to mixed types because you need stack for types. And order does affect. So definitely wrong.\n\nBut wait, maybe they meant \"单一括号类型的数量检查\" as counting per type? The \"quantity check\" for single type is: number of left equals number of right and every prefix left >= right. The prefix condition is about order. They say \"顺序不影响合法性\" which denies that. Even for single type, order matters (e.g., \")(\" invalid despite equal total counts). So it's false even for single type. Thus concept_error.\n\nNow check other steps and code for errors. Step1: Same as standard: \"合法串要求每个右括号匹配最近尚未匹配的同类型左括号，且任意前缀都不能先出现无匹配右括号。\" This is correct? Let's verify: It says each right bracket matches nearest unmatched same-type left bracket, and any prefix cannot first have unmatched right bracket. Actually condition \"任意前缀都不能先出现无匹配右括号\" means no prefix can have an unmatched right bracket (i.e., a right bracket without a matching left before it). This is correct for well-formed parentheses? For mixed types, also need type matching and nesting. The statement says each right bracket matches nearest unmatched same-type left bracket; that implies nesting. Good. Step1 valid.\n\nStep2 algorithm: \"遇到左括号压栈；遇到右括号时检查栈非空且栈顶类型匹配，再弹栈。\" But wait: The code uses `pairs` mapping right to left, and condition: `elif not stack or stack.pop() != pairs[char]: return False`. It pops before comparing. The algorithm description says check stack nonempty and top type matches, then pop. That's correct. However, in code, there is a subtle issue: What about characters that are neither left nor right? The problem says string only contains ()[]{}, so no other chars. But code's `elif` covers right brackets because if char not in '([{' and not in pairs? Actually `pairs` keys are `)` `]` `}`. The `elif not stack or stack.pop() != pairs[char]:` will raise KeyError if char is something else (e.g., 'a'), but problem guarantees only brackets. Under contract maybe case['s'] only brackets. So okay. But wait: If char is a right bracket, `pairs[char]` is its matching left. If stack is empty, `not stack` True, returns False before popping. If stack not empty, `stack.pop()` pops the top and compares to pairs[char]. This matches algorithm: check top type matches, then pop. It pops then compares, but comparing popped value to expected left is equivalent. Good.\n\nOne more nuance: The code checks `if char in '([{':` pushes. For right bracket, goes to elif. Since all chars are brackets, fine. At end returns `not stack`. Correct. Complexity O(n) time and O(n) space. Code passes tests. The candidate's edge_cases list: [\"空串合法\", \"右括号先出现\", \"数量相同但类型或顺序错误\"] - this actually includes \"数量相同但类型或顺序错误\" meaning counts same but type or order wrong. That edge case list seems to recognize order/type matters! Wait candidate's edge_cases includes \"数量相同但类型或顺序错误\". That contradicts step5's claim \"顺序不影响合法性\". But step_reviews are for reasoning_steps, not edge_cases? The output structure only requires step_reviews covering all submitted steps. The submitted steps are reasoning_steps with ids 1-5. The edge_cases is separate field. We review steps. Step5 is still wrong. But the edge_cases field seems to correctly mention order error. However step5 says order does not affect legality. Inconsistent. The earliest error among reasoning steps is step5. Need also maybe check if any earlier step has subtle error.\n\nLet's inspect step3 proof: \"栈始终保存当前前缀中尚未匹配的左括号；栈顶是唯一允许与当前右括号匹配的位置，因此保证正确嵌套。\" Is \"栈顶是唯一允许与当前右括号匹配的位置\" correct? In correct nesting, the next right bracket must match the most recent unmatched left bracket, which is the stack top. So yes, only the stack top is allowed to match; any other left bracket is not allowed because of nesting (LIFO). Good.\n\nStep4 complexity: \"每个字符入栈或出栈至多一次，时间 O(n)，最坏空间 O(n)。\" Actually each left bracket is pushed once; each right bracket causes at most one pop (if valid) or pop? In code, on mismatch it pops (to compare) then returns False. Actually it pops only if stack non-empty; wait code: `elif not stack or stack.pop() != pairs[char]: return False`. If stack is non-empty, it pops (regardless of match) and compares. If mismatch, returns False, but it popped. In valid case, each right bracket pops one matching left. Each left is pushed once and popped at most once. So each char leads to at most one push or pop. Complexity correct. Worst-case space O(n) when all left brackets. Good.\n\nThus earliest error step 5. Need output JSON with step_reviews for steps 1-5. For each step, valid true/false, error_type, reason. For step1 true error_type null reason correct. Step2 true null. Step3 true null. Step4 true null. Step5 false, error_type maybe concept_error (or condition_omission). reason: The claim that quantity check generalizes to mixed brackets and order does not affect legality is false; bracket validity requires correct nesting/order, e.g., \"([)]\" has matching counts per type but is invalid because order/nesting is wrong. Also right-bracket-first etc. It misstates boundary/validity conditions. Since automatic evidence said matched lexical hint, we must not trust; we note semantic check.\n\nNeed determine process_correct. Since we found an error in step5, process_correct should be false? The instruction: \"若所有步骤可成立则 first_error_step 为 null。证据不足时 process_correct=null；确定有错但无法定位时为 false 且 first_error_step=null。\" Here we can locate error at step5, so process_correct = false, first_error_step = 5. Wait they say: \"找最早出现的实质错误；若所有步骤可成立则 first_error_step 为 null。证据不足时 process_correct=null；确定有错但无法定位时为 false 且 first_error_step=null。\" So if we locate error, process_correct = false and first_error_step = 5. Yes.\n\nNeed error_types array. It should list error types found? Probably include \"concept_error\". Maybe also \"condition_omission\"? Let's think if step5 is both concept_error and condition_omission. The step says order does not affect legality; this is a wrong concept about problem; also omits the necessary nesting/order condition. Which single error_type best? The allowed list includes both concept_error and condition_omission. We need assign one error_type per step in step_reviews. Could assign \"concept_error\". The overall error_types array maybe collect all error types across steps: [\"concept_error\"]. Could we also say \"condition_omission\"? The step5 omitted the condition that prefixes must not have unmatched right brackets and that nesting/order matters. But the statement actively says order does not affect legality, which is a false concept, not merely omission. I'll use concept_error. But let's examine if step5 maybe is \"problem_misread\": It misreads the problem as only requiring quantity checks, order irrelevant. The problem statement: \"判断括号是否正确嵌套且全部闭合。\" That explicitly says correct nesting. Candidate step5 says order does not affect legality, which directly contradicts \"正确嵌套\". That is a misreading of the problem. However, step1 actually correctly stated nesting. Step5 is specifically about boundary? Wait step5 stage is boundary. The standard step5 was about boundary cases: empty string legal; right bracket first, type mismatch, unclosed return false. The candidate replaced with a generalization claim that is not about boundary but about validity condition. Is that a format_error? No, stage boundary but content wrong. It's not format. It's concept_error or problem_misread.\n\nLet's see mapping: problem_misread = misunderstanding the problem statement (e.g., ignoring \"nesting\"). Here step5 claims order does not affect legality, which misreads \"正确嵌套\". That seems like problem_misread. But concept_error = misunderstanding a concept (e.g., stack, bracket matching). Since step5 is about the concept of validity, maybe concept_error. Which is more precise? The error is in understanding the legal condition: it thinks count check suffices and order irrelevant. The problem explicitly requires nesting; step1 already captured that, but step5 contradicts it. This is an incorrect conceptual claim about bracket matching, i.e., concept_error. I'll state reason mentioning it contradicts correct nesting requirement and counterexample.\n\nNeed include confidence. Since we have counterexample and clear text, confidence high, e.g., 0.95 or 0.99. Let's choose 0.98. Rationale summarize: Steps 1-4 correct and match standard; code correctly implements stack and passes tests. Step 5 erroneously asserts that quantity checks generalize to mixed brackets and order does not affect legality; counterexample \"([)]\" shows equal counts but invalid due to order/nesting. Therefore first error at step 5, process_correct false.\n\nNeed ensure output only JSON, no Markdown. Structure exactly:\n{\n  \"step_reviews\": [\n    {\"step\": 1, \"valid\": true, \"error_type\": null, \"reason\": \"...\"},\n    ...\n    {\"step\": 5, \"valid\": false, \"error_type\": \"concept_error\", \"reason\": \"...\"}\n  ],\n  \"process_correct\": false,\n  \"first_error_step\": 5,\n  \"error_types\": [\"concept_error\"],\n  \"confidence\": 0.98,\n  \"rationale\": \"...\"\n}\n\nNeed write reason strings. Step1 reason: \"正确重述了合法条件：右括号必须匹配最近的未匹配同类型左括号，且任何前缀不能出现无匹配的右括号；与栈匹配语义一致。\" Step2: \"算法描述正确：左括号入栈，右括号时检查栈非空且栈顶类型匹配后弹栈，符合 LIFO 嵌套要求。\" Step3: \"栈不变量正确：栈保存当前前缀未匹配的左括号，栈顶是唯一可匹配的左括号，从而保证嵌套正确。\" Step4: \"复杂度分析正确：每个字符最多一次入栈或出栈，时间 O(n)，最坏全部为左括号时空间 O(n)。\" Step5: \"错误。该步声称单一括号类型的数量检查可直接推广到任意混合括号且顺序不影响合法性，这与题目要求“正确嵌套”矛盾。混合括号不能仅靠数量/计数判断，顺序和嵌套决定合法性；反例 s='([)]' 每种括号数量均匹配，但顺序/嵌套错误导致非法。它遗漏/否定了前缀右括号无匹配、类型不匹配以及顺序/嵌套条件，构成概念错误。\"\n\nNeed check step5 error_type maybe \"condition_omission\" because it omits prefix/order condition? But it explicitly says order does not affect, so concept_error more direct. We'll use concept_error.\n\nOne more nuance: The automatic verification says fixed_tests_all_passed true, hypothesis passed. But process evaluation is about reasoning steps, not just code. The code is correct and passes; but step5 reasoning is wrong. The final answer says \"已给出可执行 solve_case 实现。\" That's fine. We only evaluate submitted steps. The code itself is correct; no implementation_error. Wait check code for any implementation_error? Let's thoroughly test code with some cases:\n- \"\" -> stack empty, returns not stack -> True. correct (empty legal).\n- \"(\" -> push, end stack ['('], returns False. correct.\n- \")\" -> char not in '([{', goes elif not stack -> True -> return False. correct.\n- \"()\": '(' push, ')' -> not stack False, stack.pop() -> '(' compared to pairs[')']='(' -> equal, not return, stack empty, end returns True. correct.\n- \"(]\": '(' push, ']' -> pop '(' compare pairs[']']='[' -> not equal, return False. correct.\n- \"([)]\": '(' push, '[' push, ')' -> pop '[' compare pairs[')']='(' -> not equal, return False. correct (invalid). Wait but in code, it pops '[' and returns False. Good.\n- \"([{}])\": works. correct.\n\nOne subtle thing: The code uses `case['s']`. The execution interface contract is null. The standard solution didn't specify function signature. The candidate defines `solve_case(case)` accessing `case['s']`. Is that allowed? Instruction: \"若提供了执行接口契约，必须以该契约为准；不得把原函数直接参数与 solve_case(case) 的合法适配差异判为题意误读。\" Here execution_contract is null, so no contract provided. But the candidate's code uses solve_case(case) with case dict. Is that an issue? The problem statement just says given string s. The standard solution steps don't include code. The candidate's final answer says \"已给出可执行 solve_case 实现。\" There's no provided interface, so we cannot judge the parameter adaptation as error. The instruction explicitly says don't penalize legal adaptation differences between original function direct param and solve_case(case). So code signature is fine. Good.\n\nNeed also check step2 description vs code: Step2 says \"遇到右括号时检查栈非空且栈顶类型匹配，再弹栈。\" Code: `elif not stack or stack.pop() != pairs[char]: return False`. This checks stack nonempty (not stack), then pops and compares. It pops before comparing but the effect is: if stack not empty, pop top; if popped != expected left, return False. That matches check top type matches then pop (pop then compare equivalent). Good.\n\nNow, step_reviews must cover all actually submitted steps. The candidate submitted 5 reasoning_steps. Should we also review complexity, edge_cases, code? The output structure only defines step_reviews with \"step\" ids. The prompt: \"step_reviews 必须覆盖实际提交的所有步骤。\" The \"steps\" refer to reasoning_steps? The待评答案 has reasoning_steps array, and also complexity, edge_cases, code, final_answer. The output example shows step_reviews with step 1 etc. Usually we review the reasoning_steps. It says actual submitted all steps; the reasoning_steps are the steps. The other fields are not \"steps\"? But edge_cases is a list, complexity object, code string. The instruction: \"step_reviews 必须覆盖实际提交的所有步骤。\" Since reasoning_steps have id 1-5, we cover those. Good.\n\nBut wait, there is an edge_cases field that includes \"数量相同但类型或顺序错误\". If we only review reasoning_steps, we mark step5 invalid. Overall process_correct false. However, note that the edge_cases list actually correctly identifies that order errors are edge cases, which mitigates? But step5 itself is still wrong. The instruction says find earliest substantive error in steps. Step5 is an error. Even if later edge_cases are correct, process is not fully correct. So first_error_step=5. Good.\n\nLet's double-check step5 wording: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" Could there be an interpretation where it's actually true? Let's consider \"单一括号类型的数量检查\" maybe refers not to total counts but to using a counter/stack? For a single bracket type, the valid condition is that at every prefix, count('(') >= count(')') and total equal. This is a \"quantity check\" (count) along with prefix (which is order). They say \"顺序不影响合法性\" - but the prefix condition is precisely about order. So even for single type, order matters. Example: \")(\" has same counts but invalid. So it's false. Generalizing to mixed brackets by \"数量检查\" (counting each type) is insufficient as shown. So false.\n\nLet's consider if step5 is meant to describe boundary: \"单一括号类型的数量检查可以直接推广到任意混合括号，顺序不影响合法性。\" Maybe they meant \"单一括号类型的合法性检查（栈）可以直接推广到任意混合括号；顺序影响合法性\"? But they wrote \"数量检查\" and \"顺序不影响\". It's a clear negation. So error.\n\nNow, any earlier subtle error? Step1 says \"任意前缀都不能先出现无匹配右括号。\" The phrase \"先出现\" might mean \"cannot appear before being matched\"? Let's parse: \"且任意前缀都不能先出现无匹配右括号。\" Means in any prefix, there cannot first appear an unmatched right bracket. That is, you cannot have a right bracket that has no matching left in that prefix. That's correct. For mixed brackets, also need matching type; step1 says each right matches nearest unmatched same-type left, which covers type. Good.\n\nStep3: \"栈顶是唯一允许与当前右括号匹配的位置\" - In a well-formed string processed left to right, when encountering a right bracket, the only left bracket that can match it without violating nesting is the most recent unmatched left bracket, i.e., stack top. Yes. If it matched an earlier left bracket, the top left bracket would remain unmatched and would have to be closed after, resulting in crossing. So correct.\n\nThus step5 is first error.\n\nNow produce final JSON. Ensure no trailing commas, valid JSON. Use double quotes. Confidence number. Rationale string.\n\nLet's draft step_reviews reasons concisely but sufficient.\n\nStep1 valid true error_type null reason: \"正确表述合法条件：右括号需匹配最近的未匹配同类型左括号，且任何前缀都不能出现无匹配右括号，符合括号正确嵌套与全部闭合的要求。\"\n\nStep2 valid true: \"算法描述正确：左括号入栈；右括号出现时检查栈非空且栈顶左括号类型匹配后再弹栈，符合 LIFO 嵌套匹配。\"\n\nStep3 valid true: \"栈不变量正确：栈保存当前前缀尚未匹配的左括号，栈顶是唯一能与当前右括号合法匹配的位置，因而保证嵌套正确。\"\n\nStep4 valid true: \"复杂度分析正确：每个字符至多入栈/出栈一次，时间 O(n)；全为左括号时栈空间 O(n)。\"\n\nStep5 valid false error_type concept_error: \"错误。该步声称单一括号类型的数量检查可直接推广到任意混合括号且顺序不影响合法性，否定了题目要求的正确嵌套/顺序约束。混合括号不能仅靠数量判断；反例 '([)]' 各类括号数量均匹配，但因顺序/嵌套错误而非法定。该步遗漏并曲解了前缀右括号无匹配、类型不匹配及顺序/嵌套条件。\"\n\nprocess_correct: false\nfirst_error_step: 5\nerror_types: [\"concept_error\"]\nconfidence: 0.98\nrationale: \"步骤1-4对合法条件、栈模拟算法、不变量证明和复杂度的描述均正确，且代码正确实现了栈匹配并通过测试；但步骤5在边界/合法性讨论中错误地认为数量检查可推广到混合括号且顺序不影响合法性，与'正确嵌套'的要求矛盾，存在明确概念错误（反例 '([)]'）。因此最早实质错误位于步骤5，整体过程不正确。\"\n\nCheck if need mention code? Could mention code is correct but reasoning step5 wrong. Good.\n\nOne more thing: The instruction says \"确定有错但无法定位时为 false 且 first_error_step=null\". We located, so first_error_step=5. Good.\n\nLet's verify JSON keys exactly: step_reviews, process_correct, first_error_step, error_types, confidence, rationale. Yes.\n\nPotential issue: step_reviews entries require \"step\", \"valid\", \"error_type\", \"reason\". Good.\n\nLet's ensure no Markdown formatting, just JSON. Use \\n? No need. Output plain JSON.\n\nLet's produce.",
+          "usage": {
+            "prompt_tokens": 1410,
+            "completion_tokens": 6696,
+            "total_tokens": 8106,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 6160
+            }
+          },
+          "model": "hy4-preview",
+          "latency_ms": 228910.3,
+          "request_id": "61922ce1-7d85-4140-9424-2ee314d0c6d3"
+        },
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    },
+    {
+      "sample_id": "max_subarray-condition_overgeneralization",
+      "problem_id": "max_subarray",
+      "difficulty": "medium",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "状态定义",
+            "content": "子数组必须连续且非空；定义 current 为必须以当前位置结尾的最大子数组和。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "Kadane 转移",
+            "content": "对当前值 x，current = max(x, current + x)，再用 current 更新全局 best。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "归纳证明",
+            "content": "以当前位置结尾的最优非空段要么只含 x，要么把前一位置的最优结尾段延伸；两者取大覆盖全部可能。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "单次扫描，时间 O(n)，只维护两个数，额外空间 O(1)。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "正数数组的最优和非负，因此推广到全负数组时答案也至少为0。"
+          }
+        ],
+        "complexity": {
+          "time": "O(n)",
+          "space": "O(1)"
+        },
+        "edge_cases": [
+          "全负数",
+          "单元素",
+          "最优段位于首尾"
+        ],
+        "code": "def solve_case(case):\n    nums = case['nums']\n    current = best = nums[0]\n    for value in nums[1:]:\n        current = max(value, current + value)\n        best = max(best, current)\n    return best",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "nums": [
+              -2
+            ]
+          },
+          "expected": -2
+        },
+        "false_claim": "正数数组的最优和非负，因此推广到全负数组时答案也至少为0。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "max_subarray",
+        "title": "最大子数组和",
+        "statement": "给定非空整数数组 nums，返回和最大的连续非空子数组之和。",
+        "difficulty": "medium",
+        "difficulty_basis": "人工量表 9/15（算法识别2、状态/不变量2、证明2、边界2、复杂度约束1）：需要定义以当前位置结尾的非空最优状态，并正确处理全负数组。",
+        "source": "经典 Kadane 问题的原创测试组合；覆盖全负数与状态定义",
+        "input_schema": {
+          "nums": "list[int]"
+        },
+        "constraints": [
+          "1 <= len(nums) <= 200000",
+          "-10^9 <= nums[i] <= 10^9",
+          "子数组必须非空且连续"
+        ],
+        "public_tests": [
+          {
+            "name": "classic",
+            "input": {
+              "nums": [
+                -2,
+                1,
+                -3,
+                4,
+                -1,
+                2,
+                1,
+                -5,
+                4
+              ]
+            },
+            "expected": 6
+          },
+          {
+            "name": "single",
+            "input": {
+              "nums": [
+                7
+              ]
+            },
+            "expected": 7
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "max_subarray",
+        "difficulty": "medium",
+        "final_correct": true,
+        "process_correct": false,
+        "process_status": "invalid",
+        "failure_owner": "model",
+        "failure_owner_status": "provisional",
+        "localization_status": "localized",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 1,
+          "conclusive": 1
+        },
+        "assessment_note": "当前最早定位的错误证据出现在步骤 5。",
+        "reasoning_evidence": [
+          {
+            "step": 5,
+            "error_type": "condition_omission",
+            "source": "hy3_step_review",
+            "stage": "all",
+            "confidence": 0.95,
+            "reason": "步骤1-4的推理与标准 Kadane 解法一致，代码实现也正确并通过固定与随机测试；但步骤5的边界说明错误地认为全负数组的答案至少为 0，实质上遗漏了“子数组非空”这一必要条件（若允许空段才会得到 0）。自动验证中的词汇匹配和测试通过不能证明该步骤语义正确，因为代码并未实现步骤5的错误说法。最早出现的实质错误位于步骤5，因此 process_correct 为 false，first_error_step 为 5。",
+            "evidence": []
+          }
+        ],
+        "unsupported_correct": true,
+        "first_error_step": 5,
+        "error_types": [
+          "condition_omission"
+        ],
+        "error_labels": [
+          "条件或边界遗漏"
+        ],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "保留连续非空约束",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:连续且非空",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "Kadane 状态转移",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:max(x, current + x)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "覆盖开始新段或延伸旧段",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:要么只含 x",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "线性时间常数空间",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(n)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "正确处理全负数",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:全负数",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "classic",
+              "expected": 6,
+              "actual": 6,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "single",
+              "expected": 7,
+              "actual": 7,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "all_negative",
+              "expected": -2,
+              "actual": -2,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "all_positive",
+              "expected": 6,
+              "actual": 6,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "best_prefix",
+              "expected": 5,
+              "actual": 5,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "zero",
+              "expected": 0,
+              "actual": 0,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "step_reviews": [
+            {
+              "step": 1,
+              "valid": true,
+              "error_type": null,
+              "reason": "正确保留子数组必须连续且非空的约束，并将 current 定义为以当前位置结尾的最大非空子数组和，与题意及标准解法一致。"
+            },
+            {
+              "step": 2,
+              "valid": true,
+              "error_type": null,
+              "reason": "Kadane 转移式 current = max(x, current + x) 并用 current 更新全局 best 正确；在顺序遍历且已正确初始化的前提下成立，步骤本身未引入错误。"
+            },
+            {
+              "step": 3,
+              "valid": true,
+              "error_type": null,
+              "reason": "归纳证明正确：以当前位置结尾的最优非空段要么只含 x，要么由前一位置的最优结尾段延伸而来；两者取大覆盖了所有可能情况，支撑了步骤2的转移。"
+            },
+            {
+              "step": 4,
+              "valid": true,
+              "error_type": null,
+              "reason": "单次扫描、仅维护 current 与 best 两个变量，时间 O(n)、额外空间 O(1) 的复杂度结论正确。"
+            },
+            {
+              "step": 5,
+              "valid": false,
+              "error_type": "condition_omission",
+              "reason": "边界分析错误：声称推广到全负数组时答案也至少为 0。题目要求子数组非空，不允许空段贡献 0；全负数组的正确答案应是数组中最大（最接近 0 的）负数，而不是非负数。该步骤忽略了“非空”这一必要条件，并据此得出错误结论，与步骤1及代码中使用 nums[0] 初始化、禁止空段的做法相矛盾，属于实质错误。"
+            }
+          ],
+          "process_correct": false,
+          "first_error_step": 5,
+          "error_types": [
+            "condition_omission"
+          ],
+          "confidence": 0.95,
+          "rationale": "步骤1-4的推理与标准 Kadane 解法一致，代码实现也正确并通过固定与随机测试；但步骤5的边界说明错误地认为全负数组的答案至少为 0，实质上遗漏了“子数组非空”这一必要条件（若允许空段才会得到 0）。自动验证中的词汇匹配和测试通过不能证明该步骤语义正确，因为代码并未实现步骤5的错误说法。最早出现的实质错误位于步骤5，因此 process_correct 为 false，first_error_step 为 5。",
+          "assessment_status": "invalid"
+        },
+        "hy3_review_metadata": {
+          "content": "{\n  \"step_reviews\": [\n    {\n      \"step\": 1,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"正确保留子数组必须连续且非空的约束，并将 current 定义为以当前位置结尾的最大非空子数组和，与题意及标准解法一致。\"\n    },\n    {\n      \"step\": 2,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"Kadane 转移式 current = max(x, current + x) 并用 current 更新全局 best 正确；在顺序遍历且已正确初始化的前提下成立，步骤本身未引入错误。\"\n    },\n    {\n      \"step\": 3,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"归纳证明正确：以当前位置结尾的最优非空段要么只含 x，要么由前一位置的最优结尾段延伸而来；两者取大覆盖了所有可能情况，支撑了步骤2的转移。\"\n    },\n    {\n      \"step\": 4,\n      \"valid\": true,\n      \"error_type\": null,\n      \"reason\": \"单次扫描、仅维护 current 与 best 两个变量，时间 O(n)、额外空间 O(1) 的复杂度结论正确。\"\n    },\n    {\n      \"step\": 5,\n      \"valid\": false,\n      \"error_type\": \"condition_omission\",\n      \"reason\": \"边界分析错误：声称推广到全负数组时答案也至少为 0。题目要求子数组非空，不允许空段贡献 0；全负数组的正确答案应是数组中最大（最接近 0 的）负数，而不是非负数。该步骤忽略了“非空”这一必要条件，并据此得出错误结论，与步骤1及代码中使用 nums[0] 初始化、禁止空段的做法相矛盾，属于实质错误。\"\n    }\n  ],\n  \"process_correct\": false,\n  \"first_error_step\": 5,\n  \"error_types\": [\"condition_omission\"],\n  \"confidence\": 0.95,\n  \"rationale\": \"步骤1-4的推理与标准 Kadane 解法一致，代码实现也正确并通过固定与随机测试；但步骤5的边界说明错误地认为全负数组的答案至少为 0，实质上遗漏了“子数组非空”这一必要条件（若允许空段才会得到 0）。自动验证中的词汇匹配和测试通过不能证明该步骤语义正确，因为代码并未实现步骤5的错误说法。最早出现的实质错误位于步骤5，因此 process_correct 为 false，first_error_step 为 5。\"\n}",
+          "reasoning_content": "We need evaluate a submitted answer for a problem: given non-empty integer array nums, return max sum of contiguous non-empty subarray. Provided standard solution steps (5 steps).待评答案 has reasoning_steps with ids 1-5, complexity, edge_cases, code, final_answer. There is automatic verification evidence: fixed tests passed, hypothesis passed, rule criteria all \"matched\" lexical hints. But we must strictly verify reasoning, not trust final answer or lexical hints. Need find earliest substantial error; if all steps can hold then first_error_step null. Evidence insufficient => process_correct null. Determine if error but can't locate => process_correct false and first_error_step null. step_reviews must cover actual submitted all steps. Execution interface contract: null. Wait output structure requires JSON only. Allowed error types listed. We need produce step_reviews covering actual submitted all steps: The待评答案 reasoning_steps has 5 steps. But also code? Steps are reasoning_steps; do we need review code? The instruction says step_reviews必须覆盖实际提交的所有步骤. Actual submitted steps are reasoning_steps (ids 1-5). The code is part of answer but not a numbered step? The structure maybe expects reviewing reasoning_steps. We can include maybe a step for code? But output schema: step_reviews list of {step: number, valid, error_type, reason}. It says覆盖实际提交的所有步骤. The submitted answer includes reasoning_steps with ids 1-5. Probably steps 1-5 only. Could also treat code as implementation? But step_reviews step numbers likely correspond to reasoning step ids. We'll review steps 1-5. Also check code? There is no execution contract; the code implements Kadane correctly for non-empty: current = best = nums[0]; for value in nums[1:]: current=max(value,current+value); best=max(best,current); return best. It handles all negative (returns max element), single element, non-empty. Edge_cases list includes \"全负数\",\"单元素\",\"最优段位于首尾\" - all fine. Complexity O(n) time O(1) space, correct.\n\nNow we examine each reasoning step content.\n\nStep 1: \"子数组必须连续且非空；定义 current 为必须以当前位置结尾的最大子数组和。\" This matches problem and standard step 1. Is there any issue? Need check: state definition: current is max subarray sum ending at current position (must be non-empty). This is correct. Valid true.\n\nStep 2: \"对当前值 x，current = max(x, current + x)，再用 current 更新全局 best。\" This is Kadane. But wait: If current is defined as max sum ending at previous position? Standard: for each x, new current = max(x, current + x). This works if current initially nums[0] and iterating from second element. But step 2 as written: \"对当前值 x，current = max(x, current + x)\" - is current on RHS the previous position's current? Yes, in iterative update. It says再用 current 更新全局 best. That's correct. However need initialize best? Step 5 in submitted answer says something weird. Step 2 doesn't mention initialization, but that's okay maybe in code. But step 2 alone: \"对当前值 x，current = max(x, current + x)，再用 current 更新全局 best。\" In standard algorithm, we also need to initialize current and best to first element (or -inf) before loop. But step 2 doesn't mention initialization; however step? Step 1 defines current, but not initialization. Step 5 (boundary) in submitted says \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Wait that's problematic. Let's parse step 5 in submitted answer:\n\nStandard step 5: \"用 nums[0] 初始化可正确处理全负数和单元素；非空约束不允许空段贡献 0。\"\n\nSubmitted step 5: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\"\n\nThis is wrong! Let's examine. The boundary step in submitted says: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Wait what? The problem requires non-empty subarray. For an array of all negative numbers, e.g., [-5, -2, -9], the max sum of non-empty contiguous subarray is -2 (or maybe -2). It is not at least 0; it's negative. The empty subarray would have sum 0, but empty is not allowed. So the statement \"推广到全负数组时答案也至少为0\" is false. If they think answer at least 0, that would be incorrect for all-negative arrays. However does this step reflect the algorithm? The code initializes best = nums[0], which for all-negative returns negative number, not at least 0. So the boundary statement contradicts the code and standard requirement. The自动验证 rule criteria for boundary says matched lexical hint \"全负数\", but we must not trust lexical hint; the semantic content of step 5 is wrong. Need find earliest substantial error. Step 5 is the first wrong semantic step? Let's check steps 1-4 for any hidden issues.\n\nStep 3 proof: \"以当前位置结尾的最优非空段要么只含 x，要么把前一位置的最优结尾段延伸；两者取大覆盖全部可能。\" Is this fully correct? Let's scrutinize. For a subarray ending at current position i with value x = nums[i], the optimal (maximum sum) non-empty contiguous subarray ending at i either consists of only nums[i] (start new at i), or extends an optimal subarray ending at i-1 by including nums[i]. But is it valid to say \"把前一位置的最优结尾段延伸\"? Suppose the optimal subarray ending at i-1 is some segment; extending it yields sum = current_{i-1} + x. But what if the optimal ending at i-1 is negative? Actually current_{i-1} is max sum ending at i-1; it could be negative (e.g., all negatives). If we extend, sum = current_{i-1}+x. Since current_{i-1} is maximum among all ending at i-1, extending the best one gives the maximum possible sum among extensions. That is correct: any subarray ending at i that includes previous elements corresponds to a subarray ending at i-1 plus x; its sum = (sum of that subarray ending at i-1) + x. To maximize over all such, we need the maximum sum ending at i-1, which is current_{i-1}. So yes, current_i = max(x, current_{i-1}+x). The proof statement \"以当前位置结尾的最优非空段要么只含 x，要么把前一位置的最优结尾段延伸；两者取大覆盖全部可能。\" It says \"前一位置的最优结尾段\" meaning the optimal segment ending at previous position. Is that precise? The optimal segment ending at previous position is the one that achieves current_{i-1}. Extending it yields current_{i-1}+x. That's correct. This covers all possibilities: either length 1, or length >1, in which case it is some segment ending at i-1 plus x; the best among those is extending the best segment ending at i-1. So step 3 is correct. No error.\n\nStep 4 complexity: \"单次扫描，时间 O(n)，只维护两个数，额外空间 O(1)。\" Code maintains current and best, yes O(1) extra. Single pass O(n). Correct.\n\nStep 5 boundary submitted: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Let's parse Chinese: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Wait maybe they meant: \"正数数组的最优和非负\" (For arrays with positive numbers, the optimal sum is non-negative). \"因此推广到全负数组时答案也至少为0。\" This reasoning is nonsense: from positive arrays having non-negative optimal sum, it does not follow that all-negative arrays have answer at least 0. Or maybe they attempted to say: \"Because for positive arrays the optimal sum is non-negative, therefore [when] extending to all-negative arrays the answer is also at least 0.\" That's a non sequitur and false. Also the statement \"答案也至少为0\" is factually wrong for non-empty subarray problem with all-negative numbers: the max sum is the maximum (least negative) element, which is < 0, not >= 0. Only if empty subarray allowed would answer be 0. But problem says non-empty, and step 1 correctly says non-empty not allowed empty. Step 5 (boundary) in submitted answer claims answer at least 0 for all-negative arrays, which violates non-empty constraint and standard step 5 which explicitly says \"非空约束不允许空段贡献 0\". So this is a condition_omission or concept_error? Let's map error type. The error is about boundary/edge case handling: ignoring the non-empty constraint, wrongly assuming answer at least 0. It's a concept_error? Or condition_omission? It omits the condition that subarray must be non-empty, leading to incorrect claim that answer >=0. Could be \"condition_omission\" because the non-empty constraint is omitted in the boundary reasoning. But step 1 already states non-empty; step 5 contradicts it. The error in step 5 is a conceptual mistake about the value of the answer for all-negative arrays (thinking empty subarray allowed / answer >=0). The allowed error types: problem_misread, concept_error, algorithm_error, theorem_misuse, condition_omission, calculation_error, unjustified_jump, circular_reasoning, complexity_error, hallucination, implementation_error, format_error.\n\nWhich fits best? Let's consider: The boundary step fails to correctly handle all-negative arrays; it says answer at least 0, which is incorrect because the non-empty constraint disallows empty subarray (condition omitted? Actually step 1 remembered non-empty, but step 5 didn't apply it). The error type could be \"condition_omission\" because it omits the non-empty condition (empty subarray not allowed) when reasoning about all-negative arrays, leading to false conclusion. Or \"concept_error\" because misunderstanding that max subarray sum for all-negative is negative, not at least 0. The rule criteria stage boundary expected: \"正确处理全负数\". The submitted step 5 does not correctly handle all-negative; instead it gives wrong property. So error_type maybe \"condition_omission\" or \"concept_error\". Need decide.\n\nLet's examine the wording: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Actually maybe they are trying to justify initialization? Wait maybe they meant: \"正数数组的最优和非负\" means for arrays with positive numbers, the optimal sum is non-negative. \"因此推广到全负数组时答案也至少为0\" is completely illogical. Could this be a hallucination? The step is not derived from previous steps; it's an unjustified_jump? It says \"因此\" (therefore) but there's no logical connection. It might be \"unjustified_jump\" because it draws a conclusion without justification. But the conclusion is also false. The main issue is the boundary condition is mishandled: For all-negative arrays, answer is NOT at least 0. This is a conceptual misunderstanding (concept_error) or condition_omission (forgot non-empty). Since the step explicitly mentions \"全负数组\" and asserts answer at least 0, it's a false statement about the problem's required output. The root cause is ignoring the non-empty subarray constraint (i.e., allowing empty subarray contributing 0). Standard step 5 says: \"非空约束不允许空段贡献 0。\" So the submitted step omitted that condition. So error_type = condition_omission? Wait condition_omission is about omitting a condition from the problem when solving (e.g., ignoring non-empty). Here step 1 correctly states non-empty; step 5 forgets it and says answer at least 0. That is indeed omitting the non-empty condition in the boundary analysis. But concept_error is also plausible: misunderstanding of max subarray sum for all-negative arrays. Which is more accurate? Let's see definitions: \n- problem_misread: misinterpreted the problem statement. \n- concept_error: wrong conceptual understanding (e.g., confusing empty vs non-empty, or Kadane property).\n- condition_omission: failing to consider a necessary condition (e.g., non-empty). \n- calculation_error: arithmetic mistake. \n- unjustified_jump: logical leap without support. \nThe statement \"推广到全负数组时答案也至少为0\" is a factual error about the concept. However, if we trace the justification: It says because positive arrays have non-negative optimum, therefore all-negative arrays have answer at least 0. That's an unjustified_jump (non sequitur) and also false. Which one to choose? The instruction: \"找最早出现的实质错误\". Step 5 is the earliest error. We need assign error_type. Since the boundary step is supposed to address all-negative handling, and it incorrectly states the answer is at least 0, the underlying flaw is that it assumed empty subarray allowed (or that answer can be 0), i.e., omitted the \"non-empty\" constraint. Standard step explicitly says \"非空约束不允许空段贡献 0\". So submitted step omitted that condition. I'd label error_type as \"condition_omission\". But check if concept_error might be better: The concept of \"maximum subarray sum\" for non-empty all-negative array is the maximum element, which is negative. Thinking it's >=0 is a concept error. Yet the step didn't say it's 0; it says \"至少为0\" (at least 0). That's because they think empty subarray allowed. The problem condition non-empty is omitted. The step is in boundary, so condition_omission fits: \"omits the condition that the subarray must be non-empty, leading to incorrect conclusion that answer for all-negative arrays is at least 0.\" Let's also consider if the code is correct despite step 5 being wrong. The code returns best initialized to nums[0], so for all-negative, e.g., [-3,-2,-1], current/best: init -3. value -2: current=max(-2,-5)=-2, best=max(-3,-2)=-2. value -1: current=max(-1,-3)=-1, best=max(-2,-1)=-1. Returns -1, which is correct (max element is -1). So code does not reflect the erroneous statement in step 5. So there is an inconsistency: step 5 text is wrong, but code is correct. As a process evaluator, we review reasoning steps. The step 5 is a reasoning step; it contains a substantive error. The final code is correct, but we must not let correct final answer justify process. The presence of an incorrect reasoning step means process is not fully correct. We need output process_correct = false? Wait options: if all steps can hold then first_error_step null; if evidence insufficient then process_correct=null; if确定有错但无法定位 then process_correct=false and first_error_step=null. But we can locate the error: step 5. So process_correct should be false, first_error_step = 5. error_types maybe [\"condition_omission\"] or [\"concept_error\"] or both? The output has error_types list. We can include one or more? It says error_types: []. Allowed error_type singular but list. We can put [\"condition_omission\"] or maybe [\"condition_omission\",\"unjustified_jump\"]? We should be precise. The earliest substantial error is step 5. The error is a false statement/boundary mishandling. Let's read step 5 content exactly: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Wait maybe they wrote \"正数数组的最优和非负\" meaning \"For an array with positive numbers, the optimal sum is non-negative\"? Then \"因此推广到全负数组时答案也至少为0\" Actually maybe they attempted to say: If the array has positive numbers, the max subarray sum is non-negative. Therefore, when generalized to all-negative arrays, the answer is also at least 0. That is completely backwards. Or maybe they meant \"全负数组\" means array with some negative numbers? No, \"全负数组\" means all elements are negative. For all-negative, the optimal sum is negative. So the claim is false. There's no valid inference; it's an unjustified_jump (using \"因此\"). But the root semantic error is concept/condition. Let's see which error_type matches \"auto verification\" suggested? rule_criteria stage boundary: description \"正确处理全负数\", signal matched lexical hint \"全负数\", passed null. It didn't detect error. We must override. The suggested_error_type in rule_criteria is null. We need choose.\n\nMaybe we should classify as \"concept_error\": misunderstanding that max subarray sum for all-negative non-empty array is at least 0. Wait concept_error: \"concept_error\" is a broad category for wrong concepts. The concept here is Kadane's algorithm handling of all-negative arrays: You must not allow empty subarray; the answer is the largest (closest to zero) negative number, not >=0. The submitted step 5 states the opposite. That is a conceptual error about the definition/requirement. However, condition_omission specifically means \"condition_omission\" when a condition from the problem is ignored. The non-empty condition is ignored. Step 1 included it, step 5 omitted its implication. The error is in the boundary step, which should mention initialization with nums[0] and that empty segment not allowed. Since it instead says answer at least 0, it omitted the non-empty constraint. I think \"condition_omission\" is the most specific: omitted the non-empty condition when analyzing all-negative boundary. Let's also note it's an \"unjustified_jump\" because of \"因此\". But the instruction says find earliest substantial error; error_types can contain multiple? It says \"error_types\": [] maybe list of error types encountered. We can include [\"condition_omission\"] only, or [\"condition_omission\",\"unjustified_jump\"]? The allowed error_type list includes both. To be safe, we can mention in reason that it's a condition_omission (non-empty constraint ignored, leading to incorrect claim) and also an unjustified_jump? But the output error_types list maybe expects primary types. The example output didn't show multiple. We can put [\"condition_omission\"] and in reason explain. Or put [\"concept_error\"]? Let's inspect similar evaluations: If a step says \"answer at least 0\" for non-empty all-negative, it's a direct violation of problem condition (non-empty). So condition_omission. If we choose concept_error, it's also true but less specific. The guidance: \"allowed error_type：... condition_omission ...\". I'll use condition_omission. Wait, there is also \"problem_misread\": if they misread the problem as allowing empty subarray. But step 1 correctly says non-empty; step 5 contradicts. It's not misreading the whole problem; it's forgetting to apply the condition in boundary. So condition_omission.\n\nNow we need produce step_reviews for steps 1-5. Each: step number, valid boolean, error_type (null if valid), reason. Let's draft:\n\nStep 1: valid true, error_type null, reason: \"正确指出子数组需连续且非空，并将 current 定义为以当前位置结尾的最大非空子数组和，与题意和标准解法一致。\"\n\nStep 2: valid true, error_type null, reason: \"转移 current = max(x, current + x) 并用 current 更新 best 是 Kadane 算法的标准写法；在已初始化并顺序遍历时成立（初始化在代码/后续边界中体现，步骤本身未引入错误）。\" Wait step 2 didn't mention initialization, but does that make step 2 invalid? The step says \"对当前值 x，current = max(x, current + x)，再用 current 更新全局 best。\" In algorithm description, it assumes current is previous current. It's fine. It doesn't claim to handle initialization; step 5 maybe should. But step 2 alone is a correct recurrence. valid true.\n\nStep 3: valid true, error_type null, reason: \"归纳证明正确：以 i 结尾的最优非空子数组要么只含 nums[i]，要么由以 i-1 结尾的最优子数组延伸而来；取 max 覆盖所有情况，支撑了步骤2的转移。\"\n\nStep 4: valid true, error_type null, reason: \"单次扫描、维护 current 与 best 两个变量，时间 O(n)、额外空间 O(1) 的结论正确。\"\n\nStep 5: valid false, error_type \"condition_omission\", reason: \"边界说明错误。对于全负数组，由于题目要求子数组非空，不能选空段，答案应为数组中的最大（最接近0的）负数，而不是‘至少为0’；标准初始化用 nums[0] 并禁止空段贡献 0。该步骤忽略了‘非空’约束（并由此错误推断答案 >=0），与前面步骤1及代码实现不一致，属于实质错误。\"\n\nWait the reason says \"并由此错误推断答案 >=0\" also \"忽略了非空约束\". Good.\n\nNow process_correct: Since step 5 has error, process is not correct. process_correct = false. first_error_step = 5. error_types = [\"condition_omission\"] (maybe include \"unjustified_jump\"? Let's see: The step says \"因此推广到全负数组时答案也至少为0\". The \"因此\" is an unjustified inference. But the primary error is condition_omission. If we list both, is that okay? The output field error_types is a list; we can put [\"condition_omission\"] only to be precise. Or [\"condition_omission\",\"unjustified_jump\"]? The instruction says \"找最早出现的实质错误；... error_types\". It didn't forbid multiple. But step_reviews error_type is single allowed? In step_reviews, error_type field is one type (null or string). For step 5, we put \"condition_omission\". In top-level error_types, we can put [\"condition_omission\"]. Let's keep single.\n\nConfidence: We are confident there is an error in step 5, so confidence high, e.g., 0.95 or 0.9. The automated tests all passed because code correct, but reasoning step wrong. We should output confidence maybe 0.95. rationale: Summarize: Steps 1-4 are correct; code correctly implements Kadane and handles all-negative by initializing best=nums[0], returning negative max. However step 5's boundary reasoning falsely claims for all-negative arrays answer is at least 0, ignoring non-empty constraint; this is earliest substantial error at step 5. Therefore process_correct=false, first_error_step=5. Note: fixed tests passed and lexical hints matched are not sufficient to accept step 5 because its semantic content contradicts required non-empty condition and standard boundary handling.\n\nNeed ensure output is legal JSON, no Markdown. Use double quotes. step_reviews must cover actual submitted all steps. The submitted reasoning_steps ids 1-5. We'll produce steps 1-5. Should we also review the code? The code is not a \"step\" with id. The output structure step_reviews step numbers correspond to reasoning step ids. We'll not add step 6 for code. But maybe \"actual submitted all steps\" includes the code as an implementation step? The待评答案 has \"code\" field, not in reasoning_steps. The instruction says \"step_reviews 必须覆盖实际提交的所有步骤。\" The provided standard answer steps are 1-5. The待评答案 reasoning_steps are 1-5. So 5 steps. Good.\n\nLet's double-check step 2: Is there any subtle error about \"current = max(x, current + x)\" without saying current is previous? In an algorithm description, if we are iterating, yes. No error.\n\nCheck step 3: \"把前一位置的最优结尾段延伸\" — one might argue: The optimal subarray ending at i-1 is current_{i-1}; extending it gives current_{i-1}+x. But is it always valid to extend the optimal ending at i-1? Yes, because any extension of a subarray ending at i-1 yields sum = (sum of that subarray) + x. To maximize, pick the one with maximum sum, i.e., the optimal ending at i-1. So correct.\n\nStep 4: \"只维护两个数\" - current and best. Yes.\n\nStep 5: Let's read again: \"正数数组的最优和非负，因此推广到全负数组时答案也至少为0。\" Wait maybe they say: \"正数数组的最优和非负\" -> For arrays that contain positive numbers, the optimal sum is non-negative. Therefore, when generalized to all-negative arrays, the answer is also at least 0. This is contradictory: if all numbers are negative, there are no positive numbers, so the premise doesn't apply. Also the conclusion is false. So yes error.\n\nCould step 5 error be \"hallucination\"? It's a false statement not based on given data. But hallucination is for fabricating information (e.g., made-up API). Here it's a reasoning error. condition_omission/concept_error better.\n\nLet's consider if step 5 might be considered not a \"substantial\" error because it's just a boundary remark and the code is correct? The evaluator instruction: \"逐步核验推理，不因最终答案正确就默认过程正确。\" We must check reasoning. The step says answer at least 0 for all-negative arrays. That is a false claim about the output of the required algorithm. That's substantial. Even if code correct, the reasoning step is wrong. So process_correct = false. first_error_step = 5.\n\nWait, there is also an edge_cases field: [\"全负数\", \"单元素\", \"最优段位于首尾\"]. Those are fine. Complexity field time O(n), space O(1) correct. final_answer says \"已给出可执行 solve_case 实现。\" That's fine. But top-level maybe no step for edge_cases. No need.\n\nNow about execution interface contract: null. So we don't evaluate adaptation.\n\nOne more nuance: In step 5 standard: \"用 nums[0] 初始化可正确处理全负数和单元素；非空约束不允许空段贡献 0。\" Submitted step 5 replaced this entirely with a wrong sentence. The submitted step 1 says non-empty. Step 5 says answer at least 0. So it's inconsistent. The earliest error is step 5 because steps 1-4 valid. Yes.\n\nLet's prepare final JSON.\n\nStructure:\n{\n  \"step_reviews\": [\n    {\"step\": 1, \"valid\": true, \"error_type\": null, \"reason\": \"...\"},\n    {\"step\": 2, \"valid\": true, \"error_type\": null, \"reason\": \"...\"},\n    {\"step\": 3, \"valid\": true, \"error_type\": null, \"reason\": \"...\"},\n    {\"step\": 4, \"valid\": true, \"error_type\": null, \"reason\": \"...\"},\n    {\"step\": 5, \"valid\": false, \"error_type\": \"condition_omission\", \"reason\": \"...\"}\n  ],\n  \"process_correct\": false,\n  \"first_error_step\": 5,\n  \"error_types\": [\"condition_omission\"],\n  \"confidence\": 0.96,\n  \"rationale\": \"...\"\n}\n\nNeed ensure no Markdown. Use \\n? No, just string. Let's write reasons concisely but clear.\n\nStep 1 reason: \"正确保留连续且非空约束，current 定义为以当前位置结尾的最大非空子数组和，与题意一致。\"\nStep 2 reason: \"Kadane 转移式 current = max(x, current + x) 并用 current 更新 best 正确；在顺序遍历且已初始化前提下成立，未引入错误。\"\nStep 3 reason: \"归纳证明正确：以当前位置结尾的最优非空段仅可能是单独 x，或将前一位置最优结尾段延伸；两者取大覆盖全部可能，支撑转移。\"\nStep 4 reason: \"单次扫描、仅维护 current 与 best，时间 O(n)、额外空间 O(1) 的结论正确。\"\nStep 5 reason: \"错误：声称全负数组时答案也至少为 0。题目要求子数组非空，不允许空段贡献 0；全负数组的正确答案应是最大（最接近 0 的）负数，而非非负数。该步骤忽略了非空约束，并用无依据的‘因此’得出错误边界结论，与步骤1及代码实现（初始化为 nums[0]）相矛盾，是实质错误。\"\n\nRationale: \"步骤1-4的推理与标准 Kadane 解法一致，代码实现也正确并通过测试；但步骤5的边界分析错误地认为全负数组的答案至少为0，实质上遗漏了‘子数组非空’这一必要条件（若允许空段才会得到0）。自动验证的词汇匹配和固定测试通过不能证明该推理步骤语义正确，因为代码并未实现步骤5的错误说法。最早实质错误出现在步骤5，故 process_correct=false, first_error_step=5。\"\n\nCheck confidence value: maybe 0.95. We'll use 0.95.\n\nOne more thing: The output field \"error_types\" perhaps should include all error types found. We have condition_omission. Could also include \"unjustified_jump\". Should we? The step says \"因此推广到全负数组时答案也至少为0\". The \"因此\" indicates a logical jump. But the primary misstep is condition_omission. If I list both, step 5 error_type in step_reviews is single; top-level error_types can be [\"condition_omission\",\"unjustified_jump\"]. But is that overcomplicating? The instruction: \"error_types\": [] maybe expects list of error types among allowed. Multiple allowed. Let's decide: The false conclusion arises from omitting non-empty condition, not merely an unjustified jump. The jump is invalid because the premise doesn't imply conclusion, but the root error type is condition_omission. I'll keep only [\"condition_omission\"].\n\nWait, what about step 5's statement \"正数数组的最优和非负\" - is that even correct? If array has positive numbers, the max subarray sum is at least the max positive number, so non-negative (>=0). Yes, true. Then \"因此推广到全负数组时答案也至少为0\" - It tries to generalize from positive arrays to all-negative arrays, which is a non-sequitur. But the statement about all-negative arrays is false. The reason it's false is because for all-negative, answer negative. That's not just omission; it's a false factual claim. concept_error maybe more direct: The concept of max subarray sum for all-negative non-empty array is misunderstood. However, since the step is supposed to handle boundary and the correct handling requires remembering non-empty, I think condition_omission is exactly \"omission of the non-empty condition\". Let's finalize with condition_omission.\n\nNeed verify step_reviews covers all steps. Yes 1-5.\n\nLet's produce JSON. Ensure no trailing commas. Use valid JSON. No Markdown fences.\n\nFinal answer.",
+          "usage": {
+            "prompt_tokens": 1377,
+            "completion_tokens": 7329,
+            "total_tokens": 8706,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 6773
+            }
+          },
+          "model": "hy4-preview",
+          "latency_ms": 269160.3,
+          "request_id": "df09de05-95e5-44a3-a36d-65ee91c27681"
+        },
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    },
+    {
+      "sample_id": "grid_shortest_path-condition_overgeneralization",
+      "problem_id": "grid_shortest_path",
+      "difficulty": "medium",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "图建模",
+            "content": "把每个可通行格视为顶点，相邻的上、下、左、右格之间有单位权边，目标是无权图最短路。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "BFS",
+            "content": "从起点做 BFS，入队时立即标记 seen；队列按距离分层，首次到达终点的距离就是答案。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "最短性",
+            "content": "BFS 按非递减距离出队，所有边权均为 1，因此终点第一次出队时不可能存在更短未处理路径。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "每个格最多入队一次，时间 O(rows*cols)，队列和访问集合空间 O(rows*cols)。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "无障碍网格能从起点出发，因此起点有障碍时也可将其视为空地继续搜索。"
+          }
+        ],
+        "complexity": {
+          "time": "O(rows*cols)",
+          "space": "O(rows*cols)"
+        },
+        "edge_cases": [
+          "1x1",
+          "起终点障碍",
+          "不可达",
+          "路径可能需要向上或向左绕行"
+        ],
+        "code": "def solve_case(case):\n    grid = case['grid']\n    rows, cols = len(grid), len(grid[0])\n    if grid[0][0] or grid[rows - 1][cols - 1]:\n        return -1\n    queue = [(0, 0, 0)]\n    seen = {(0, 0)}\n    head = 0\n    while head < len(queue):\n        row, col, dist = queue[head]\n        head += 1\n        if row == rows - 1 and col == cols - 1:\n            return dist\n        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n            nr, nc = row + dr, col + dc\n            if 0 <= nr < rows and 0 <= nc < cols and not grid[nr][nc] and (nr, nc) not in seen:\n                seen.add((nr, nc))\n                queue.append((nr, nc, dist + 1))\n    return -1",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "grid": [
+              [
+                1
+              ]
+            ]
+          },
+          "expected": -1
+        },
+        "false_claim": "无障碍网格能从起点出发，因此起点有障碍时也可将其视为空地继续搜索。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "grid_shortest_path",
+        "title": "障碍网格最短路",
+        "statement": "0/1 网格中 0 可通行、1 为障碍。从左上角到右下角每次可向上、下、左、右移动一格，返回最少步数；不可达返回 -1。",
+        "difficulty": "medium",
+        "difficulty_basis": "人工量表 10/15（算法识别2、状态/不变量2、证明2、边界2、复杂度约束2）：需要完成网格建图、BFS 分层最短性和访问时机判断。",
+        "source": "原创迷宫模板；隐藏用例要求四方向移动并检验访问标记",
+        "input_schema": {
+          "grid": "list[list[int]]"
+        },
+        "constraints": [
+          "1 <= rows, cols <= 200",
+          "起点或终点可能是障碍",
+          "四方向等权移动"
+        ],
+        "public_tests": [
+          {
+            "name": "open_2x2",
+            "input": {
+              "grid": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0
+                ]
+              ]
+            },
+            "expected": 2
+          },
+          {
+            "name": "blocked",
+            "input": {
+              "grid": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  0
+                ]
+              ]
+            },
+            "expected": -1
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "grid_shortest_path",
+        "difficulty": "medium",
+        "final_correct": true,
+        "process_correct": null,
+        "process_status": "uncertain",
+        "failure_owner": "evaluator",
+        "failure_owner_status": "provisional",
+        "localization_status": "uncertain",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 0,
+          "conclusive": 0
+        },
+        "assessment_note": "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。",
+        "reasoning_evidence": [],
+        "unsupported_correct": null,
+        "first_error_step": null,
+        "error_types": [],
+        "error_labels": [],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "按四方向无权图建模",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:上、下、左、右",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "使用 BFS 并及时标记",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:BFS",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "利用等权分层证明最短",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:非递减距离",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "复杂度与格数线性",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(rows*cols)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "覆盖障碍、单格和不可达",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:1x1",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "open_2x2",
+              "expected": 2,
+              "actual": 2,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "blocked",
+              "expected": -1,
+              "actual": -1,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "single_open",
+              "expected": 0,
+              "actual": 0,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "single_blocked",
+              "expected": -1,
+              "actual": -1,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "requires_left",
+              "expected": 16,
+              "actual": 16,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "corridor",
+              "expected": 3,
+              "actual": 3,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "status": "error",
+          "process_correct": null,
+          "failure_owner": "evaluator",
+          "error": "Hy3 process reviewer returned invalid structured JSON: 无法从模型输出解析 JSON: Expecting value: line 1 column 17 (char 16)",
+          "confidence": 0.0,
+          "assessment_status": "uncertain"
+        },
+        "hy3_review_metadata": null,
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    },
+    {
+      "sample_id": "coin_change-condition_overgeneralization",
+      "problem_id": "coin_change",
+      "difficulty": "hard",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "状态定义",
+            "content": "面额可无限使用且一般币制不保证贪心正确；定义 dp[x] 为凑出金额 x 的最少硬币数。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "完全背包 DP",
+            "content": "初始化 dp[0]=0，其余为不可达；对每个金额 x 枚举 coin，转移 dp[x]=min(dp[x], dp[x-coin]+1)。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "最优子结构",
+            "content": "任意最优方案取出最后一枚 coin 后，剩余部分必须是 x-coin 的最优方案，否则可替换得到更优解。枚举最后一枚硬币覆盖所有方案。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "金额与硬币双重循环，时间 O(amount*len(coins))，dp 数组空间 O(amount)。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "只有面值1时答案等于amount，因此只要包含面值1，任意币制答案都等于amount。"
+          }
+        ],
+        "complexity": {
+          "time": "O(amount*len(coins))",
+          "space": "O(amount)"
+        },
+        "edge_cases": [
+          "amount=0",
+          "不可达",
+          "非规范币制中贪心失效"
+        ],
+        "code": "def solve_case(case):\n    coins, amount = case['coins'], case['amount']\n    unreachable = amount + 1\n    dp = [0] + [unreachable] * amount\n    for value in range(1, amount + 1):\n        for coin in coins:\n            if coin <= value:\n                dp[value] = min(dp[value], dp[value - coin] + 1)\n    return -1 if dp[amount] == unreachable else dp[amount]",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "coins": [
+              1,
+              5
+            ],
+            "amount": 10
+          },
+          "expected": 2
+        },
+        "false_claim": "只有面值1时答案等于amount，因此只要包含面值1，任意币制答案都等于amount。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "coin_change",
+        "title": "最少硬币数",
+        "statement": "给定正整数硬币面额 coins（每种可无限使用）和非负金额 amount，返回凑成金额所需的最少硬币数；无法凑成返回 -1。",
+        "difficulty": "hard",
+        "difficulty_basis": "人工量表 13/15（算法识别3、状态/不变量3、证明2、边界3、复杂度约束2）：需识别完全背包并排除贪心，处理无限使用、不可达哨兵和金额零边界。",
+        "source": "经典完全背包问题的原创反贪心用例；覆盖不可达状态",
+        "input_schema": {
+          "coins": "list[int]",
+          "amount": "int"
+        },
+        "constraints": [
+          "1 <= len(coins) <= 100",
+          "1 <= coins[i]",
+          "0 <= amount <= 10000"
+        ],
+        "public_tests": [
+          {
+            "name": "canonical",
+            "input": {
+              "coins": [
+                1,
+                2,
+                5
+              ],
+              "amount": 11
+            },
+            "expected": 3
+          },
+          {
+            "name": "unreachable",
+            "input": {
+              "coins": [
+                2
+              ],
+              "amount": 3
+            },
+            "expected": -1
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "coin_change",
+        "difficulty": "hard",
+        "final_correct": true,
+        "process_correct": null,
+        "process_status": "uncertain",
+        "failure_owner": "evaluator",
+        "failure_owner_status": "provisional",
+        "localization_status": "uncertain",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 0,
+          "conclusive": 0
+        },
+        "assessment_note": "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。",
+        "reasoning_evidence": [],
+        "unsupported_correct": null,
+        "first_error_step": null,
+        "error_types": [],
+        "error_labels": [],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "识别一般币制不可贪心",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:不保证贪心",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "给出完全背包转移",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:dp[x-coin]+1",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "证明最优子结构",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:最后一枚",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "金额乘面额数",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(amount*len(coins))",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "覆盖零金额、不可达和反贪心",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:amount=0",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "canonical",
+              "expected": 3,
+              "actual": 3,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "unreachable",
+              "expected": -1,
+              "actual": -1,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "zero",
+              "expected": 0,
+              "actual": 0,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "greedy_trap",
+              "expected": 2,
+              "actual": 2,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "exact",
+              "expected": 2,
+              "actual": 2,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "gcd_unreachable",
+              "expected": -1,
+              "actual": -1,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "status": "error",
+          "process_correct": null,
+          "failure_owner": "evaluator",
+          "error": "Hy3 process reviewer returned invalid structured JSON: 无法从模型输出解析 JSON: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+          "confidence": 0.0,
+          "assessment_status": "uncertain"
+        },
+        "hy3_review_metadata": null,
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    },
+    {
+      "sample_id": "lis_length-condition_overgeneralization",
+      "problem_id": "lis_length",
+      "difficulty": "hard",
+      "profile": "condition_overgeneralization",
+      "answer": {
+        "reasoning_steps": [
+          {
+            "id": 1,
+            "stage": "understanding",
+            "title": "子序列定义",
+            "content": "子序列保持相对顺序但不要求连续，并且是严格递增，所以相等值不能延长长度。"
+          },
+          {
+            "id": 2,
+            "stage": "algorithm",
+            "title": "最小结尾数组",
+            "content": "维护 tails[k] 为长度 k+1 的递增子序列可达到的最小结尾。对每个值用 lower_bound 找第一个 >= value 的位置替换，若不存在则追加。"
+          },
+          {
+            "id": 3,
+            "stage": "proof",
+            "title": "不变量与长度",
+            "content": "较小结尾不会降低后续可扩展性；替换保持每个长度存在可行子序列且 tails 严格递增，最终 tails 长度等于 LIS 长度。"
+          },
+          {
+            "id": 4,
+            "stage": "complexity",
+            "title": "复杂度",
+            "content": "每个元素做一次二分查找，时间 O(n log n)，tails 最多 n 个元素，空间 O(n)。"
+          },
+          {
+            "id": 5,
+            "stage": "boundary",
+            "title": "边界",
+            "content": "互异元素中非严格递增与严格递增相同，所以含重复值时也可以让相等值延长严格递增子序列。"
+          }
+        ],
+        "complexity": {
+          "time": "O(n log n)",
+          "space": "O(n)"
+        },
+        "edge_cases": [
+          "空数组",
+          "重复值不能延长",
+          "最优子序列不连续"
+        ],
+        "code": "def solve_case(case):\n    tails = []\n    for value in case['nums']:\n        left, right = 0, len(tails)\n        while left < right:\n            middle = (left + right) // 2\n            if tails[middle] < value:\n                left = middle + 1\n            else:\n                right = middle\n        if left == len(tails):\n            tails.append(value)\n        else:\n            tails[left] = value\n    return len(tails)",
+        "final_answer": "已给出可执行 solve_case 实现。"
+      },
+      "ground_truth": {
+        "final_correct": true,
+        "process_valid": false,
+        "first_error_step": 5,
+        "error_type": "condition_omission",
+        "annotation_basis": "受控单步骤替换，保留参考代码；非独立人工标注",
+        "counterexample": {
+          "input": {
+            "nums": [
+              2,
+              2
+            ]
+          },
+          "expected": 1
+        },
+        "false_claim": "互异元素中非严格递增与严格递增相同，所以含重复值时也可以让相等值延长严格递增子序列。"
+      },
+      "sample_origin": "controlled",
+      "problem": {
+        "id": "lis_length",
+        "title": "最长严格递增子序列长度",
+        "statement": "给定整数数组 nums，返回最长严格递增子序列（不要求连续）的长度。空数组返回 0。",
+        "difficulty": "hard",
+        "difficulty_basis": "人工量表 14/15（算法识别3、状态/不变量3、证明3、边界2、复杂度约束3）：O(n log n) 约束要求 tails 与 lower_bound，且需证明最小结尾不变量。",
+        "source": "经典 LIS 的原创分层用例；要求 O(n log n) 并区分子序列与子数组",
+        "input_schema": {
+          "nums": "list[int]"
+        },
+        "constraints": [
+          "0 <= len(nums) <= 200000",
+          "要求严格递增",
+          "目标复杂度 O(n log n)"
+        ],
+        "public_tests": [
+          {
+            "name": "classic",
+            "input": {
+              "nums": [
+                10,
+                9,
+                2,
+                5,
+                3,
+                7,
+                101,
+                18
+              ]
+            },
+            "expected": 4
+          },
+          {
+            "name": "duplicates",
+            "input": {
+              "nums": [
+                2,
+                2,
+                2
+              ]
+            },
+            "expected": 1
+          }
+        ],
+        "adapter_contract": null
+      },
+      "evaluation": {
+        "problem_id": "lis_length",
+        "difficulty": "hard",
+        "final_correct": true,
+        "process_correct": null,
+        "process_status": "uncertain",
+        "failure_owner": "evaluator",
+        "failure_owner_status": "provisional",
+        "localization_status": "uncertain",
+        "review_coverage": {
+          "expected": 1,
+          "completed": 0,
+          "conclusive": 0
+        },
+        "assessment_note": "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。",
+        "reasoning_evidence": [],
+        "unsupported_correct": null,
+        "first_error_step": null,
+        "error_types": [],
+        "error_labels": [],
+        "format_errors": [],
+        "criteria": [
+          {
+            "stage": "understanding",
+            "expected_step": 1,
+            "source_step": 1,
+            "description": "区分不连续子序列",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:不要求连续",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "algorithm",
+            "expected_step": 2,
+            "source_step": 2,
+            "description": "维护最小结尾并二分",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:最小结尾",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "proof",
+            "expected_step": 3,
+            "source_step": 3,
+            "description": "说明替换不损失最优性",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:不会降低后续可扩展性",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "complexity",
+            "expected_step": 4,
+            "source_step": 4,
+            "description": "达到 n log n",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:O(n log n)",
+            "error_type": null,
+            "suggested_error_type": null
+          },
+          {
+            "stage": "boundary",
+            "expected_step": 5,
+            "source_step": 5,
+            "description": "覆盖空数组与重复值",
+            "passed": null,
+            "signal": "matched",
+            "evidence_kind": "lexical_hint",
+            "reason": "evidence:空数组",
+            "error_type": null,
+            "suggested_error_type": null
+          }
+        ],
+        "execution": {
+          "passed": 6,
+          "total": 6,
+          "all_passed": true,
+          "tests": [
+            {
+              "name": "classic",
+              "expected": 4,
+              "actual": 4,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "duplicates",
+              "expected": 1,
+              "actual": 1,
+              "passed": true,
+              "error": null,
+              "visibility": "public"
+            },
+            {
+              "name": "empty",
+              "expected": 0,
+              "actual": 0,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "non_contiguous",
+              "expected": 3,
+              "actual": 3,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "zigzag",
+              "expected": 6,
+              "actual": 6,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            },
+            {
+              "name": "decreasing",
+              "expected": 1,
+              "actual": 1,
+              "passed": true,
+              "error": null,
+              "visibility": "hidden"
+            }
+          ],
+          "harness_error": null
+        },
+        "hypothesis": {
+          "enabled": true,
+          "status": "passed",
+          "found": false,
+          "engine": "hypothesis",
+          "examples_checked": 20,
+          "max_examples": 20,
+          "seed": 20260824,
+          "counterexample": null
+        },
+        "hy3_review": {
+          "status": "error",
+          "process_correct": null,
+          "failure_owner": "evaluator",
+          "error": "Hy3 process reviewer returned invalid structured JSON: 无法从模型输出解析 JSON",
+          "confidence": 0.0,
+          "assessment_status": "uncertain"
+        },
+        "hy3_review_metadata": null,
+        "review_mode": "single",
+        "orchestration": null,
+        "judge_sources": [
+          "fixed_tests",
+          "rubric_rules",
+          "hypothesis",
+          "hy3_step_review"
+        ]
+      }
+    }
+  ]
+}

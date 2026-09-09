@@ -92,6 +92,7 @@ def evaluate_submission(
     *,
     hypothesis_examples: int,
     update_phase,
+    hy3_client: Hy3Client | None = None,
 ) -> dict[str, Any]:
     # Repeat the API check at execution time: a queued job may outlive a config change.
     require_submission_sandbox()
@@ -124,7 +125,7 @@ def evaluate_submission(
     metadata = None
     update_phase("submission_review")
     try:
-        raw, raw_metadata = Hy3Client().review_submission(problem, submission, evidence)
+        raw, raw_metadata = (hy3_client or Hy3Client()).review_submission(problem, submission, evidence)
         review = normalize_review(raw, code, steps)
         metadata = {key: raw_metadata[key] for key in ("model", "latency_ms", "request_id", "usage") if key in raw_metadata}
     except Hy3APIError:

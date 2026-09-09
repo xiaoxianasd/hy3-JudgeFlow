@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import re
 from typing import Any
@@ -78,6 +79,15 @@ def extract_json_object(text: str) -> dict[str, Any]:
                 return parsed
         except json.JSONDecodeError as exc:
             failures.append(str(exc))
+            # Some model endpoints emit a Python-style mapping despite an
+            # explicit JSON request. literal_eval accepts only literals and
+            # cannot execute calls, imports, attributes, or expressions.
+            try:
+                parsed = ast.literal_eval(candidate)
+                if isinstance(parsed, dict):
+                    return parsed
+            except (SyntaxError, ValueError, TypeError, MemoryError, RecursionError):
+                pass
     raise ValueError("无法从模型输出解析 JSON" + (f": {failures[-1]}" if failures else ""))
 
 

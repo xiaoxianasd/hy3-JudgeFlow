@@ -4,100 +4,85 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Hy3 JudgeFlow · 代码解题与过程评估平台</title>
-  <link rel="stylesheet" href="/assets/styles.css?v=d6a5df813cb8">
-  <script src="/assets/app.js" defer></script>
+  <title>Hy3 JudgeFlow · 推理过程评估与首错定位平台</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=20260908.3">
+  <script src="/assets/app.js?v=20260909.2" defer></script>
 </head>
-<body>
+<body data-page="evaluation">
 <main>
   <header class="page-header">
-    <div class="brand"><div class="mark">H3</div><div><div class="kicker">Process Evaluation Workspace</div><strong>Hy3 JudgeFlow</strong></div></div>
-    <h1>代码解题与过程评估平台</h1>
-    <p class="lead">基于 Hy3 生成分步解答，结合测试执行、Hypothesis 属性测试与多 Agent 审查，评估实现及推理过程，定位错误步骤。</p>
+    <div class="topbar">
+      <div class="brand"><div class="mark">H3</div><div><div class="kicker">Process Evaluation</div><strong>Hy3 JudgeFlow</strong></div></div>
+      <a id="submissionMode" class="secondary-link" href="/submit">提交我的代码</a>
+    </div>
+    <h1>Hy3 推理过程评估与首错定位平台</h1>
+    <p class="lead">检查 Hy3 的答案和推理是否可靠，结合可执行测试与多 Agent 审查定位第一个错误，并保留可复核证据。</p>
+    <ol class="journey" aria-label="评估流程">
+      <li><span>1</span><div><b>选择题目</b><small>查看题面、约束和公开示例</small></div></li>
+      <li><span>2</span><div><b>运行 Hy3 评估</b><small>生成解答并执行多层验证</small></div></li>
+      <li><span>3</span><div><b>查看结论与证据</b><small>答案、过程、首错和失败归属</small></div></li>
+    </ol>
   </header>
-  <nav class="workflow-switch" aria-label="选择评估工作区">
-    <button id="generateMode" type="button" class="workflow-button selected" aria-pressed="true">Hy3 自动解题</button>
-    <button id="submissionMode" type="button" class="workflow-button" aria-pressed="false">提交我的代码</button>
-  </nav>
   <div class="layout">
-    <section class="card controls">
-      <h2 class="controls-title">评估配置</h2>
-      <div class="label">服务状态</div><div class="status"><span id="dot" class="dot"></span><span id="health">正在检查…</span></div>
+    <aside class="card controls">
+      <div class="step-heading"><span class="step-number">1</span><div><span class="label">开始评估</span><h2 class="controls-title">选择题目</h2></div></div>
+      <div class="service-line"><span id="dot" class="dot"></span><span id="health">正在检查 Hy3…</span></div>
       <div id="authGroup" hidden>
-        <label class="label" for="apiKey">API 访问密钥</label>
+        <label class="label" for="apiKey">站点访问密钥</label>
         <input id="apiKey" type="password" autocomplete="off" maxlength="512" placeholder="输入 WEB_API_KEY">
-        <p class="hint">密钥仅保存在当前浏览器标签页，不会写入页面或服务器日志。</p>
-        <button id="checkKey" class="secondary" type="button">保存密钥并检查连接</button>
+        <p class="hint">用于访问本平台，只保存在当前浏览器标签页。</p>
+        <button id="checkKey" class="secondary" type="button">保存并检查连接</button>
       </div>
-      <label id="problemSelectLabel" class="label" for="problem">选择要让 Hy3 解答的题目</label>
+      <div id="modelSettings" class="model-settings">
+        <label class="label" for="modelName">解题与审查模型</label>
+        <select id="modelName"><option value="hy3">hy3</option><option value="hy4-preview">hy4-preview</option></select>
+        <label class="label" for="modelApiKey">TokenHub API Key</label>
+        <div class="secret-row"><input id="modelApiKey" type="password" autocomplete="off" maxlength="512" placeholder="留空则使用服务端 HY3_API_KEY"><button id="toggleModelKey" class="secondary compact" type="button" aria-pressed="false">显示</button></div>
+        <p id="modelKeyHint" class="hint">逐任务使用，只保存在当前标签页，不写入评测结果。</p>
+        <button id="checkModel" class="secondary" type="button">保存并检查模型</button>
+      </div>
+      <label id="problemSelectLabel" class="label" for="problem">评测题目</label>
       <div class="problem-filters">
         <input id="problemSearch" type="search" autocomplete="off" placeholder="搜索题名或题号" aria-label="搜索题目">
         <select id="difficulty" aria-label="按难度筛选题目">
-          <option value="all">全部难度</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
+          <option value="all">全部难度</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
         </select>
       </div>
       <select id="problem" aria-describedby="problemCount" disabled></select>
       <div id="problemCount" class="hint problem-count"></div>
-      <label class="label" for="examples">Hypothesis 测试生成预算</label><input id="examples" type="number" min="1" max="500" value="60" aria-describedby="examplesHint">
-      <p id="examplesHint" class="hint">仅对已配置策略的题目生效；实际检查次数含反例收缩与重放，可能超过生成预算。</p>
-      <div id="generationOptions">
-      <label class="label" for="reviewMode">多 Agent 编排模式</label>
-      <select id="reviewMode"><option value="supervisor">Supervisor · 5 专家并行</option><option value="swarm">Bounded Swarm · 冲突仲裁</option><option value="single">Single · 单评审基线</option></select>
-      <div id="modeHint" class="hint"></div>
+      <details class="advanced-settings">
+        <summary>高级设置</summary>
+        <div class="advanced-body">
+          <label class="label" for="examples">Hypothesis 测试预算</label>
+          <input id="examples" type="number" min="1" max="500" value="60" aria-describedby="examplesHint">
+          <p id="examplesHint" class="hint">实际检查次数包含反例收缩与重放。</p>
+          <div id="generationOptions">
+            <label class="label" for="reviewMode">多 Agent 编排模式</label>
+            <select id="reviewMode"><option value="supervisor">Supervisor · 5 专家并行</option><option value="swarm">Bounded Swarm · 冲突仲裁</option><option value="single">Single · 单评审基线</option></select>
+            <div id="modeHint" class="hint"></div>
+          </div>
+        </div>
+      </details>
+      <button id="run" class="primary-action" type="button" disabled><span>2</span>运行所选模型评估</button>
+      <div id="generationPipeline" class="pipeline" aria-label="运行进度">
+        <div class="pipe">生成分步解答</div><div class="pipe">执行固定与属性测试</div><div class="pipe">多 Agent 审查</div><div class="pipe">汇总结论与首错</div>
       </div>
-      <p id="submissionHint" class="detail-note" hidden>在右侧填写 Python 代码，可选填解题步骤。系统直接验证你的实现，不让 Hy3 重新生成答案。</p>
-      <button id="run" type="button" disabled>调用 Hy3 解答并评估所选题</button>
-      <div id="generationPipeline" class="pipeline">
-        <div class="pipe">01 · Hy3 生成分步解答</div><div class="pipe">02 · 固定/隐藏用例执行</div><div class="pipe">03 · Hypothesis 搜索最小反例</div><div class="pipe">04 · Supervisor 分派专业 Agent</div><div class="pipe">05 · 汇总证据并定位首错</div>
-      </div>
-    </section>
+    </aside>
     <div class="workspace">
-      <section id="submissionPanel" class="card submission-panel" aria-labelledby="submissionTitle" hidden>
-        <div class="section-heading"><span class="label">用户代码评估</span><span class="meta-chip">Python · Docker 隔离执行</span></div>
-        <h2 id="submissionTitle">提交我的代码</h2>
-        <p class="detail-note">当前题目：<strong id="submissionProblem">请先选择题目</strong> · <a href="#problemDetails">查看完整题面与示例</a></p>
-        <p class="detail-note">请实现 <code>solve_case(case)</code> 并返回结果。只提交代码时评估实现逻辑；填写解题步骤后，才能审查你提供的推理过程。</p>
-        <label class="label" for="userCode">Python 代码（必填，最多 20,000 字符）</label>
-        <textarea id="userCode" class="code-editor" rows="12" maxlength="20000" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="def solve_case(case):&#10;    # 在这里编写你的实现&#10;    pass" aria-describedby="submissionPrivacy"></textarea>
-        <label class="label" for="userSteps">分步解题说明（选填，每行一步，最多 20 步）</label>
-        <textarea id="userSteps" rows="5" maxlength="40000" spellcheck="false" placeholder="例如：先说明题目条件，再说明算法及其正确性。&#10;每行填写一个完整步骤，每步最多 2,000 字符。"></textarea>
-        <p id="submissionPrivacy" class="detail-note">代码与步骤会发送到已配置的 Hy3 服务进行审查，并按任务保留策略存储在服务端。请勿提交密钥、密码或敏感信息。浏览器草稿仅保存在本页内存中，刷新页面会清空。</p>
-        <p id="submissionSafety" class="adapter-note" hidden>用户代码评估需要 Docker 安全沙盒。请设置 SANDBOX_BACKEND=docker，启动 Docker 并构建沙盒镜像后重启服务。</p>
-        <p id="submissionValidation" class="error" role="alert" hidden></p>
-        <button id="submitCode" type="button" disabled>提交代码并评估</button>
-      </section>
       <section id="problemDetails" class="card problem-details" aria-labelledby="problemTitle">
-        <div class="section-heading"><span class="label">题目详情</span><span id="problemId" class="problem-id"></span></div>
+        <div class="section-heading"><span class="label">题目内容</span><span id="problemId" class="problem-id"></span></div>
         <h2 id="problemTitle">正在加载题库…</h2>
         <p id="problemNotice" class="detail-note" role="status">题库加载完成后将在此展示所选题目的完整描述。</p>
         <div id="problemContent" hidden>
           <div id="problemMeta" class="problem-meta"></div>
-          <section class="detail-section">
-            <h3>题目描述</h3>
-            <div id="statement" class="statement"></div>
-          </section>
-          <section class="detail-section">
-            <h3>输入格式与执行接口</h3>
-            <p class="detail-note">评测入口：<code id="problemEntrypoint"></code>。输入字段封装在 <code>case</code> 字典中，返回值应符合题目描述。</p>
-            <dl id="inputSchema" class="input-schema"></dl>
-            <p id="adapterNote" class="adapter-note" hidden>原题中的函数调用和 assert 用于说明任务语义；平台将原函数参数按名称封装到 case 字典，返回结果的含义保持不变。</p>
-          </section>
-          <section class="detail-section">
-            <h3>约束条件</h3>
-            <ul id="constraints" class="constraints"></ul>
-          </section>
-          <section class="detail-section">
-            <h3>公开示例</h3>
-            <div id="publicExamples" class="public-examples"></div>
-            <p class="detail-note">此处仅展示公开示例；隐藏测试和参考实现不对外展示。</p>
-          </section>
+          <section class="detail-section"><h3>题目描述</h3><div id="statement" class="statement"></div></section>
+          <section class="detail-section"><h3>输入格式与执行接口</h3><p class="detail-note">评测入口：<code id="problemEntrypoint"></code>。输入字段封装在 <code>case</code> 字典中。</p><dl id="inputSchema" class="input-schema"></dl><p id="adapterNote" class="adapter-note" hidden>原题函数参数按名称封装到 case 字典，返回结果含义保持不变。</p></section>
+          <section class="detail-section"><h3>约束条件</h3><ul id="constraints" class="constraints"></ul></section>
+          <section class="detail-section"><h3>公开示例</h3><div id="publicExamples" class="public-examples"></div><p class="detail-note">隐藏测试和参考实现不对外展示。</p></section>
           <p class="problem-source">题目来源：<span id="problemSource"></span></p>
         </div>
       </section>
-      <section id="result" class="card empty" aria-label="评估结果"><div><b>尚未开始评估</b><br>确认上方题目内容后，点击左侧按钮生成解答并评估</div></section>
+      <section id="result" class="card empty" aria-label="评估结果"><div><span class="empty-step">3</span><b>等待评估结果</b><br>选择题目并运行后，这里将优先展示结论与直接证据</div></section>
     </div>
   </div>
 </main>

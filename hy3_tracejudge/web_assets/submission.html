@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>提交我的代码 · Hy3 JudgeFlow</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=20260908.3">
+  <script src="/assets/app.js?v=20260909.2" defer></script>
+</head>
+<body data-page="submission">
+<main>
+  <header class="page-header compact-header">
+    <div class="topbar">
+      <div class="brand"><div class="mark">H3</div><div><div class="kicker">Code Review</div><strong>Hy3 JudgeFlow</strong></div></div>
+      <a id="generateMode" class="secondary-link" href="/">返回 Hy3 评测</a>
+    </div>
+    <h1>提交我的代码</h1>
+    <p class="lead">选择对应题目，提交 Python 实现；可选附上分步说明以审查你的推理过程。</p>
+  </header>
+  <div class="layout">
+    <aside class="card controls">
+      <div class="step-heading"><span class="step-number">1</span><div><span class="label">准备提交</span><h2 class="controls-title">选择题目</h2></div></div>
+      <div class="service-line"><span id="dot" class="dot"></span><span id="health">正在检查 Hy3…</span></div>
+      <div id="authGroup" hidden><label class="label" for="apiKey">站点访问密钥</label><input id="apiKey" type="password" autocomplete="off" maxlength="512" placeholder="输入 WEB_API_KEY"><p class="hint">用于访问本平台，只保存在当前浏览器标签页。</p><button id="checkKey" class="secondary" type="button">保存并检查连接</button></div>
+      <div id="modelSettings" class="model-settings"><label class="label" for="modelName">代码审查模型</label><select id="modelName"><option value="hy3">hy3</option><option value="hy4-preview">hy4-preview</option></select><label class="label" for="modelApiKey">TokenHub API Key</label><div class="secret-row"><input id="modelApiKey" type="password" autocomplete="off" maxlength="512" placeholder="留空则使用服务端 HY3_API_KEY"><button id="toggleModelKey" class="secondary compact" type="button" aria-pressed="false">显示</button></div><p id="modelKeyHint" class="hint">逐任务使用，只保存在当前标签页，不写入评测结果。</p><button id="checkModel" class="secondary" type="button">保存并检查模型</button></div>
+      <label id="problemSelectLabel" class="label" for="problem">代码对应的题目</label>
+      <div class="problem-filters"><input id="problemSearch" type="search" autocomplete="off" placeholder="搜索题名或题号" aria-label="搜索题目"><select id="difficulty" aria-label="按难度筛选题目"><option value="all">全部难度</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></div>
+      <select id="problem" aria-describedby="problemCount" disabled></select><div id="problemCount" class="hint problem-count"></div>
+      <label class="label" for="examples">Hypothesis 测试预算</label><input id="examples" type="number" min="1" max="500" value="60"><p class="hint">用于搜索固定用例之外的实现反例。</p>
+    </aside>
+    <div class="workspace">
+      <section id="submissionPanel" class="card submission-panel" aria-labelledby="submissionTitle">
+        <div class="section-heading"><span class="label">步骤 2 · 编写并提交</span><span class="meta-chip">Python · 安全沙盒</span></div>
+        <h2 id="submissionTitle">代码与解题步骤</h2>
+        <p class="detail-note">当前题目：<strong id="submissionProblem">请先选择题目</strong> · <a href="#problemDetails">查看完整题面与示例</a></p>
+        <p class="detail-note">请实现 <code>solve_case(case)</code> 并返回结果。只提交代码时评估实现；填写步骤后才审查推理过程。</p>
+        <label class="label" for="userCode">Python 代码（必填，最多 20,000 字符）</label><textarea id="userCode" class="code-editor" rows="12" maxlength="20000" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="def solve_case(case):&#10;    pass" aria-describedby="submissionPrivacy"></textarea>
+        <label class="label" for="userSteps">分步解题说明（选填，每行一步，最多 20 步）</label><textarea id="userSteps" rows="5" maxlength="40000" spellcheck="false" placeholder="每行填写一个完整步骤"></textarea>
+        <p id="submissionPrivacy" class="detail-note">代码和步骤会发送至所选模型并按任务策略存储。模型 API Key 不写入任务记录。请勿在代码或步骤中提交密钥。</p>
+        <p id="submissionSafety" class="adapter-note" hidden>用户代码评估需要已配置的生产安全沙盒，请联系管理员完成部署。</p>
+        <p id="submissionValidation" class="error" role="alert" hidden></p><button id="submitCode" type="button" disabled>提交代码并评估</button>
+      </section>
+      <section id="problemDetails" class="card problem-details" aria-labelledby="problemTitle">
+        <div class="section-heading"><span class="label">题目内容</span><span id="problemId" class="problem-id"></span></div><h2 id="problemTitle">正在加载题库…</h2><p id="problemNotice" class="detail-note" role="status">题库加载完成后将在此展示题目。</p>
+        <div id="problemContent" hidden><div id="problemMeta" class="problem-meta"></div><section class="detail-section"><h3>题目描述</h3><div id="statement" class="statement"></div></section><section class="detail-section"><h3>输入格式与执行接口</h3><p class="detail-note">评测入口：<code id="problemEntrypoint"></code>。</p><dl id="inputSchema" class="input-schema"></dl><p id="adapterNote" class="adapter-note" hidden>原题函数参数按名称封装到 case 字典。</p></section><section class="detail-section"><h3>约束条件</h3><ul id="constraints" class="constraints"></ul></section><section class="detail-section"><h3>公开示例</h3><div id="publicExamples" class="public-examples"></div></section><p class="problem-source">题目来源：<span id="problemSource"></span></p></div>
+      </section>
+      <section id="result" class="card empty" aria-label="评估结果"><div><b>等待代码提交</b><br>提交后将在此展示实现、推理和定位证据</div></section>
+    </div>
+  </div>
+</main>
+</body>
+</html>

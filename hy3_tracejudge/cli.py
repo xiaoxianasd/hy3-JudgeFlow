@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from .fixtures import build_labeled_samples
 from .hy3_client import Hy3APIError, Hy3Client
 from .reporting import write_json, write_jsonl, write_results_csv
 from .auditing import build_audit_queue, summarize_audits
+from .detection import summarize_detection
 
 
 def _print(value: Any) -> None:
@@ -92,9 +94,18 @@ def command_evaluate(args: argparse.Namespace) -> int:
 
 def _fixture_benchmark(args: argparse.Namespace) -> dict[str, Any]:
     samples = build_labeled_samples(load_problems())
+    if args.fixture_profile:
+        selected_profiles = set(args.fixture_profile)
+        samples = [sample for sample in samples if sample["profile"] in selected_profiles]
+    if args.fixture_sample:
+        selected_samples = set(args.fixture_sample)
+        samples = [sample for sample in samples if sample["sample_id"] in selected_samples]
+    if not samples:
+        raise ValueError("构造样本筛选条件没有选中任何样本")
     client = Hy3Client() if args.hy3_review else None
     records = []
     for sample in samples:
+        print(f"[{len(records)+1}/{len(samples)}] {sample['sample_id']}", file=sys.stderr, flush=True)
         evaluation = evaluate_answer(
             get_problem(sample["problem_id"]),
             sample["answer"],
@@ -104,13 +115,25 @@ def _fixture_benchmark(args: argparse.Namespace) -> dict[str, Any]:
         )
         records.append({**sample, "problem": _problem_snapshot(get_problem(sample["problem_id"])),
                         "evaluation": evaluation})
+        if args.output:
+            write_json(args.output.with_suffix(".partial.json"), {
+                "run_type": "evaluator_validation_fixtures", "status": "in_progress",
+                "semantic_review_enabled": client is not None, "review_mode": args.review_mode,
+                "records": records, "process_detection": summarize_detection(records)})
+        if args.fixture_delay and len(records) < len(samples):
+            time.sleep(args.fixture_delay)
     evaluations = [item["evaluation"] for item in records]
     return {
         "run_type": "evaluator_validation_fixtures",
         "disclaimer": "去重受控轨迹与对抗变换，仅验证评估器；不是 Hy3 解题能力结果或独立人工抽检。",
         "semantic_review_enabled": client is not None,
+        "review_mode": args.review_mode,
+        "hypothesis_examples": args.hypothesis_examples,
+        "fixture_profiles": sorted(set(args.fixture_profile or [])),
+        "fixture_samples": sorted(set(args.fixture_sample or [])),
         "summary": summarize_results(evaluations),
         "validity": validate_evaluator(records),
+        "process_detection": summarize_detection(records),
         "records": records,
     }
 
@@ -161,7 +184,7 @@ def _hy3_benchmark(args: argparse.Namespace) -> dict[str, Any]:
         "python": list(sys.version_info[:3]), "hypothesis_version": hypothesis.__version__,
     }
     records = [{"sample_id": f"hy3-{p['id']}", "problem_id": p["id"], "difficulty": p["difficulty"],
-                "problem": _problem_snapshot(p), "status": "pending", "attempts": 0} for p in selected]
+                "sample_origin": "natural", "problem": _problem_snapshot(p), "status": "pending", "attempts": 0} for p in selected]
     return run_checkpointed(
         output=args.output or ROOT / "reports" / "hy3_benchmark.json", manifest=manifest,
         initial_records=records, solve=lambda pid: client.solve(get_problem(pid)),
@@ -179,6 +202,8 @@ def command_benchmark(args: argparse.Namespace) -> int:
         raise ValueError("--retry-failed 必须与 --resume 一起使用")
     if args.source == "fixtures" and (args.resume or args.retry_failed):
         raise ValueError("断点续跑用于 --source hy3；构造集请输出到新文件")
+    if args.source != "fixtures" and (args.fixture_profile or args.fixture_sample or args.fixture_delay):
+        raise ValueError("--fixture-profile/--fixture-sample/--fixture-delay 仅用于 --source fixtures")
     if args.output and args.output.suffix.lower() != ".json":
         raise ValueError("--output 必须是 .json 文件，旁边自动生成 .jsonl/.csv")
     result = _fixture_benchmark(args) if args.source == "fixtures" else _hy3_benchmark(args)
@@ -188,6 +213,9 @@ def command_benchmark(args: argparse.Namespace) -> int:
         write_json(output, result)
         write_jsonl(output.with_suffix(".jsonl"), records)
         write_results_csv(output.with_suffix(".csv"), records)
+        partial = output.with_suffix(".partial.json")
+        if partial.exists():
+            partial.unlink()
     if args.source == "fixtures":
         audits = []
         for item in records:
@@ -318,6 +346,21 @@ def build_parser() -> argparse.ArgumentParser:
     selection.add_argument("--limit", type=_positive_int)
     selection.add_argument("--per-difficulty", type=_positive_int, help="每个难度等量选题，按题库固定顺序")
     benchmark.add_argument("--hy3-review", action="store_true", help="为构造集启用真实 Hy3 语义复核（会调用模型）")
+    benchmark.add_argument(
+        "--fixture-profile",
+        action="append",
+        choices=("gold", "wrong", "unsupported_correct", "keyword_only", "negated_fault",
+                 "correct_code_wrong_proof", "condition_overgeneralization"),
+        help="仅运行指定构造类型；可重复传入，避免为无关样本调用模型",
+    )
+    benchmark.add_argument(
+        "--fixture-sample", action="append",
+        help="仅运行指定 sample_id；可重复传入，用于精确重试弃判样本",
+    )
+    benchmark.add_argument(
+        "--fixture-delay", type=_nonnegative_seconds, default=0.0,
+        help="构造样本语义评审之间的冷却秒数，TokenHub高负载时推荐30",
+    )
     benchmark.add_argument(
         "--tier",
         choices=("seed", "external", "all"),

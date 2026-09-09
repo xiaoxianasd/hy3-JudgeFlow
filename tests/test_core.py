@@ -7,7 +7,7 @@ from hy3_tracejudge.catalog import get_problem, load_problems
 from hy3_tracejudge.evaluator import evaluate_answer
 from hy3_tracejudge.executor import reference_check
 from hy3_tracejudge.fixtures import make_answer
-from hy3_tracejudge.hy3_client import Hy3APIError, Hy3Client, Hy3Config
+from hy3_tracejudge.hy3_client import Hy3APIError, Hy3Client, Hy3Config, public_model_error
 from hy3_tracejudge.property_testing import find_counterexample
 
 
@@ -101,6 +101,30 @@ class FakeHy3(Hy3Client):
 
 
 class Hy3ClientTests(unittest.TestCase):
+    def test_public_model_error_exposes_status_without_provider_body(self) -> None:
+        error = Hy3APIError(
+            "Hy3 HTTP 429: secret provider response",
+            retryable=True,
+            status_code=429,
+        )
+        public = public_model_error(error, "hy4-preview", attempts=2, max_attempts=2)
+        self.assertEqual(public["code"], "upstream_rate_limited")
+        self.assertEqual(public["upstream_status"], 429)
+        self.assertTrue(public["retryable"])
+        self.assertIn("已自动尝试 2 次", public["message"])
+        self.assertNotIn("secret provider response", str(public))
+
+    def test_probe_performs_real_inference(self) -> None:
+        fake = FakeHy3({"data": [{"id": "hy3"}]})
+        responses = iter([
+            {"data": [{"id": "hy3"}]},
+            {"choices": [{"message": {"content": '{"ok":true}'}}]},
+        ])
+        fake._request = lambda path, payload=None: next(responses)  # type: ignore[method-assign]
+        result = fake.probe()
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["probe"], "inference")
+
     def test_all_review_protocols_accept_null_and_reject_string_booleans(self) -> None:
         import json
         problem = get_problem("two_sum_exists")
@@ -127,8 +151,9 @@ class Hy3ClientTests(unittest.TestCase):
                 "usage": {"completion_tokens": 4},
             }
         )
-        with self.assertRaisesRegex(Hy3APIError, "invalid structured JSON"):
+        with self.assertRaisesRegex(Hy3APIError, "invalid structured JSON") as raised:
             fake.solve(problem)
+        self.assertEqual(raised.exception.failure_owner, "model")
 
     def test_solve_calls_openai_compatible_hy3_payload(self) -> None:
         problem = get_problem("two_sum_exists")
@@ -147,6 +172,10 @@ class Hy3ClientTests(unittest.TestCase):
         self.assertEqual(fake.last_payload["model"], "hy3")
         self.assertEqual(fake.last_payload["chat_template_kwargs"]["reasoning_effort"], "high")
         self.assertEqual(metadata["request_id"], "test-id")
+        system_prompt = fake.last_payload["messages"][0]["content"]
+        self.assertIn("允许 import", system_prompt)
+        self.assertIn("collections", system_prompt)
+        self.assertIn("禁止其他模块", system_prompt)
 
     def test_tokenhub_uses_top_level_reasoning_effort(self) -> None:
         problem = get_problem("two_sum_exists")
@@ -157,6 +186,7 @@ class Hy3ClientTests(unittest.TestCase):
         )
         fake.solve(problem)
         self.assertEqual(fake.last_payload["reasoning_effort"], "high")
+        self.assertEqual(fake.last_payload["response_format"], {"type": "json_object"})
         self.assertNotIn("chat_template_kwargs", fake.last_payload)
 
 

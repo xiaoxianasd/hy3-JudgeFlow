@@ -1,0 +1,7 @@
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error,status,attempts
+hy3-two_sum_exists,two_sum_exists,easy,True,True,valid,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-max_subarray,max_subarray,medium,True,True,valid,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-coin_change,coin_change,hard,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,2
+hy3-bracket_balance,bracket_balance,easy,True,True,valid,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-grid_shortest_path,grid_shortest_path,medium,False,False,invalid,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,1
+hy3-lis_length,lis_length,hard,True,True,valid,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,3

@@ -37,6 +37,8 @@ Evaluator / Hypothesis
 docker build -f sandbox/Dockerfile -t hy3-process-sandbox:py3.12 .
 ```
 
+沙盒运行器或安全白名单更新后必须重新执行上述构建并重启 Web/Worker；已有同名镜像不会自动包含代码更新。
+
 正式发布应把基础镜像固定到审核过的 digest：
 
 ```bash
@@ -77,7 +79,7 @@ docker build \
 
 Runner 在容器内部再次执行防御：
 
-- 禁止 `import`；
+- 只允许 `bisect`、`collections`、`functools`、`heapq`、`math` 中明确列出的安全成员；支持 `import module` 和 `from module import member`，拒绝星号、相对、子模块及其他导入；
 - 禁止 class、async/await；
 - 禁止双下划线和私有属性访问；
 - 禁止 `open/eval/exec/compile/getattr/globals/vars` 等名称；

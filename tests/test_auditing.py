@@ -41,6 +41,10 @@ def test_summary_reports_localization_false_positive_ratio_and_coverage():
     result = summarize_audits(data, completed_audits(data))
     assert result["audit_coverage"] == 0.75
     assert result["flagged_audit_coverage"] == 1
+    assert result["automated_final_correct_and_process_flagged_samples"] == 2
+    assert result["human_confirmed_answer_correct_and_process_flagged_samples"] == 2
+    assert result["failure_owner_distribution"] == {"evaluator": 1, "model": 2}
+    assert result["adjudicated_records"][2]["failure_owner"] == "evaluator"
     assert result["metrics"]["exact_step_localization_accuracy"] == 1
     assert result["metrics"]["flagged_real_issue_ratio"] == 0.5
     assert result["metrics"]["flagged_false_positive_ratio"] == 0.5

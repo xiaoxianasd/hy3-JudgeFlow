@@ -35,6 +35,7 @@ def prepare_seed(output: Path) -> None:
                 "statement": problem["statement"],
                 "difficulty": problem["difficulty"],
                 "difficulty_rank": problem["difficulty_rank"],
+                "difficulty_basis": problem.get("difficulty_basis"),
                 "function_name": problem["function_name"],
                 "tests": problem["public_tests"] + problem["hidden_tests"],
                 "reference_solution": problem["reference_solution"],
@@ -49,7 +50,10 @@ def prepare_seed(output: Path) -> None:
     split_manifest = {
         "version": "tracejudge_seed_v1",
         "construction": "原创参数化题；按固定奇偶序号划分 dev/test，仅供工程验收",
-        "difficulty_basis": "状态/算法复杂度、证明负担、边界与反例强度",
+        "difficulty_basis": (
+            "五维人工量表：算法识别、状态/不变量、证明、边界陷阱、复杂度约束各 0-3 分；"
+            "总分 0-6 为 easy、7-10 为 medium、11-15 为 hard。"
+        ),
         "counts": {"all": len(normalized), "dev": len(normalized[::2]), "test": len(normalized[1::2])},
         "ids": {"dev": [x["id"] for x in normalized[::2]], "test": [x["id"] for x in normalized[1::2]]},
     }

@@ -10,12 +10,78 @@ from pathlib import Path
 from typing import Any
 
 from .protocol import answer_schema_example, extract_json_object, validate_answer_shape
+from .sandbox import SANDBOX_CODE_CONTRACT
 
 
 class Hy3APIError(RuntimeError):
-    def __init__(self, message: str, *, retryable: bool = True):
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool = True,
+        failure_owner: str = "infrastructure",
+        status_code: int | None = None,
+        retry_after_seconds: float | None = None,
+    ):
         super().__init__(message)
         self.retryable = retryable
+        if failure_owner not in {"model", "evaluator", "infrastructure"}:
+            raise ValueError(f"invalid failure owner: {failure_owner}")
+        self.failure_owner = failure_owner
+        self.status_code = status_code
+        self.retry_after_seconds = retry_after_seconds
+
+
+def public_model_error(
+    exc: Hy3APIError,
+    model: str,
+    *,
+    attempts: int | None = None,
+    max_attempts: int | None = None,
+) -> dict[str, Any]:
+    """Return actionable diagnostics without exposing provider response bodies."""
+    status = exc.status_code
+    suffix = f"（HTTP {status}）" if status is not None else ""
+    if status in {401, 403}:
+        code = "upstream_auth_error"
+        message = f"{model} 的 API Key 无效，或当前账号没有该模型权限{suffix}"
+    elif status == 402:
+        code = "upstream_quota_exhausted"
+        message = f"{model} 的 TokenHub 额度不足{suffix}"
+    elif status == 429:
+        code = "upstream_rate_limited"
+        if exc.retry_after_seconds is not None:
+            wait_seconds = max(1, min(300, int(exc.retry_after_seconds + 0.999)))
+            retry_hint = f"请在 {wait_seconds} 秒后重试"
+        else:
+            retry_hint = "请稍后重试"
+        fallback = "，高峰期可切换 hy3" if model == "hy4-preview" else "并降低并发"
+        message = f"{model} 请求被 TokenHub 限流{suffix}，{retry_hint}{fallback}"
+    elif status is not None and status >= 500:
+        code = "upstream_unavailable"
+        message = f"{model} 服务暂时不可用{suffix}，请稍后重试"
+    elif "timed out" in str(exc).lower() or "timeout" in str(exc).lower():
+        code = "upstream_timeout"
+        message = f"{model} 推理超时，请稍后重试或改用单评审"
+    elif exc.failure_owner == "model":
+        code = "model_output_invalid"
+        message = f"{model} 未返回可校验的完整解答，请重新运行"
+    elif exc.failure_owner == "evaluator":
+        code = "evaluator_output_invalid"
+        message = f"{model} 的过程评审输出无法校验，请重新运行"
+    else:
+        code = "upstream_error"
+        message = f"{model} 服务调用失败，请稍后重试"
+    if attempts is not None and max_attempts is not None and attempts >= max_attempts > 1:
+        message += f"（已自动尝试 {attempts} 次）"
+    return {
+        "code": code,
+        "message": message,
+        "failure_owner": exc.failure_owner,
+        "failure_owner_status": "provisional",
+        "retryable": exc.retryable,
+        **({"upstream_status": status} if status is not None else {}),
+    }
 
 
 def _load_env_file() -> None:
@@ -39,6 +105,7 @@ class Hy3Config:
     max_tokens: int = 8192
     temperature: float = 0.9
     top_p: float = 1.0
+    review_reasoning_effort: str = "high"
 
     @classmethod
     def from_env(cls) -> "Hy3Config":
@@ -51,6 +118,9 @@ class Hy3Config:
             max_tokens=int(os.getenv("HY3_MAX_TOKENS", str(cls.max_tokens))),
             temperature=float(os.getenv("HY3_TEMPERATURE", str(cls.temperature))),
             top_p=float(os.getenv("HY3_TOP_P", str(cls.top_p))),
+            review_reasoning_effort=os.getenv(
+                "HY3_REVIEW_REASONING_EFFORT", cls.review_reasoning_effort
+            ),
         )
 
 
@@ -61,11 +131,21 @@ class Hy3Client:
         self.config = config or Hy3Config.from_env()
 
     @staticmethod
-    def _extract_structured(metadata: dict[str, Any], context: str) -> dict[str, Any]:
+    def _extract_structured(
+        metadata: dict[str, Any], context: str, *, failure_owner: str
+    ) -> dict[str, Any]:
+        if metadata.get("content_source") == "reasoning_content":
+            raise Hy3APIError(
+                f"{context} returned reasoning_content but no final content; "
+                f"finish_reason={metadata.get('finish_reason') or 'unknown'}",
+                failure_owner=failure_owner,
+            )
         try:
             return extract_json_object(metadata["content"])
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-            raise Hy3APIError(f"{context} returned invalid structured JSON: {exc}") from exc
+            raise Hy3APIError(
+                f"{context} returned invalid structured JSON: {exc}", failure_owner=failure_owner
+            ) from exc
 
     def _request(self, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         url = self.config.base_url + path
@@ -84,8 +164,17 @@ class Hy3Client:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")[:1000]
-            raise Hy3APIError(f"Hy3 HTTP {exc.code}: {body}",
-                             retryable=exc.code in {408, 409, 425, 429} or exc.code >= 500) from exc
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            try:
+                retry_after_seconds = float(retry_after) if retry_after is not None else None
+            except ValueError:
+                retry_after_seconds = None
+            raise Hy3APIError(
+                f"Hy3 HTTP {exc.code}: {body}",
+                retryable=exc.code in {408, 409, 425, 429} or exc.code >= 500,
+                status_code=exc.code,
+                retry_after_seconds=retry_after_seconds,
+            ) from exc
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise Hy3APIError(f"Hy3 request failed: {exc}") from exc
 
@@ -98,6 +187,31 @@ class Hy3Client:
             "endpoint": self.config.base_url,
             "requested_model": self.config.model,
             "available_models": model_ids,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+        }
+
+    def probe(self) -> dict[str, Any]:
+        """Verify that the selected model can perform a small real inference."""
+        started = time.perf_counter()
+        advertised = self.health()
+        if not advertised["ok"]:
+            return advertised
+        metadata = self.chat(
+            [
+                {"role": "system", "content": "只输出一个合法 JSON 对象。"},
+                {"role": "user", "content": '输出 {"ok":true}。'},
+            ],
+            reasoning_effort="low",
+            max_tokens=128,
+        )
+        value = self._extract_structured(
+            metadata, "Model connection probe", failure_owner="infrastructure"
+        )
+        if value.get("ok") is not True:
+            raise Hy3APIError("Model connection probe returned an unexpected payload")
+        return {
+            **advertised,
+            "probe": "inference",
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
         }
 
@@ -118,6 +232,7 @@ class Hy3Client:
         if "tokenhub" in self.config.base_url.lower():
             # Tencent Cloud TokenHub Chat Completions extension.
             payload["reasoning_effort"] = reasoning_effort
+            payload["response_format"] = {"type": "json_object"}
         else:
             # Official self-hosted Hy3/vLLM sends this field after the OpenAI
             # SDK merges its ``extra_body`` argument into the raw request.
@@ -128,16 +243,20 @@ class Hy3Client:
             message = response["choices"][0]["message"]
         except (KeyError, IndexError, TypeError) as exc:
             raise Hy3APIError(f"Unexpected Hy3 response: {str(response)[:1000]}") from exc
-        content = message.get("content") or message.get("reasoning_content") or ""
+        final_content = message.get("content")
+        reasoning_content = message.get("reasoning_content")
+        content = final_content or reasoning_content or ""
         if not content:
             raise Hy3APIError("Hy3 returned neither content nor reasoning_content")
         return {
             "content": content,
-            "reasoning_content": message.get("reasoning_content"),
+            "content_source": "content" if final_content else "reasoning_content",
+            "reasoning_content": reasoning_content,
             "usage": response.get("usage", {}),
             "model": response.get("model", self.config.model),
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
             "request_id": response.get("id"),
+            "finish_reason": response.get("choices", [{}])[0].get("finish_reason"),
         }
 
     def solve(self, problem: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -147,6 +266,7 @@ class Hy3Client:
             "若题面包含统一执行接口，必须以该接口为提交契约；原函数调用仅说明任务语义。"
             "只输出一个合法 JSON 对象，不要 Markdown 围栏。代码必须定义题目指定函数，"
             "输入为一个 case 字典，不读写 stdin/stdout。"
+            + SANDBOX_CODE_CONTRACT
         )
         user = (
             f"题目：{problem['title']}\n{problem['statement']}\n"
@@ -161,10 +281,12 @@ class Hy3Client:
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             reasoning_effort="high",
         )
-        answer = self._extract_structured(metadata, "Hy3 solver")
+        answer = self._extract_structured(metadata, "Hy3 solver", failure_owner="model")
         errors = validate_answer_shape(answer)
         if errors:
-            raise Hy3APIError("Hy3 answer schema invalid: " + "; ".join(errors))
+            raise Hy3APIError(
+                "Hy3 answer schema invalid: " + "; ".join(errors), failure_owner="model"
+            )
         return answer, metadata
 
     def review(
@@ -218,11 +340,13 @@ class Hy3Client:
         )
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            reasoning_effort="high",
+            reasoning_effort=self.config.review_reasoning_effort,
         )
-        review = self._extract_structured(metadata, "Hy3 process reviewer")
+        review = self._extract_structured(metadata, "Hy3 process reviewer", failure_owner="evaluator")
         if "process_correct" not in review or (review["process_correct"] is not None and type(review["process_correct"]) is not bool):
-            raise Hy3APIError("Hy3 review requires boolean or null process_correct")
+            raise Hy3APIError(
+                "Hy3 review requires boolean or null process_correct", failure_owner="evaluator"
+            )
         return review, metadata
 
     def review_submission(
@@ -269,10 +393,12 @@ class Hy3Client:
         }, ensure_ascii=False)
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            reasoning_effort="high",
+            reasoning_effort=self.config.review_reasoning_effort,
             max_tokens=min(self.config.max_tokens, 4096),
         )
-        return self._extract_structured(metadata, "Hy3 submission reviewer"), metadata
+        return self._extract_structured(
+            metadata, "Hy3 submission reviewer", failure_owner="evaluator"
+        ), metadata
 
     def review_stage(
         self,
@@ -303,6 +429,7 @@ class Hy3Client:
             "证据不足时 valid=null；确定有错但无法定位时 valid=false 且 first_error_step=null。"
             "reviewed_steps 必须准确列出本次已审查的目标步骤。"
             "判断必须引用题目条件、标准过程或可执行证据。若错误来自更早阶段，标记 inherited_from_step，"
+            "若可用具体输入反驳某一步，必须在 reason 和 evidence 中写明输入、该步骤声称的结果与正确结果。"
             "不要把传播错误冒充新的根因。只输出合法JSON。允许的error_type：problem_misread, "
             "concept_error, algorithm_error, theorem_misuse, condition_omission, calculation_error, "
             "unjustified_jump, circular_reasoning, complexity_error, hallucination, implementation_error。"
@@ -345,12 +472,16 @@ class Hy3Client:
         )
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            reasoning_effort="high",
+            reasoning_effort=self.config.review_reasoning_effort,
             max_tokens=min(self.config.max_tokens, 4096),
         )
-        review = self._extract_structured(metadata, f"Hy3 specialist {agent_name}")
+        review = self._extract_structured(
+            metadata, f"Hy3 specialist {agent_name}", failure_owner="evaluator"
+        )
         if "valid" not in review or (review["valid"] is not None and type(review["valid"]) is not bool):
-            raise Hy3APIError(f"{agent_name} review requires boolean or null valid")
+            raise Hy3APIError(
+                f"{agent_name} review requires boolean or null valid", failure_owner="evaluator"
+            )
         review["agent"] = agent_name
         review["stage"] = stage
         return review, metadata
@@ -408,10 +539,15 @@ class Hy3Client:
         )
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            reasoning_effort="high",
+            reasoning_effort=self.config.review_reasoning_effort,
             max_tokens=min(self.config.max_tokens, 4096),
         )
-        decision = self._extract_structured(metadata, "Hy3 swarm supervisor")
+        decision = self._extract_structured(
+            metadata, "Hy3 swarm supervisor", failure_owner="evaluator"
+        )
         if "process_correct" not in decision or (decision["process_correct"] is not None and type(decision["process_correct"]) is not bool):
-            raise Hy3APIError("Supervisor arbitration requires boolean or null process_correct")
+            raise Hy3APIError(
+                "Supervisor arbitration requires boolean or null process_correct",
+                failure_owner="evaluator",
+            )
         return decision, metadata

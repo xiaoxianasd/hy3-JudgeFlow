@@ -11,6 +11,7 @@ from hy3_tracejudge.api.app import create_app
 from hy3_tracejudge.api.config import WebConfig
 from hy3_tracejudge.api.jobs import EvaluationJobManager, JobNotFound, JobQueueFull
 from hy3_tracejudge.catalog import ADAPTER_HEADING, get_problem
+from hy3_tracejudge.hy3_client import Hy3APIError
 
 
 API_KEY = "test-web-api-key-with-32-characters"
@@ -23,11 +24,13 @@ class FakeManager:
         self.queue_full = queue_full
         self.submissions: list[tuple[str, int, str]] = []
         self.code_submissions: list[dict] = []
+        self.model_runtimes: list[dict | None] = []
 
-    def submit(self, problem_id: str, examples: int, mode: str, *, submission=None):
+    def submit(self, problem_id: str, examples: int, mode: str, *, submission=None, runtime=None):
         if self.queue_full:
             raise JobQueueFull()
         self.submissions.append((problem_id, examples, mode))
+        self.model_runtimes.append(runtime)
         if submission is not None:
             self.code_submissions.append(submission)
         return {
@@ -134,6 +137,72 @@ class WebAPITests(unittest.TestCase):
             f"/api/v1/evaluations/{JOB_ID}",
         )
         self.assertEqual(self.manager.submissions, [("two_sum_exists", 25, "supervisor")])
+
+    def test_model_and_provider_key_are_forwarded_without_leaking(self) -> None:
+        secret = "provider-secret-for-test"
+        response = self.client.post(
+            "/api/v1/evaluations",
+            headers=self.auth,
+            json={"problem_id": "two_sum_exists", "model": "hy4-preview", "provider_api_key": secret},
+        )
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(self.manager.model_runtimes[-1], {"model": "hy4-preview", "api_key": secret})
+        self.assertNotIn(secret, response.text)
+
+    def test_model_configuration_is_public_but_credentials_are_not(self) -> None:
+        response = self.client.get("/api/v1/config")
+        self.assertEqual(response.status_code, 200)
+        runtime = response.json()["model_runtime"]
+        self.assertEqual(runtime["models"], ["hy3", "hy4-preview"])
+        self.assertTrue(runtime["per_job_credentials"])
+        self.assertNotIn("api_key", response.text.lower())
+
+    def test_model_fields_are_strictly_validated(self) -> None:
+        for payload in (
+            {"model": "hy5"},
+            {"provider_api_key": "bad\nkey"},
+            {"provider_api_key": False},
+        ):
+            response = self.client.post(
+                "/api/v1/evaluations", headers=self.auth,
+                json={"problem_id": "two_sum_exists", **payload},
+            )
+            self.assertEqual(response.status_code, 422)
+
+    @patch("hy3_tracejudge.api.app.Hy3Client")
+    def test_selected_model_health_uses_transient_provider_key(self, client_class) -> None:
+        secret = "health-provider-secret"
+        client_class.return_value.probe.return_value = {
+            "ok": True, "requested_model": "hy4-preview", "latency_ms": 12.5,
+            "probe": "inference",
+        }
+        response = self.client.post(
+            "/api/v1/health/model", headers=self.auth,
+            json={"model": "hy4-preview", "provider_api_key": secret},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["probe"], "inference")
+        configured = client_class.call_args.args[0]
+        self.assertEqual(configured.model, "hy4-preview")
+        self.assertEqual(configured.api_key, secret)
+        self.assertLessEqual(configured.timeout_seconds, 30)
+        self.assertNotIn(secret, response.text)
+
+    @patch("hy3_tracejudge.api.app.Hy3Client")
+    def test_model_probe_returns_actionable_safe_upstream_error(self, client_class) -> None:
+        client_class.return_value.probe.side_effect = Hy3APIError(
+            "Hy3 HTTP 429: private provider detail",
+            status_code=429,
+        )
+        response = self.client.post(
+            "/api/v1/health/model",
+            headers=self.auth,
+            json={"model": "hy4-preview", "provider_api_key": "safe-test-key"},
+        )
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["error"]["code"], "upstream_rate_limited")
+        self.assertIn("HTTP 429", response.json()["error"]["message"])
+        self.assertNotIn("private provider detail", response.text)
 
     def test_external_problem_can_be_selected_and_submitted(self) -> None:
         response = self.client.post(
@@ -268,7 +337,14 @@ class WebAPITests(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Hy3 JudgeFlow", response.text)
-        self.assertIn("代码解题与过程评估平台", response.text)
+        self.assertIn("Hy3 推理过程评估与首错定位平台", response.text)
+        self.assertIn('id="modelName"', response.text)
+        self.assertIn('value="hy4-preview"', response.text)
+        self.assertIn('id="modelApiKey"', response.text)
+        submission = self.client.get("/submit")
+        self.assertEqual(submission.status_code, 200)
+        self.assertIn("提交我的代码", submission.text)
+        self.assertIn('id="modelName"', submission.text)
         self.assertNotIn("过程真的成立吗", response.text)
         self.assertIn('id="problemDetails"', response.text)
         self.assertIn('id="publicExamples"', response.text)

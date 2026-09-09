@@ -119,6 +119,8 @@ def run_checkpointed(
                 if record.get("status") == "completed" or (record.get("status") == "failed" and not retry_failed):
                     continue
                 record.pop("run_error", None)
+                record.pop("failure_owner", None)
+                record.pop("failure_owner_status", None)
                 for attempt in range(max_attempts):
                     record["attempts"] = record.get("attempts", 0) + 1
                     stage = "generation" if "answer" not in record else "evaluation"
@@ -137,12 +139,18 @@ def run_checkpointed(
                         result = evaluate(record["problem_id"], record["answer"])
                         if unavailable_evaluation(result):
                             record["partial_evaluation"] = result
-                            raise Hy3APIError("执行或评审服务暂不可用，保留答案和部分证据以供重试")
+                            raise Hy3APIError(
+                                "执行或评审服务暂不可用，保留答案和部分证据以供重试",
+                                failure_owner=result.get("failure_owner") or "infrastructure",
+                            )
                     except Hy3APIError as exc:
                         record.setdefault("attempt_history", []).append(
                             {"attempt": record["attempts"], "stage": stage, "error": str(exc), "at": now(),
-                             "retryable": getattr(exc, "retryable", True)})
-                        record.update(status="failed", run_error=str(exc))
+                             "retryable": getattr(exc, "retryable", True),
+                             "failure_owner": exc.failure_owner})
+                        record.update(status="failed", run_error=str(exc),
+                                      failure_owner=exc.failure_owner,
+                                      failure_owner_status="provisional")
                         persist()
                         if not getattr(exc, "retryable", True) or attempt + 1 == max_attempts:
                             break
@@ -151,6 +159,8 @@ def run_checkpointed(
                         record.update(evaluation=result, status="completed")
                         record.pop("partial_evaluation", None)
                         record.pop("run_error", None)
+                        record.pop("failure_owner", None)
+                        record.pop("failure_owner_status", None)
                         persist()
                         break
         except BaseException:

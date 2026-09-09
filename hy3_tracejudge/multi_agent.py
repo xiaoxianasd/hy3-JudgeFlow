@@ -104,6 +104,8 @@ def _normalize_review(spec: Specialist, review: dict[str, Any]) -> dict[str, Any
     step = review.get("first_error_step")
     if type(step) is not int:
         step = None
+    raw_evidence = review.get("evidence")
+    normalized_evidence = [str(item)[:2000] for item in raw_evidence[:5]] if isinstance(raw_evidence, list) else []
     return {
         "agent": spec.name,
         "stage": spec.stage,
@@ -112,8 +114,8 @@ def _normalize_review(spec: Specialist, review: dict[str, Any]) -> dict[str, Any
         "reviewed_steps": review.get("reviewed_steps", []),
         "first_error_step": step,
         "error_type": error_type,
-        "reason": str(review.get("reason", "")),
-        "evidence": review.get("evidence", []),
+        "reason": str(review.get("reason", ""))[:4000],
+        "evidence": normalized_evidence,
         "inherited_from_step": review.get("inherited_from_step"),
         "confidence": _confidence(review.get("confidence")),
     }
@@ -156,6 +158,7 @@ def _run_specialists(
                         "first_error_step": None,
                         "error_type": None,
                         "reason": str(exc),
+                        "failure_owner": exc.failure_owner,
                         "evidence": [],
                         "confidence": 0.0,
                     }
@@ -228,8 +231,15 @@ def _build_decision(
             review["assessment_status"] = "invalid"
             inherited = review.get("inherited_from_step")
             step = error_step(answer, inherited if inherited is not None else review.get("first_error_step"))
-            candidates.append({"step": step, "error_type": review["error_type"] or "algorithm_error",
-                               "source": review["agent"], "confidence": confidence})
+            candidates.append({
+                "step": step,
+                "error_type": review["error_type"] or "algorithm_error",
+                "source": review["agent"],
+                "stage": review["stage"],
+                "confidence": confidence,
+                "reason": review["reason"],
+                "evidence": review["evidence"],
+            })
             conclusive.add(review["agent"])
             continue
         target_ids = {
@@ -285,6 +295,7 @@ def _build_decision(
                     if incomplete else "已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。"
                 ),
                 "supporting_sources": [],
+                "reasoning_evidence": [],
             },
             conflicts,
         )
@@ -313,6 +324,18 @@ def _build_decision(
                 if first_step is None else f"当前最早定位的错误证据出现在步骤 {first_step}。"
             ),
             "supporting_sources": sorted({item["source"] for item in first}),
+            "reasoning_evidence": [
+                {
+                    "step": item["step"],
+                    "error_type": item["error_type"],
+                    "source": item["source"],
+                    "stage": item.get("stage"),
+                    "confidence": item["confidence"],
+                    "reason": item.get("reason", ""),
+                    "evidence": item.get("evidence", []),
+                }
+                for item in first if item["source"] != "executable_evidence"
+            ],
         },
         conflicts,
     )
@@ -337,10 +360,12 @@ def run_single_agent_review(
         })
         if review["valid"] is True and any(isinstance(item, dict) and item.get("valid") is False for item in step_reviews):
             review["valid"] = None
-    except Hy3APIError:
-        raw = {"status": "error", "process_correct": None}
+    except Hy3APIError as exc:
+        raw = {"status": "error", "process_correct": None, "failure_owner": exc.failure_owner,
+               "error": str(exc)}
         review = {"agent": spec.name, "stage": spec.stage, "status": "error", "valid": None,
-                  "confidence": 0.0, "reason": "Hy3 过程审查暂不可用，请稍后重试。"}
+                  "confidence": 0.0, "reason": str(exc),
+                  "failure_owner": exc.failure_owner}
     decision, conflicts = _build_decision(problem, answer, evidence, [review], specialists=(spec,))
     raw["confidence"] = review["confidence"]
     raw["assessment_status"] = review["assessment_status"]
@@ -383,7 +408,7 @@ def _merge_arbitration(
         return {**decision, "process_correct": True, "process_status": "valid",
                 "localization_status": "not_applicable", "first_error_step": None,
                 "error_types": [], "confidence": confidence, "rationale": reason,
-                "supporting_sources": ["hy3_arbitration"]}
+                "supporting_sources": ["hy3_arbitration"], "reasoning_evidence": []}
     step = error_step(answer, arbitration.get("first_error_step"))
     current_step = decision.get("first_error_step")
     if step is not None and current_step is not None and step > current_step:
@@ -394,7 +419,17 @@ def _merge_arbitration(
             "localization_status": localization_status(False, step), "first_error_step": step,
             "error_types": types or decision["error_types"] or ["algorithm_error"],
             "confidence": confidence, "rationale": reason,
-            "supporting_sources": arbitration.get("supporting_agents") or []}
+            "supporting_sources": arbitration.get("supporting_agents") or [],
+            "reasoning_evidence": [{
+                "step": step,
+                "error_type": (types or decision["error_types"] or ["algorithm_error"])[0],
+                "source": "hy3_arbitration",
+                "stage": None,
+                "confidence": confidence,
+                "reason": reason,
+                "evidence": [str(item)[:2000] for item in arbitration.get("evidence", [])[:5]]
+                if isinstance(arbitration.get("evidence"), list) else [],
+            }]}
 
 
 def run_multi_agent_review(
@@ -421,7 +456,8 @@ def run_multi_agent_review(
             )
             decision = _merge_arbitration(decision, arbitration, answer, conflicts)
         except Hy3APIError as exc:
-            conflicts.append({"kind": "arbitration_unavailable", "reason": str(exc)})
+            conflicts.append({"kind": "arbitration_unavailable", "reason": str(exc),
+                              "failure_owner": exc.failure_owner})
             if decision["process_correct"] is True:
                 decision.update({"process_correct": None, "process_status": "uncertain",
                                  "localization_status": "uncertain",

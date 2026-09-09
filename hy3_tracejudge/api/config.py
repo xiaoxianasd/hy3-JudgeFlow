@@ -58,7 +58,7 @@ class WebConfig:
     forwarded_allow_ips: str = "127.0.0.1"
     rate_limit_per_minute: int = 20
     max_request_bytes: int = 65_536
-    job_workers: int = 2
+    job_workers: int = 1
     job_queue_size: int = 8
     job_ttl_seconds: int = 3_600
     max_stored_jobs: int = 500
@@ -73,7 +73,7 @@ class WebConfig:
     job_poll_interval_seconds: float = 0.5
     job_lease_seconds: int = 900
     job_heartbeat_seconds: int = 15
-    job_max_attempts: int = 2
+    job_max_attempts: int = 3
     job_retention_seconds: int = 604_800
 
     @property
@@ -160,7 +160,7 @@ class WebConfig:
             forwarded_allow_ips=os.getenv("WEB_FORWARDED_ALLOW_IPS", "127.0.0.1").strip(),
             rate_limit_per_minute=_int("WEB_RATE_LIMIT_PER_MINUTE", 20, 1, 10_000),
             max_request_bytes=_int("WEB_MAX_REQUEST_BYTES", 65_536, 1_024, 2_097_152),
-            job_workers=_int("WEB_JOB_WORKERS", 2, 1, 16),
+            job_workers=_int("WEB_JOB_WORKERS", 1, 1, 16),
             job_queue_size=_int("WEB_JOB_QUEUE_SIZE", 8, 0, 1_000),
             job_ttl_seconds=_int("WEB_JOB_TTL_SECONDS", 3_600, 60, 86_400),
             max_stored_jobs=_int("WEB_MAX_STORED_JOBS", 500, 10, 100_000),
@@ -180,7 +180,7 @@ class WebConfig:
             job_poll_interval_seconds=_float("JOB_POLL_INTERVAL_SECONDS", 0.5, 0.1, 30),
             job_lease_seconds=_int("JOB_LEASE_SECONDS", 900, 30, 7_200),
             job_heartbeat_seconds=_int("JOB_HEARTBEAT_SECONDS", 15, 5, 600),
-            job_max_attempts=_int("JOB_MAX_ATTEMPTS", 2, 1, 10),
+            job_max_attempts=_int("JOB_MAX_ATTEMPTS", 3, 1, 10),
             job_retention_seconds=_int(
                 "JOB_RETENTION_SECONDS", 604_800, 3_600, 31_536_000
             ),

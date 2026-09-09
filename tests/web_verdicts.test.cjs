@@ -69,6 +69,47 @@ test('confirmed but unlocalized issue stays invalid without an invented step', (
   assert.doesNotMatch(html(), /步骤 null|步骤 undefined|步骤 1/);
 });
 
+test('code validation and reasoning counterevidence are separate and the first-error example is prominent', () => {
+  const {context, html} = app();
+  context.render(sample({
+    process_correct: false,
+    first_error_step: 5,
+    error_types: ['concept_error'],
+    error_labels: ['概念理解错误'],
+    reasoning_evidence: [{
+      step: 5,
+      source: 'boundary_agent',
+      stage: 'boundary',
+      confidence: 0.95,
+      reason: 'coins=[1,5]、amount=10 时最优答案是 2，不是 10。',
+      evidence: ['步骤 5 错把“含面额 1”解释为最优硬币数等于 amount。'],
+    }],
+  }));
+  assert.match(html(), /代码验证证据/);
+  assert.match(html(), /推理反例证据/);
+  assert.match(html(), /步骤 5/);
+  assert.match(html(), /coins=\[1,5\].*最优答案是 2/);
+  assert.ok(html().indexOf('推理反例证据') < html().indexOf('查看完整推理过程'));
+});
+
+test('saved supervisor jobs recover the selected first-error evidence without a rerun', () => {
+  const {context, html} = app();
+  context.render(sample({
+    process_correct: false,
+    first_error_step: 5,
+    orchestration: {
+      topology: 'pipeline', model_calls: 5, conflicts: [],
+      decision: {supporting_sources: ['boundary_agent']},
+      specialist_reviews: [{
+        agent: 'boundary_agent', stage: 'boundary', status: 'completed', assessment_status: 'invalid',
+        first_error_step: 5, confidence: 0.95, reason: '旧任务中的具体反例', evidence: ['输入 A 得到 B'],
+      }],
+    },
+  }));
+  assert.match(html(), /旧任务中的具体反例/);
+  assert.match(html(), /输入 A 得到 B/);
+});
+
 test('failed and inconclusive reviewers are not displayed as passing', () => {
   const {context, html} = app();
   context.render(sample({orchestration: {topology: 'pipeline', model_calls: 1, conflicts: [], specialist_reviews: [
@@ -90,9 +131,27 @@ test('shape errors with no execution or valid step array remain renderable', () 
 
 test('notes, errors and model text remain escaped', () => {
   const {context, html} = app();
-  context.render(sample({assessment_note: '<img src=x onerror=alert(1)>', error_labels: ['<script>bad</script>']}));
+  context.render(sample({
+    process_correct: false,
+    assessment_note: '<img src=x onerror=alert(1)>',
+    error_labels: ['<script>bad</script>'],
+    reasoning_evidence: [{step: 2, source: '<svg onload=bad()>', reason: '<iframe>bad</iframe>', evidence: ['<object>bad</object>']}],
+  }));
   assert.doesNotMatch(html(), /<img|<script/);
   assert.match(html(), /&lt;img/);
+  assert.doesNotMatch(html(), /<svg|<iframe|<object/);
+  assert.match(html(), /&lt;iframe/);
+});
+
+test('failure ownership is explicit and distinguishes provisional from adjudicated', () => {
+  const {context, html} = app();
+  context.render(sample({failure_owner: 'infrastructure', failure_owner_status: 'provisional'}));
+  assert.match(html(), /失败归属：基础设施（自动暂定，待人工复核）/);
+  context.render(sample({failure_owner: 'evaluator', failure_owner_status: 'adjudicated'}));
+  assert.match(html(), /失败归属：评估器（人工裁决）/);
+  context.render(sample({failure_owner: '<script>', failure_owner_status: 'provisional'}));
+  assert.doesNotMatch(html(), /<script>/);
+  assert.match(html(), /失败归属：未知归属/);
 });
 
 test('manual submissions use the same property text and retain no-steps semantics', () => {

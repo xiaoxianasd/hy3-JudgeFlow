@@ -1,0 +1,5 @@
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,failure_owner,failure_owner_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error,status,attempts
+max_subarray-01-gold,max_subarray,medium,True,,uncertain,infrastructure,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,
+grid_shortest_path-01-gold,grid_shortest_path,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,,
+coin_change-01-gold,coin_change,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,,
+lis_length-01-gold,lis_length,hard,True,,uncertain,infrastructure,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,,

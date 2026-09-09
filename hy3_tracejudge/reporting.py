@@ -42,6 +42,8 @@ def write_results_csv(path: Path, values: list[dict[str, Any]]) -> None:
         "final_correct",
         "process_correct",
         "process_status",
+        "failure_owner",
+        "failure_owner_status",
         "localization_status",
         "assessment_note",
         "unsupported_correct",
@@ -64,6 +66,10 @@ def write_results_csv(path: Path, values: list[dict[str, Any]]) -> None:
                     "final_correct": evaluation.get("final_correct"),
                     "process_correct": evaluation.get("process_correct"),
                     "process_status": evaluation.get("process_status", process_status(evaluation.get("process_correct"))),
+                    "failure_owner": evaluation.get("failure_owner", item.get("failure_owner", "")),
+                    "failure_owner_status": evaluation.get(
+                        "failure_owner_status", item.get("failure_owner_status", "")
+                    ),
                     "localization_status": evaluation.get("localization_status", localization_status(evaluation.get("process_correct"), evaluation.get("first_error_step"))),
                     "assessment_note": evaluation.get("assessment_note", ""),
                     "unsupported_correct": evaluation.get("unsupported_correct"),

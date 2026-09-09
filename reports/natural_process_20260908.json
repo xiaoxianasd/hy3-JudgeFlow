@@ -1,0 +1,197 @@
+{
+  "run_type": "independent_human_audit_summary",
+  "completed_evaluations": 6,
+  "reviewed_samples": 6,
+  "pending_or_unreviewed_samples": 0,
+  "audit_coverage": 1.0,
+  "automated_final_correct_and_process_flagged_samples": 0,
+  "reviewed_automated_flagged_samples": 0,
+  "automated_flagged_audit_coverage": null,
+  "human_confirmed_answer_correct_and_process_flagged_samples": 1,
+  "reviewed_human_confirmed_flagged_samples": 1,
+  "failure_owner_distribution": {
+    "evaluator": 1,
+    "model": 1
+  },
+  "adjudicated_records": [
+    {
+      "sample_id": "hy3-two_sum_exists",
+      "automated_final_correct": true,
+      "automated_process_correct": true,
+      "human_final_answer_correct": true,
+      "human_process_valid": true,
+      "failure_owner": null,
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工与自动结论一致且未发现失败"
+    },
+    {
+      "sample_id": "hy3-max_subarray",
+      "automated_final_correct": true,
+      "automated_process_correct": true,
+      "human_final_answer_correct": true,
+      "human_process_valid": true,
+      "failure_owner": null,
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工与自动结论一致且未发现失败"
+    },
+    {
+      "sample_id": "hy3-coin_change",
+      "automated_final_correct": false,
+      "automated_process_correct": false,
+      "human_final_answer_correct": false,
+      "human_process_valid": false,
+      "failure_owner": "model",
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工复核确认答案或过程存在问题"
+    },
+    {
+      "sample_id": "hy3-bracket_balance",
+      "automated_final_correct": true,
+      "automated_process_correct": true,
+      "human_final_answer_correct": true,
+      "human_process_valid": true,
+      "failure_owner": null,
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工与自动结论一致且未发现失败"
+    },
+    {
+      "sample_id": "hy3-grid_shortest_path",
+      "automated_final_correct": false,
+      "automated_process_correct": false,
+      "human_final_answer_correct": true,
+      "human_process_valid": true,
+      "failure_owner": "evaluator",
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工确认答案与过程成立，但自动评估给出否定结论"
+    },
+    {
+      "sample_id": "hy3-lis_length",
+      "automated_final_correct": true,
+      "automated_process_correct": true,
+      "human_final_answer_correct": true,
+      "human_process_valid": true,
+      "failure_owner": null,
+      "failure_owner_status": "adjudicated",
+      "failure_owner_basis": "人工与自动结论一致且未发现失败"
+    }
+  ],
+  "predicted_flagged_correct_samples": 0,
+  "reviewed_predicted_flagged_samples": 0,
+  "flagged_audit_coverage": null,
+  "metrics": {
+    "process_uncertain_samples": 0,
+    "wrong_answer_samples": 1,
+    "process_problem_detection_rate": 1.0,
+    "exact_step_localization_accuracy": 1.0,
+    "answer_correct_samples": 5,
+    "sound_answer_correct_samples": 5,
+    "reviewed_sound_answer_correct_samples": 5,
+    "sound_process_review_coverage": 1.0,
+    "false_positive_count": 1,
+    "false_positive_rate_on_sound_processes": 0.2,
+    "flagged_answer_correct_samples": 1,
+    "flagged_real_issue_count": 0,
+    "flagged_false_positive_count": 1,
+    "flagged_real_issue_ratio": 0.0,
+    "flagged_false_positive_ratio": 1.0
+  },
+  "process_detection": {
+    "by_origin": {
+      "controlled": {
+        "all_processes": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 0,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "gold_answer_correct": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 0,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "by_profile": {}
+      },
+      "natural": {
+        "all_processes": {
+          "samples": 6,
+          "detected": 1,
+          "missed": 0,
+          "false_positive": 1,
+          "true_negative": 4,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 1,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "gold_answer_correct": {
+          "samples": 5,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 1,
+          "true_negative": 4,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 0,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "by_profile": {}
+      },
+      "unknown": {
+        "all_processes": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 0,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "gold_answer_correct": {
+          "samples": 0,
+          "detected": 0,
+          "missed": 0,
+          "false_positive": 0,
+          "true_negative": 0,
+          "abstained": 0,
+          "abstained_invalid": 0,
+          "abstained_valid": 0,
+          "unlabeled": 0,
+          "detected_exact_step": 0,
+          "detected_wrong_step": 0,
+          "detected_unlocalized": 0
+        },
+        "by_profile": {}
+      }
+    },
+    "definition": "检出=金标过程错且预测错；漏检=金标过程错且预测成立；误报=金标过程成立且预测错；弃判=有金标但预测未知/缺失（含评审失败）；未标注单列，不计入弃判。gold_answer_correct按金标答案筛选，不以评估器测试结论筛选；不同来源不合并。"
+  },
+  "note": "automated_* 字段只使用自动结论；human_confirmed_* 与 metrics 使用人工最终答案。指标仅适用于已完成人工复核的样本；未复核与缺失样本不算正确或误报。"
+}

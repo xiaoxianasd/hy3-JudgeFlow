@@ -30,12 +30,15 @@ queued ──claim──> running ──success──> succeeded
 `evaluation_jobs` 保存：
 
 - 题目、Hypothesis 预算和 Agent 编排模式；
+- 逐任务选择的模型名，以及是否依赖浏览器临时凭据；
 - 排队、运行、阶段、尝试次数和最大重试次数；
 - Worker 租约、心跳、开始和完成时间；
 - JSON 类型的最终评估结果或公开错误；
 - 用于抢占、租约恢复和过期清理的组合索引。
 
 数据库结构由 Alembic 管理。不要手工修改表，也不要在生产启动时自动建表。
+
+网页填写的 TokenHub API Key 不进入 `evaluation_jobs`。同一进程内的临时凭据保险箱按任务编号保存 Key，数据库只记录 `requires_transient_credentials`。若进程在任务结束前重启，Worker 会将该任务标为 `transient_credentials_lost`，要求用户重新提交；不会退回服务端 Key 后继续执行。未填写网页 Key 的任务仍可使用服务端 `HY3_API_KEY`，所选 `requested_model` 可在重启后恢复。
 
 ## 初始化与升级
 

@@ -14,6 +14,23 @@ from typing import Any
 
 
 HARD_MAX_INPUT_BYTES = 8 * 1024 * 1024
+ALLOWED_IMPORT_MEMBERS = {
+    "bisect": ("bisect_left", "bisect_right", "insort_left", "insort_right"),
+    "collections": ("Counter", "defaultdict", "deque"),
+    "functools": ("cache", "lru_cache"),
+    "heapq": (
+        "heapify", "heappop", "heappush", "heappushpop", "heapreplace", "nlargest", "nsmallest",
+    ),
+    "math": (
+        "ceil", "comb", "cos", "e", "exp", "factorial", "floor", "gcd", "inf", "isclose",
+        "isqrt", "lcm", "log", "pi", "prod", "sin", "sqrt",
+    ),
+}
+SANDBOX_CODE_CONTRACT = (
+    "代码运行在受限沙盒中。允许 import 或 from ... import 的模块只有："
+    + "；".join(f"{module}({', '.join(names)})" for module, names in ALLOWED_IMPORT_MEMBERS.items())
+    + "。禁止其他模块、星号导入、相对导入、class、async/await、文件访问、网络访问和反射。"
+)
 _BANNED_NAMES = {
     "__builtins__",
     "__import__",
@@ -49,11 +66,25 @@ class _SecurityVisitor(ast.NodeVisitor):
         self.nodes += 1
         if self.nodes > self.max_nodes:
             raise SecurityPolicyError("ASTNodeLimitExceeded")
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
-            raise SecurityPolicyError("ImportNotAllowed")
         if isinstance(node, (ast.ClassDef, ast.AsyncFunctionDef, ast.Await, ast.AsyncFor, ast.AsyncWith)):
             raise SecurityPolicyError(f"{type(node).__name__}NotAllowed")
         super().generic_visit(node)
+
+    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
+        for alias in node.names:
+            if alias.name not in ALLOWED_IMPORT_MEMBERS:
+                raise SecurityPolicyError(f"ImportNotAllowed:{alias.name}")
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
+        module = node.module or ""
+        if node.level != 0 or module not in ALLOWED_IMPORT_MEMBERS:
+            raise SecurityPolicyError(f"ImportNotAllowed:{'.' * node.level}{module}")
+        allowed = ALLOWED_IMPORT_MEMBERS[module]
+        for alias in node.names:
+            if alias.name == "*" or alias.name not in allowed:
+                raise SecurityPolicyError(f"ImportNameNotAllowed:{module}.{alias.name}")
+        self.generic_visit(node)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:  # noqa: N802
         if node.attr.startswith("_"):
@@ -178,6 +209,27 @@ SAFE_MODULES = {
         sqrt=_math.sqrt,
     ),
 }
+
+
+def _safe_import(
+    name: str,
+    globals: dict[str, Any] | None = None,
+    locals: dict[str, Any] | None = None,
+    fromlist: tuple[str, ...] | list[str] = (),
+    level: int = 0,
+) -> _ModuleFacade:
+    del globals, locals
+    if level != 0 or name not in SAFE_MODULES:
+        raise ImportError(f"module not allowed: {name}")
+    module = SAFE_MODULES[name]
+    for member in fromlist or ():
+        if member == "*" or member not in ALLOWED_IMPORT_MEMBERS[name]:
+            raise ImportError(f"name not allowed: {name}.{member}")
+    return module
+
+
+# Import syntax requires this hook. Direct calls remain blocked by the AST name policy.
+SAFE_BUILTINS["__import__"] = _safe_import
 
 
 def _apply_os_limits(limits: dict[str, Any]) -> None:

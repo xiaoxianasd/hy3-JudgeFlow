@@ -20,6 +20,7 @@ from hy3_tracejudge.api.database import (
 from hy3_tracejudge.api.database_admin import _alembic_config, upgrade_database
 from hy3_tracejudge.api.db_jobs import DatabaseEvaluationJobManager
 from hy3_tracejudge.api.jobs import JobQueueFull
+from hy3_tracejudge.hy3_client import Hy3APIError
 
 
 class DatabaseQueueTests(unittest.TestCase):
@@ -72,6 +73,45 @@ class DatabaseQueueTests(unittest.TestCase):
         self.assertEqual(claimed["submission"], submission)
         self.assertNotIn("submission", store.get(queued["id"]))
 
+    def test_model_metadata_is_persisted_without_provider_key(self) -> None:
+        store = self.store()
+        queued = store.enqueue(
+            "two_sum_exists", 2, "single",
+            requested_model="hy4-preview", requires_transient_credentials=True,
+        )
+        self.assertEqual(queued["requested_model"], "hy4-preview")
+        self.assertNotIn("credentials", queued)
+        claimed = store.claim("worker", 60)
+        self.assertEqual(claimed["requested_model"], "hy4-preview")
+        self.assertTrue(claimed["requires_transient_credentials"])
+
+    def test_database_manager_keeps_provider_key_only_in_memory(self) -> None:
+        received = []
+
+        def runner(problem_id, examples, mode, update_phase, *, runtime):
+            received.append(runtime)
+            return {"model": runtime["model"]}
+
+        manager = DatabaseEvaluationJobManager(
+            self.store(), workers=1, poll_interval_seconds=0.01,
+            lease_seconds=60, heartbeat_seconds=5, retention_seconds=3600, runner=runner,
+        )
+        secret = "database-provider-secret"
+        job = manager.submit(
+            "two_sum_exists", 1, "single",
+            runtime={"model": "hy4-preview", "api_key": secret},
+        )
+        self.assertNotIn(secret, repr(job))
+        claimed = self.store().claim("test-worker", 60)
+        try:
+            manager._execute("test-worker", claimed)
+            snapshot = manager.snapshot(job["id"])
+            self.assertEqual(received, [{"model": "hy4-preview", "api_key": secret}])
+            self.assertNotIn(secret, repr(snapshot))
+            self.assertEqual(snapshot["result"]["model"], "hy4-preview")
+        finally:
+            manager.shutdown()
+
     def test_database_manager_delivers_submission_to_runner(self) -> None:
         received = []
         def runner(problem_id, examples, mode, update_phase, *, submission):
@@ -86,6 +126,32 @@ class DatabaseQueueTests(unittest.TestCase):
             manager._execute("test-worker", claimed)
             self.assertEqual(received, [payload])
             self.assertEqual(manager.snapshot(job["id"])["result"], {"source": "user_submission"})
+        finally:
+            manager.shutdown()
+
+    def test_database_worker_fails_closed_when_transient_key_was_lost(self) -> None:
+        store = self.store()
+        queued = store.enqueue(
+            "two_sum_exists", 1, "single",
+            requested_model="hy4-preview", requires_transient_credentials=True,
+        )
+        claimed = store.claim("restarted-worker", 60)
+        called = []
+
+        def runner(*args, **kwargs):
+            called.append((args, kwargs))
+            return {}
+
+        manager = DatabaseEvaluationJobManager(
+            store, workers=1, poll_interval_seconds=0.01,
+            lease_seconds=60, heartbeat_seconds=5, retention_seconds=3600, runner=runner,
+        )
+        try:
+            manager._execute("restarted-worker", claimed)
+            snapshot = store.get(queued["id"])
+            self.assertEqual(snapshot["status"], "failed")
+            self.assertEqual(snapshot["error"]["code"], "transient_credentials_lost")
+            self.assertEqual(called, [])
         finally:
             manager.shutdown()
 
@@ -113,6 +179,34 @@ class DatabaseQueueTests(unittest.TestCase):
             )
         second = store.claim("worker-b", 60)
         self.assertEqual(second["attempts"], 2)
+
+    def test_database_manager_does_not_retry_auth_errors(self) -> None:
+        store = self.store(max_attempts=3)
+        queued = store.enqueue("two_sum_exists", 1, "single", requested_model="hy4-preview")
+        claimed = store.claim("worker-a", 60)
+
+        def runner(*args, **kwargs):
+            raise Hy3APIError(
+                "Hy3 HTTP 401: private provider detail",
+                retryable=False,
+                status_code=401,
+            )
+
+        manager = DatabaseEvaluationJobManager(
+            store, workers=1, poll_interval_seconds=0.01,
+            lease_seconds=60,
+            heartbeat_seconds=5, retention_seconds=3600, runner=runner,
+        )
+        try:
+            manager._execute("worker-a", claimed)
+            snapshot = store.get(queued["id"])
+            self.assertEqual(snapshot["status"], "failed")
+            self.assertEqual(snapshot["attempts"], 1)
+            self.assertEqual(snapshot["error"]["code"], "upstream_auth_error")
+            self.assertEqual(snapshot["error"]["upstream_status"], 401)
+            self.assertNotIn("private provider detail", str(snapshot["error"]))
+        finally:
+            manager.shutdown()
 
     def test_expired_lease_is_recovered_then_failed_at_attempt_limit(self) -> None:
         store = self.store(max_attempts=2)
@@ -185,6 +279,7 @@ class MigrationTests(unittest.TestCase):
                 preserved = store.get("a" * 32)
                 self.assertEqual(preserved["kind"], "hy3_generation")
                 self.assertEqual(preserved["hypothesis_examples"], 20)
+                self.assertEqual(preserved["requested_model"], "hy3")
                 self.assertIsNone(store.claim("worker", 60)["submission"])
             finally:
                 engine.dispose()
@@ -194,7 +289,7 @@ class MigrationTests(unittest.TestCase):
             path = Path(directory) / "migration.sqlite3"
             config = WebConfig(database_url=f"sqlite:///{path.as_posix()}")
             status = upgrade_database(config)
-            self.assertEqual(status["schema_revision"], "0003")
+            self.assertEqual(status["schema_revision"], "0004")
             self.assertTrue(status["queue_table"])
 
 

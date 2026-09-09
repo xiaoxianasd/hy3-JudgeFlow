@@ -13,6 +13,7 @@ import time
 import uuid
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Literal
 
@@ -25,7 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from starlette.concurrency import run_in_threadpool
 
 from ..catalog import get_problem, load_problems
-from ..hy3_client import Hy3APIError, Hy3Client
+from ..hy3_client import Hy3APIError, Hy3Client, Hy3Config, public_model_error
 from .config import WebConfig
 from .database import DatabaseUnavailable, MySQLJobStore, create_database_engine
 from .db_jobs import DatabaseEvaluationJobManager
@@ -34,6 +35,7 @@ from .jobs import EvaluationJobManager, JobNotFound, JobQueueFull
 
 ASSETS = Path(__file__).resolve().parent.parent / "web_assets"
 REVIEW_MODES = {"single", "supervisor", "swarm"}
+MODEL_NAMES = ("hy3", "hy4-preview")
 LOGGER = logging.getLogger("hy3_tracejudge.api")
 
 
@@ -43,6 +45,29 @@ class EvaluationRequest(BaseModel):
     problem_id: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$")
     hypothesis_examples: int = Field(default=60, ge=1, le=500)
     review_mode: Literal["single", "supervisor", "swarm"] = "supervisor"
+    model: Literal["hy3", "hy4-preview"] = "hy3"
+    provider_api_key: str | None = Field(default=None, max_length=512)
+
+    @field_validator("provider_api_key")
+    @classmethod
+    def safe_provider_key(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            return None
+        if any(ord(char) < 32 or ord(char) == 127 for char in value):
+            raise ValueError("模型 API Key 不能包含控制字符")
+        return value
+
+
+class ModelConnectionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    model: Literal["hy3", "hy4-preview"] = "hy3"
+    provider_api_key: str | None = Field(default=None, max_length=512)
+
+    _safe_provider_key = field_validator("provider_api_key")(EvaluationRequest.safe_provider_key.__func__)
 
 
 class APIError(Exception):
@@ -61,6 +86,8 @@ class CodeSubmissionRequest(BaseModel):
     hypothesis_examples: int = Field(default=60, ge=1, le=500)
     code: str = Field(min_length=1, max_length=20_000)
     reasoning_steps: list[str] = Field(default_factory=list, max_length=20)
+    model: Literal["hy3", "hy4-preview"] = "hy3"
+    provider_api_key: str | None = Field(default=None, max_length=512)
 
     @field_validator("code")
     @classmethod
@@ -75,6 +102,8 @@ class CodeSubmissionRequest(BaseModel):
         if any(not value.strip() or len(value) > 2000 for value in values):
             raise ValueError("每个步骤应包含 1–2000 个字符")
         return [value.strip() for value in values]
+
+    _safe_provider_key = field_validator("provider_api_key")(EvaluationRequest.safe_provider_key.__func__)
 
 
 class SlidingWindowLimiter:
@@ -376,11 +405,17 @@ def create_app(
 
     @app.get("/api/v1/config")
     async def public_config() -> dict[str, Any]:
+        default_model = Hy3Config.from_env().model
         return {
             "api_version": "v1",
             "authentication_required": config.authentication_required,
             "hypothesis_examples": {"default": 60, "minimum": 1, "maximum": 500},
             "review_modes": sorted(REVIEW_MODES),
+            "model_runtime": {
+                "models": list(MODEL_NAMES),
+                "default_model": default_model if default_model in MODEL_NAMES else "hy3",
+                "per_job_credentials": True,
+            },
             "code_submission": {
                 "enabled": os.getenv("SANDBOX_BACKEND", "local").strip().lower() == "docker",
                 "language": "python", "max_code_chars": 20_000, "max_steps": 20,
@@ -425,6 +460,28 @@ def create_app(
             "ok": bool(health.get("ok")),
             "requested_model": health.get("requested_model"),
             "latency_ms": health.get("latency_ms"),
+        }
+
+    @app.post("/api/v1/health/model")
+    async def model_health(request: Request, _: str = Depends(require_api_key)):
+        payload = await _bounded_payload(request, config, ModelConnectionRequest)
+        base = Hy3Config.from_env()
+        client_config = replace(
+            base,
+            model=payload.model,
+            api_key=payload.provider_api_key or base.api_key,
+            timeout_seconds=min(base.timeout_seconds, 30.0),
+        )
+        try:
+            health = await run_in_threadpool(Hy3Client(client_config).probe)
+        except Hy3APIError as exc:
+            error = public_model_error(exc, payload.model)
+            raise APIError(503, error["code"], error["message"])
+        return {
+            "ok": bool(health.get("ok")),
+            "requested_model": health.get("requested_model"),
+            "latency_ms": health.get("latency_ms"),
+            "probe": health.get("probe"),
         }
 
     @app.get("/api/v1/problems")
@@ -512,8 +569,11 @@ def create_app(
                 raise APIError(503, "submission_sandbox_required", "提交用户代码必须启用 Docker 安全沙盒，请配置 SANDBOX_BACKEND=docker 后重启服务")
             if not await run_in_threadpool(docker_probe.ready, os.getenv("SANDBOX_DOCKER_IMAGE", "hy3-process-sandbox:py3.12")):
                 raise APIError(503, "submission_sandbox_unavailable", "Docker 沙盒未就绪，请启动 Docker 并构建沙盒镜像后重试")
+        runtime = {"model": payload.model, "api_key": payload.provider_api_key}
         try:
             options = {"submission": submission} if submission is not None else {}
+            if runtime is not None:
+                options["runtime"] = runtime
             job = await run_in_threadpool(
                 manager.submit,
                 payload.problem_id,
@@ -571,5 +631,9 @@ def create_app(
     @app.get("/", include_in_schema=False)
     async def index() -> FileResponse:
         return FileResponse(ASSETS / "index.html", media_type="text/html")
+
+    @app.get("/submit", include_in_schema=False)
+    async def submission_page() -> FileResponse:
+        return FileResponse(ASSETS / "submission.html", media_type="text/html")
 
     return app

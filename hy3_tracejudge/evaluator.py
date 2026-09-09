@@ -10,7 +10,7 @@ from .hy3_client import Hy3Client
 from .multi_agent import _build_decision, run_multi_agent_review, run_single_agent_review
 from .property_testing import find_counterexample
 from .protocol import validate_answer_shape
-from .verdicts import test_verdict, unsupported_verdict
+from .verdicts import is_infrastructure_error, provisional_failure_owner, test_verdict, unsupported_verdict
 
 
 ERROR_LABELS = {
@@ -94,8 +94,11 @@ def evaluate_answer(
             "final_correct": None,
             "process_correct": False,
             "process_status": "invalid",
+            "failure_owner": "model",
+            "failure_owner_status": "provisional",
             "localization_status": "unlocalized",
             "assessment_note": "答案格式不符合协议，未执行测试；格式问题不等同于第一步题意错误。",
+            "reasoning_evidence": [],
             "review_coverage": {"expected": 0, "completed": 0, "conclusive": 0},
             "unsupported_correct": None,
             "first_error_step": None,
@@ -152,6 +155,32 @@ def evaluate_answer(
             }
     final_correct = test_verdict(provisional["execution"], hypothesis)
     process_correct = decision["process_correct"]
+    review_failure_owners = set()
+    if isinstance(hy3_review, dict) and hy3_review.get("status") == "error":
+        review_failure_owners.add(hy3_review.get("failure_owner", "infrastructure"))
+    if isinstance(orchestration, dict):
+        review_failure_owners.update(
+            item.get("failure_owner", "infrastructure")
+            for item in orchestration.get("specialist_reviews", [])
+            if item.get("status") == "error"
+        )
+        review_failure_owners.update(
+            item.get("failure_owner", "infrastructure")
+            for item in orchestration.get("conflicts", [])
+            if item.get("kind") == "arbitration_unavailable"
+        )
+    review_incomplete = (
+        hy3_client is not None
+        and decision["review_coverage"]["completed"] < decision["review_coverage"]["expected"]
+    )
+    evaluator_failure = "evaluator" in review_failure_owners
+    infrastructure_failure = (
+        is_infrastructure_error(execution.harness_error)
+        or bool(hypothesis and hypothesis.get("status") == "error")
+        or "infrastructure" in review_failure_owners
+        or (review_incomplete and not evaluator_failure)
+        or final_correct is None
+    )
     error_types = [item for item in decision["error_types"] if item in ERROR_LABELS]
     return {
         "problem_id": problem["id"],
@@ -159,9 +188,15 @@ def evaluate_answer(
         "final_correct": final_correct,
         "process_correct": process_correct,
         "process_status": decision["process_status"],
+        "failure_owner": provisional_failure_owner(
+            final_correct, process_correct, infrastructure_failure=infrastructure_failure,
+            evaluator_failure=evaluator_failure,
+        ),
+        "failure_owner_status": "provisional",
         "localization_status": decision["localization_status"],
         "review_coverage": decision["review_coverage"],
         "assessment_note": decision["rationale"],
+        "reasoning_evidence": decision.get("reasoning_evidence", []),
         "unsupported_correct": unsupported_verdict(final_correct, process_correct),
         "first_error_step": decision["first_error_step"],
         "error_types": error_types,

@@ -43,6 +43,23 @@ def is_infrastructure_error(error: Any) -> bool:
     return isinstance(error, str) and error.startswith(INFRASTRUCTURE_ERRORS)
 
 
+def provisional_failure_owner(
+    final: bool | None,
+    process: bool | None,
+    *,
+    infrastructure_failure: bool = False,
+    evaluator_failure: bool = False,
+) -> str | None:
+    """Attribute an automated failure provisionally; human audit may override it."""
+    if final is False or process is False:
+        return "model"
+    if evaluator_failure:
+        return "evaluator"
+    if infrastructure_failure:
+        return "infrastructure"
+    return None
+
+
 def test_verdict(execution: dict[str, Any], hypothesis: dict[str, Any] | None) -> bool | None:
     """A concrete failure wins; missing or broken checks must never imply success."""
     fixed_unknown = is_infrastructure_error(execution.get("harness_error"))
