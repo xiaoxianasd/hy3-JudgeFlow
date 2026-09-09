@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,19 @@ def write_json(path: Path, value: Any) -> None:
             json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        # Windows 上目标文件被杀毒软件/索引器/其他读者瞬时占用时，
+        # os.replace 会抛 WinError 5；短暂退避重试即可，不属于数据错误。
+        last_error: OSError | None = None
+        for attempt in range(5):
+            try:
+                os.replace(temporary, path)
+                last_error = None
+                break
+            except OSError as error:
+                last_error = error
+                time.sleep(min(0.5 * (2 ** attempt), 4.0))
+        if last_error is not None:
+            raise last_error
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
