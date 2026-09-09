@@ -1,0 +1,907 @@
+{
+  "version": 1,
+  "calibration_type": "manual_rubric",
+  "scope": "2026-09-09 Hy3 external benchmark（60 道 MBPP+/EvalPlus 题）",
+  "benchmark_file": "reports/hy3_external_20260909.json",
+  "status": "template_pending_manual_review",
+  "prepared_by": "WorkBuddy assisted template",
+  "dimensions": [
+    {
+      "id": "algorithm_recognition",
+      "label": "算法识别",
+      "range": [
+        0,
+        3
+      ]
+    },
+    {
+      "id": "state_invariant",
+      "label": "状态或不变量",
+      "range": [
+        0,
+        3
+      ]
+    },
+    {
+      "id": "proof_burden",
+      "label": "正确性证明",
+      "range": [
+        0,
+        3
+      ]
+    },
+    {
+      "id": "boundary_traps",
+      "label": "边界陷阱",
+      "range": [
+        0,
+        3
+      ]
+    },
+    {
+      "id": "complexity_pressure",
+      "label": "复杂度约束",
+      "range": [
+        0,
+        3
+      ]
+    }
+  ],
+  "thresholds": {
+    "easy": [
+      0,
+      6
+    ],
+    "medium": [
+      7,
+      10
+    ],
+    "hard": [
+      11,
+      15
+    ]
+  },
+  "instructions": "逐题按五维量表评分（每维 0-3），总分映射难度；heuristic_* 为 AST 启发式初值仅供参考，人工评分后以 calibrated_difficulty 为准。评分依据应来自题面与参考实现本身，不得根据模型是否答对反推。",
+  "records": [
+    {
+      "problem_id": "mbpp_Mbpp/8",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/9",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/11",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/12",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/14",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/17",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/18",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/19",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/56",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/57",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/58",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/59",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/62",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/63",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/64",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/66",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/67",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/68",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/69",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/70",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/71",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/72",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/74",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/75",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/77",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/79",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/80",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/86",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/89",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/90",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/91",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/92",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/93",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/95",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/96",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/97",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/100",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/101",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/102",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/103",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/104",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/105",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/109",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/111",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/116",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/118",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/119",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/120",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/123",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/125",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/127",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/128",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/129",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/131",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/132",
+      "heuristic_difficulty": "easy",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/133",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/135",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/138",
+      "heuristic_difficulty": "medium",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/141",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    },
+    {
+      "problem_id": "mbpp_Mbpp/142",
+      "heuristic_difficulty": "hard",
+      "scores": {
+        "algorithm_recognition": null,
+        "state_invariant": null,
+        "proof_burden": null,
+        "boundary_traps": null,
+        "complexity_pressure": null
+      },
+      "total": null,
+      "calibrated_difficulty": null,
+      "evidence": ""
+    }
+  ]
+}
