@@ -3,8 +3,8 @@
   "calibration_type": "manual_rubric",
   "scope": "2026-09-09 Hy3 external benchmark（60 道 MBPP+/EvalPlus 题）",
   "benchmark_file": "reports/hy3_external_20260909.json",
-  "status": "template_pending_manual_review",
-  "prepared_by": "WorkBuddy assisted template",
+  "status": "ai_assisted_draft_pending_spot_check",
+  "prepared_by": "AI-assisted draft (WorkBuddy)；提交前需人工抽查复核",
   "dimensions": [
     {
       "id": "algorithm_recognition",
@@ -67,841 +67,841 @@
       "problem_id": "mbpp_Mbpp/8",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "纯列表推导的逐元素平方；边界仅空列表。"
     },
     {
       "problem_id": "mbpp_Mbpp/9",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 3,
+      "calibrated_difficulty": "easy",
+      "evidence": "s+s 旋转技巧与线性扫描；全相同字符返回 1 是主要边界。"
     },
     {
       "problem_id": "mbpp_Mbpp/11",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 4,
+      "calibrated_difficulty": "easy",
+      "evidence": "replace 计数参数加反转删除末次出现；陷阱在字符不存在或首尾同一处。"
     },
     {
       "problem_id": "mbpp_Mbpp/12",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "sorted 以行和为键；行和相等时保持原序即可。"
     },
     {
       "problem_id": "mbpp_Mbpp/14",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "三棱柱体积公式直接代入。"
     },
     {
       "problem_id": "mbpp_Mbpp/17",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "正方形周长公式 4a。"
     },
     {
       "problem_id": "mbpp_Mbpp/18",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 3,
+      "calibrated_difficulty": "easy",
+      "evidence": "逐字符 replace 删除；第二个串重复字符会重复 replace 但结果正确。"
     },
     {
       "problem_id": "mbpp_Mbpp/19",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "set 去重比较长度；空列表视为无重复。"
     },
     {
       "problem_id": "mbpp_Mbpp/56",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 4,
+      "calibrated_difficulty": "easy",
+      "evidence": "题面已给出等式关系，实现为字符串反转；陷阱在个位数与末位 0 的反序退化。"
     },
     {
       "problem_id": "mbpp_Mbpp/57",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "降序排序后拼接；含 0 时拼接仍成立。"
     },
     {
       "problem_id": "mbpp_Mbpp/58",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 3,
+      "calibrated_difficulty": "easy",
+      "evidence": "异或符号位技巧；两数之一为 0 时异或不变号需留意但语义正确。"
     },
     {
       "problem_id": "mbpp_Mbpp/59",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "八角数公式 3n^2-2n 直接代入。"
     },
     {
       "problem_id": "mbpp_Mbpp/62",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "min() 直接取；空列表由断言排除。"
     },
     {
       "problem_id": "mbpp_Mbpp/63",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "逐对取绝对差的最大值；空列表边界未覆盖但题目不涉。"
     },
     {
       "problem_id": "mbpp_Mbpp/64",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "按第二元素排序；同分保持原序。"
     },
     {
       "problem_id": "mbpp_Mbpp/66",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "过滤正数计数。"
     },
     {
       "problem_id": "mbpp_Mbpp/67",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 8,
+      "calibrated_difficulty": "medium",
+      "evidence": "需知道 Bell 三角递推并维护二维 DP；证明递推成立是主要负担。"
     },
     {
       "problem_id": "mbpp_Mbpp/68",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "双向 all 判定单调；相等元素两个方向都要容忍，空表与单元素需默认真。"
     },
     {
       "problem_id": "mbpp_Mbpp/69",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "滑动窗口逐段比较；空子列表语义与长度不足需先处理。"
     },
     {
       "problem_id": "mbpp_Mbpp/70",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "set 收集长度判一；空输入边界。"
     },
     {
       "problem_id": "mbpp_Mbpp/71",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 2
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 8,
+      "calibrated_difficulty": "medium",
+      "evidence": "梳排序为指定算法，但 gap 缩减与 swapped 状态维护有负担，需平均 O(n log n)。"
     },
     {
       "problem_id": "mbpp_Mbpp/72",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 0,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "两平方差可表 iff n%4!=2 的数论结论非显然，需引用或证明。"
     },
     {
       "problem_id": "mbpp_Mbpp/74",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 1,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "按 pattern 分组到 set；陷阱在长度不等与多对一映射方向。"
     },
     {
       "problem_id": "mbpp_Mbpp/75",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "过滤全部可整除的元组；k 为正整数时不涉除零。"
     },
     {
       "problem_id": "mbpp_Mbpp/77",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "取模判整除。"
     },
     {
       "problem_id": "mbpp_Mbpp/79",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "长度取模判奇偶。"
     },
     {
       "problem_id": "mbpp_Mbpp/80",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "四面体数公式直接代入。"
     },
     {
       "problem_id": "mbpp_Mbpp/86",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "中心六边形数公式直接代入。"
     },
     {
       "problem_id": "mbpp_Mbpp/89",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "N-1 即最近较小数。"
     },
     {
       "problem_id": "mbpp_Mbpp/90",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "max 长度；空列表会抛错但题目不涉。"
     },
     {
       "problem_id": "mbpp_Mbpp/91",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "any 子串匹配；空列表为假。"
     },
     {
       "problem_id": "mbpp_Mbpp/92",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 4,
+      "calibrated_difficulty": "easy",
+      "evidence": "恰两种数字且相邻互异；两位数与 1212 式重复是主要陷阱。"
     },
     {
       "problem_id": "mbpp_Mbpp/93",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "幂运算符直接计算。"
     },
     {
       "problem_id": "mbpp_Mbpp/95",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "min 子列表长度；空外层列表边界。"
     },
     {
       "problem_id": "mbpp_Mbpp/96",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 2,
+      "calibrated_difficulty": "easy",
+      "evidence": "O(n) 枚举因数；大数时可优化到 sqrt 但非必需。"
     },
     {
       "problem_id": "mbpp_Mbpp/97",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 1,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 3,
+      "calibrated_difficulty": "easy",
+      "evidence": "展平后计数字典；count 在推导式中为 O(n^2)，规模小时无碍。"
     },
     {
       "problem_id": "mbpp_Mbpp/100",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 3,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 10,
+      "calibrated_difficulty": "medium",
+      "evidence": "镜像半侧加进位传播；全 9、奇偶长度、进位跨位传播均为隐蔽陷阱。"
     },
     {
       "problem_id": "mbpp_Mbpp/101",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "按下标直接取；越界未处理但题目不涉。"
     },
     {
       "problem_id": "mbpp_Mbpp/102",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "split 后逐段首字母大写；前导下划线产生空段需留意。"
     },
     {
       "problem_id": "mbpp_Mbpp/103",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 2
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "需知道 Eulerian 数递推；递归无记忆化在 n 稍大时指数膨胀。"
     },
     {
       "problem_id": "mbpp_Mbpp/104",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "逐子列表排序；嵌套空列表无碍。"
     },
     {
       "problem_id": "mbpp_Mbpp/105",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "布尔求和即计数。"
     },
     {
       "problem_id": "mbpp_Mbpp/109",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 3,
+      "calibrated_difficulty": "easy",
+      "evidence": "轮转 n 次后奇数个数等价于统计前 n 位中 1 的个数；n 超界需留意。"
     },
     {
       "problem_id": "mbpp_Mbpp/111",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "set 交集；空嵌套列表会抛错但题目不涉。"
     },
     {
       "problem_id": "mbpp_Mbpp/116",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "字符串拼接转整数；元素为多位数时语义按题面即拼接。"
     },
     {
       "problem_id": "mbpp_Mbpp/118",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "split 空格。"
     },
     {
       "problem_id": "mbpp_Mbpp/119",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 0,
+        "proof_burden": 1,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 4,
+      "calibrated_difficulty": "easy",
+      "evidence": "XOR 消去成对元素的标准技巧。"
     },
     {
       "problem_id": "mbpp_Mbpp/120",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "逐对绝对乘积取最大；空列表边界。"
     },
     {
       "problem_id": "mbpp_Mbpp/123",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 2,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 2
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 9,
+      "calibrated_difficulty": "medium",
+      "evidence": "亲和数判定需因数和枚举与成对去重；sqrt 枚举与完全平方去重是关键。"
     },
     {
       "problem_id": "mbpp_Mbpp/125",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 1,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 7,
+      "calibrated_difficulty": "medium",
+      "evidence": "0/1 映射为 ±1 后的 Kadane 最大子段和；全 1 串返回 0。"
     },
     {
       "problem_id": "mbpp_Mbpp/127",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "直接相乘。"
     },
     {
       "problem_id": "mbpp_Mbpp/128",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "split 后按长度过滤。"
     },
     {
       "problem_id": "mbpp_Mbpp/129",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 1,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "行列与双对角线和逐一校验；非方阵输入未防御但题目不涉。"
     },
     {
       "problem_id": "mbpp_Mbpp/131",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 1,
+        "proof_burden": 1,
+        "boundary_traps": 2,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "收集元音位置后逆序回填；无元音或全元音串是主要边界。"
     },
     {
       "problem_id": "mbpp_Mbpp/132",
       "heuristic_difficulty": "easy",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "join 元组。"
     },
     {
       "problem_id": "mbpp_Mbpp/133",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "过滤负数求和。"
     },
     {
       "problem_id": "mbpp_Mbpp/135",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 0,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 0,
+      "calibrated_difficulty": "easy",
+      "evidence": "六边形数公式直接代入。"
     },
     {
       "problem_id": "mbpp_Mbpp/138",
       "heuristic_difficulty": "medium",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 2,
+        "state_invariant": 0,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 5,
+      "calibrated_difficulty": "easy",
+      "evidence": "任何正偶数都可表为非零 2 幂之和的结论需要论证；n=0 与负数需排除。"
     },
     {
       "problem_id": "mbpp_Mbpp/141",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 1,
+        "state_invariant": 2,
+        "proof_burden": 2,
+        "boundary_traps": 1,
+        "complexity_pressure": 1
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 7,
+      "calibrated_difficulty": "medium",
+      "evidence": "煎饼排序为指定算法，每轮两次翻转定位最大值；翻转区间状态需仔细维护。"
     },
     {
       "problem_id": "mbpp_Mbpp/142",
       "heuristic_difficulty": "hard",
       "scores": {
-        "algorithm_recognition": null,
-        "state_invariant": null,
-        "proof_burden": null,
-        "boundary_traps": null,
-        "complexity_pressure": null
+        "algorithm_recognition": 0,
+        "state_invariant": 0,
+        "proof_burden": 0,
+        "boundary_traps": 1,
+        "complexity_pressure": 0
       },
-      "total": null,
-      "calibrated_difficulty": null,
-      "evidence": ""
+      "total": 1,
+      "calibrated_difficulty": "easy",
+      "evidence": "zip 三列表同位比较计数。"
     }
   ]
 }
