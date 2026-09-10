@@ -2,6 +2,8 @@
 
 > Process-Level Evaluation and Error Localization with Hy3
 
+Demo：[Bilibili 演示视频](https://www.bilibili.com/video/BV1r5Yg6JEj3/)
+
 面向“标准答案可自动验证”的算法题，调用 **Hy3 模型**生成完整解题过程，并结合代码沙盒、固定测试、Hypothesis 属性测试、规则量表和 Hy3 多 Agent 复核，判断过程是否成立、定位首个错误步骤、归类错误，以及识别“答案正确但过程不支持结论”的样本。
 
 > 这是个人参赛原型，不是腾讯或 Hy3 官方项目。仓库内的构造集结果用于评估器验收，不能冒充 Hy3 模型能力结果；真实模型结果必须在连接 Hy3 服务后重新生成。
