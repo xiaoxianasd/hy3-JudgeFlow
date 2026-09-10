@@ -1,0 +1,66 @@
+﻿sample_id,problem_id,difficulty,final_correct,process_correct,process_status,failure_owner,failure_owner_status,localization_status,assessment_note,unsupported_correct,first_error_step,error_types,run_error,status,attempts
+hy3-mbpp_Mbpp/8,mbpp_Mbpp/8,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/9,mbpp_Mbpp/9,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,13
+hy3-mbpp_Mbpp/11,mbpp_Mbpp/11,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/12,mbpp_Mbpp/12,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/14,mbpp_Mbpp/14,medium,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,1
+hy3-mbpp_Mbpp/17,mbpp_Mbpp/17,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,4
+hy3-mbpp_Mbpp/18,mbpp_Mbpp/18,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/19,mbpp_Mbpp/19,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/56,mbpp_Mbpp/56,medium,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,1
+hy3-mbpp_Mbpp/57,mbpp_Mbpp/57,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/58,mbpp_Mbpp/58,easy,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,13
+hy3-mbpp_Mbpp/59,mbpp_Mbpp/59,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/62,mbpp_Mbpp/62,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,3
+hy3-mbpp_Mbpp/63,mbpp_Mbpp/63,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/64,mbpp_Mbpp/64,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/66,mbpp_Mbpp/66,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/67,mbpp_Mbpp/67,hard,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,completed,2
+hy3-mbpp_Mbpp/68,mbpp_Mbpp/68,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,4
+hy3-mbpp_Mbpp/69,mbpp_Mbpp/69,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/70,mbpp_Mbpp/70,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/71,mbpp_Mbpp/71,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,3
+hy3-mbpp_Mbpp/72,mbpp_Mbpp/72,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/74,mbpp_Mbpp/74,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,7
+hy3-mbpp_Mbpp/75,mbpp_Mbpp/75,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/77,mbpp_Mbpp/77,easy,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,calculation_error,,completed,1
+hy3-mbpp_Mbpp/79,mbpp_Mbpp/79,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,3
+hy3-mbpp_Mbpp/80,mbpp_Mbpp/80,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/86,mbpp_Mbpp/86,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/89,mbpp_Mbpp/89,easy,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,completed,1
+hy3-mbpp_Mbpp/90,mbpp_Mbpp/90,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/91,mbpp_Mbpp/91,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/92,mbpp_Mbpp/92,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,9
+hy3-mbpp_Mbpp/93,mbpp_Mbpp/93,easy,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,2
+hy3-mbpp_Mbpp/95,mbpp_Mbpp/95,medium,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,2
+hy3-mbpp_Mbpp/96,mbpp_Mbpp/96,medium,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,1
+hy3-mbpp_Mbpp/97,mbpp_Mbpp/97,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/100,mbpp_Mbpp/100,hard,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,unjustified_jump,,completed,9
+hy3-mbpp_Mbpp/101,mbpp_Mbpp/101,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/102,mbpp_Mbpp/102,medium,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,4
+hy3-mbpp_Mbpp/103,mbpp_Mbpp/103,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,9
+hy3-mbpp_Mbpp/104,mbpp_Mbpp/104,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/105,mbpp_Mbpp/105,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/109,mbpp_Mbpp/109,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 2。,False,2,algorithm_error|concept_error,,completed,9
+hy3-mbpp_Mbpp/111,mbpp_Mbpp/111,medium,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 4。,True,4,complexity_error,,completed,1
+hy3-mbpp_Mbpp/116,mbpp_Mbpp/116,medium,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,2
+hy3-mbpp_Mbpp/118,mbpp_Mbpp/118,easy,True,,uncertain,,provisional,uncertain,评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。,,,,,completed,1
+hy3-mbpp_Mbpp/119,mbpp_Mbpp/119,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,9
+hy3-mbpp_Mbpp/120,mbpp_Mbpp/120,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,5
+hy3-mbpp_Mbpp/123,mbpp_Mbpp/123,hard,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 4。,True,4,complexity_error,,completed,9
+hy3-mbpp_Mbpp/125,mbpp_Mbpp/125,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 1。,False,1,condition_omission|problem_misread,,completed,6
+hy3-mbpp_Mbpp/127,mbpp_Mbpp/127,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,2
+hy3-mbpp_Mbpp/128,mbpp_Mbpp/128,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/129,mbpp_Mbpp/129,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/131,mbpp_Mbpp/131,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/132,mbpp_Mbpp/132,easy,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/133,mbpp_Mbpp/133,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/135,mbpp_Mbpp/135,medium,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/138,mbpp_Mbpp/138,medium,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,completed,2
+hy3-mbpp_Mbpp/141,mbpp_Mbpp/141,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-mbpp_Mbpp/142,mbpp_Mbpp/142,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-taco_converter,taco_converter,hard,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 2。,True,2,algorithm_error,,completed,2
+hy3-taco_mix,taco_mix,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-taco_count_change,taco_count_change,hard,True,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 3。,True,3,concept_error,,completed,1
+hy3-taco_simplify,taco_simplify,hard,True,True,valid,,provisional,not_applicable,已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。,False,,,,completed,1
+hy3-taco_bowling_score,taco_bowling_score,hard,False,False,invalid,model,provisional,localized,当前最早定位的错误证据出现在步骤 6。,False,6,implementation_error,,completed,10
