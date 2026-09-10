@@ -4,23 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Hy3 JudgeFlow · 推理过程评估与首错定位平台</title>
-  <link rel="stylesheet" href="/assets/styles.css?v=20260908.3">
-  <script src="/assets/app.js?v=20260909.2" defer></script>
+  <title>Hy3 推理评估 · JudgeFlow</title>
+  <link rel="stylesheet" href="/assets/vendor/bootstrap-icons/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/assets/styles.css?v=20260910.1">
+  <script src="/assets/app.js?v=20260910.4" defer></script>
 </head>
 <body data-page="evaluation">
-<main>
+<div class="app-shell">
+  <aside class="app-nav" aria-label="主导航">
+    <a class="nav-brand" href="/">
+      <span class="mark">H3</span>
+      <span><strong>Hy3 JudgeFlow</strong><span class="kicker">Evidence Review</span></span>
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link active" href="/" aria-current="page"><i class="bi bi-bezier2" aria-hidden="true"></i><span>推理评估</span></a>
+      <a id="submissionMode" class="nav-link" href="/submit"><i class="bi bi-code-square" aria-hidden="true"></i><span>提交代码</span></a>
+      <a class="nav-link" href="#problemDetails"><i class="bi bi-journal-code" aria-hidden="true"></i><span>题目详情</span></a>
+      <a class="nav-link" href="#result"><i class="bi bi-shield-check" aria-hidden="true"></i><span>结论证据</span></a>
+    </nav>
+    <div class="nav-note"><strong>可执行证据优先</strong>验证代码，定位推理首错。</div>
+  </aside>
+<main class="app-main">
   <header class="page-header">
     <div class="topbar">
-      <div class="brand"><div class="mark">H3</div><div><div class="kicker">Process Evaluation</div><strong>Hy3 JudgeFlow</strong></div></div>
-      <a id="submissionMode" class="secondary-link" href="/submit">提交我的代码</a>
+      <div class="breadcrumb"><span>评估任务</span><i class="bi bi-chevron-right" aria-hidden="true"></i><b>Hy3 推理评估</b></div>
+      <div class="top-actions"><div class="top-search" aria-hidden="true"><i class="bi bi-search"></i><span>搜索题目或记录</span></div><a class="top-action" href="#run"><i class="bi bi-play-fill" aria-hidden="true"></i><span>运行评估</span></a></div>
     </div>
-    <h1>Hy3 推理过程评估与首错定位平台</h1>
-    <p class="lead">检查 Hy3 的答案和推理是否可靠，结合可执行测试与多 Agent 审查定位第一个错误，并保留可复核证据。</p>
+    <h1>Hy3 推理评估</h1>
+    <p class="lead">验证代码，定位推理首错</p>
     <ol class="journey" aria-label="评估流程">
-      <li><span>1</span><div><b>选择题目</b><small>查看题面、约束和公开示例</small></div></li>
-      <li><span>2</span><div><b>运行 Hy3 评估</b><small>生成解答并执行多层验证</small></div></li>
-      <li><span>3</span><div><b>查看结论与证据</b><small>答案、过程、首错和失败归属</small></div></li>
+      <li><span>1</span><div><b>选题</b><small>题面、约束与示例</small></div></li>
+      <li><span>2</span><div><b>运行评估</b><small>生成解答并验证</small></div></li>
+      <li><span>3</span><div><b>结论与证据</b><small>结果、首错与反例</small></div></li>
     </ol>
   </header>
   <div class="layout">
@@ -34,14 +49,14 @@
         <button id="checkKey" class="secondary" type="button">保存并检查连接</button>
       </div>
       <div id="modelSettings" class="model-settings">
-        <label class="label" for="modelName">解题与审查模型</label>
+        <label class="label" for="modelName">模型</label>
         <select id="modelName"><option value="hy3">hy3</option><option value="hy4-preview">hy4-preview</option></select>
         <label class="label" for="modelApiKey">TokenHub API Key</label>
         <div class="secret-row"><input id="modelApiKey" type="password" autocomplete="off" maxlength="512" placeholder="留空则使用服务端 HY3_API_KEY"><button id="toggleModelKey" class="secondary compact" type="button" aria-pressed="false">显示</button></div>
-        <p id="modelKeyHint" class="hint">逐任务使用，只保存在当前标签页，不写入评测结果。</p>
-        <button id="checkModel" class="secondary" type="button">保存并检查模型</button>
+        <p id="modelKeyHint" class="hint">仅存当前标签页，不写入结果。</p>
+        <button id="checkModel" class="secondary" type="button">检查模型</button>
       </div>
-      <label id="problemSelectLabel" class="label" for="problem">评测题目</label>
+      <label id="problemSelectLabel" class="label" for="problem">题目</label>
       <div class="problem-filters">
         <input id="problemSearch" type="search" autocomplete="off" placeholder="搜索题名或题号" aria-label="搜索题目">
         <select id="difficulty" aria-label="按难度筛选题目">
@@ -63,12 +78,13 @@
           </div>
         </div>
       </details>
-      <button id="run" class="primary-action" type="button" disabled><span>2</span>运行所选模型评估</button>
+      <button id="run" class="primary-action" type="button" disabled><i class="bi bi-play-fill" aria-hidden="true"></i>运行评估</button>
       <div id="generationPipeline" class="pipeline" aria-label="运行进度">
         <div class="pipe">生成分步解答</div><div class="pipe">执行固定与属性测试</div><div class="pipe">多 Agent 审查</div><div class="pipe">汇总结论与首错</div>
       </div>
     </aside>
     <div class="workspace">
+      <section id="result" class="card empty" aria-label="评估结果"><div><span class="empty-step">3</span><b>等待评估</b><br>运行后显示结论与证据</div></section>
       <section id="problemDetails" class="card problem-details" aria-labelledby="problemTitle">
         <div class="section-heading"><span class="label">题目内容</span><span id="problemId" class="problem-id"></span></div>
         <h2 id="problemTitle">正在加载题库…</h2>
@@ -82,9 +98,9 @@
           <p class="problem-source">题目来源：<span id="problemSource"></span></p>
         </div>
       </section>
-      <section id="result" class="card empty" aria-label="评估结果"><div><span class="empty-step">3</span><b>等待评估结果</b><br>选择题目并运行后，这里将优先展示结论与直接证据</div></section>
     </div>
   </div>
 </main>
+</div>
 </body>
 </html>

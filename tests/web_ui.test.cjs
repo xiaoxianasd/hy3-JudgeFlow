@@ -93,7 +93,7 @@ test('model selector checks hy4-preview with a session-scoped provider key', asy
 
 test('professional heading and complete public problem details', async t => {
   const page = await openPage(t);
-  assert.equal(await page.locator('h1').textContent(), 'Hy3 推理过程评估与首错定位平台');
+  assert.equal(await page.locator('h1').textContent(), 'Hy3 推理评估');
   assert.equal(await page.locator('.journey li').count(), 3);
   assert.equal(await page.locator('#submissionPanel').count(), 0);
   assert.equal(await page.locator('.advanced-settings').getAttribute('open'), null);

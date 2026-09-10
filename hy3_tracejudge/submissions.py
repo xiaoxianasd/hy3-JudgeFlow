@@ -18,10 +18,15 @@ class SubmissionSandboxRequired(RuntimeError):
     pass
 
 
-def require_submission_sandbox() -> None:
+def require_submission_sandbox(*, allow_local: bool = False) -> None:
     SandboxLimits.from_env(timeout_seconds=3)
-    if os.getenv("SANDBOX_BACKEND", "local").strip().lower() != "docker":
-        raise SubmissionSandboxRequired("User code requires the Docker sandbox")
+    backend = os.getenv("SANDBOX_BACKEND", "local").strip().lower()
+    if backend == "docker":
+        return
+    local_opt_in = os.getenv("ALLOW_UNSAFE_LOCAL_EXECUTION", "false").strip().lower() in {"1", "true", "yes", "on"}
+    development = os.getenv("APP_ENV", "development").strip().lower() != "production"
+    if not (backend == "local" and allow_local and local_opt_in and development):
+        raise SubmissionSandboxRequired("User code requires an approved sandbox")
 
 
 class Finding(BaseModel):
@@ -95,7 +100,7 @@ def evaluate_submission(
     hy3_client: Hy3Client | None = None,
 ) -> dict[str, Any]:
     # Repeat the API check at execution time: a queued job may outlive a config change.
-    require_submission_sandbox()
+    require_submission_sandbox(allow_local=bool(submission.get("_allow_local_sandbox")))
     code = submission["code"]
     steps = submission.get("reasoning_steps", [])
     update_phase("code_execution")

@@ -41,6 +41,17 @@ SPECIALISTS = (
     Specialist("boundary_agent", "boundary", "检查空输入、重复值、不可达和其他边界条件"),
 )
 
+STAGE_LABELS = {
+    "understanding": "题意与建模",
+    "algorithm": "算法",
+    "proof": "正确性证明",
+    "complexity": "复杂度",
+    "boundary": "边界",
+    "execution": "代码执行",
+    "semantic_review": "语义审查",
+    "unassigned_steps": "未分配步骤",
+}
+
 
 def _confidence(value: Any) -> float:
     return confidence_value(value)
@@ -277,10 +288,13 @@ def _build_decision(
                 "conclusive": len(conclusive)}
     if not candidates:
         verdict = None if incomplete else True
+        incomplete_stages = sorted(set(incomplete))
+        incomplete_text = "、".join(STAGE_LABELS.get(item, item) for item in incomplete_stages)
+        coverage_text = f"审查完成 {coverage['completed']}/{coverage['expected']}，结论明确 {coverage['conclusive']}/{coverage['expected']}"
         return (
             {
                 "deterministic_errors": deterministic_errors,
-                "incomplete_checks": sorted(set(incomplete)),
+                "incomplete_checks": incomplete_stages,
                 "process_correct": verdict,
                 "process_status": process_status(verdict),
                 "localization_status": localization_status(verdict, None),
@@ -291,7 +305,7 @@ def _build_decision(
                     [_confidence(item["confidence"]) for item in reviews if item["status"] == "completed"] or [0.0]
                 ),
                 "rationale": (
-                    "评审或验证证据不完整（缺失、低置信度、覆盖不足或意见待复核），无法确认过程成立。"
+                    f"{coverage_text}；{incomplete_text}审查弃判或证据不完整，无法确认过程成立。"
                     if incomplete else "已完成覆盖全部步骤的语义审查；测试通过不等于完整正确性证明。"
                 ),
                 "supporting_sources": [],

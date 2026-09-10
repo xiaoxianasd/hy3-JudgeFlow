@@ -9,7 +9,7 @@ from hy3_tracejudge.api.jobs import EvaluationJobManager, run_evaluation_job
 from hy3_tracejudge.catalog import get_problem
 from hy3_tracejudge.executor import ExecutionResult, TestResult as CaseResult
 from hy3_tracejudge.hy3_client import Hy3APIError
-from hy3_tracejudge.submissions import SubmissionSandboxRequired, evaluate_submission, normalize_review
+from hy3_tracejudge.submissions import SubmissionSandboxRequired, evaluate_submission, normalize_review, require_submission_sandbox
 
 
 CODE = "def solve_case(case):\n    return True\n"
@@ -98,6 +98,15 @@ class SubmissionTests(unittest.TestCase):
         with self.assertRaises(SubmissionSandboxRequired):
             evaluate_submission(get_problem("two_sum_exists"), {"code": CODE}, hypothesis_examples=1, update_phase=lambda _: None)
         candidate.assert_not_called()
+
+    @patch.dict("os.environ", {"APP_ENV": "development", "SANDBOX_BACKEND": "local", "ALLOW_UNSAFE_LOCAL_EXECUTION": "true"})
+    def test_worker_accepts_explicit_local_development_marker(self):
+        require_submission_sandbox(allow_local=True)
+
+    @patch.dict("os.environ", {"APP_ENV": "production", "SANDBOX_BACKEND": "local", "ALLOW_UNSAFE_LOCAL_EXECUTION": "true"})
+    def test_worker_rejects_local_marker_in_production(self):
+        with self.assertRaises(SubmissionSandboxRequired):
+            require_submission_sandbox(allow_local=True)
 
     @patch("hy3_tracejudge.submissions.evaluate_submission", return_value={"source": "user_submission"})
     @patch("hy3_tracejudge.api.jobs.Hy3Client")

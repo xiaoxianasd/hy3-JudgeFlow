@@ -160,6 +160,16 @@ class DockerReadinessProbe:
             return self._ready
 
 
+def _local_code_submission_enabled(config: WebConfig) -> bool:
+    flag = os.getenv("ALLOW_UNSAFE_LOCAL_EXECUTION", "false").strip().lower()
+    return (
+        not config.production
+        and config.host in {"127.0.0.1", "localhost", "::1"}
+        and os.getenv("SANDBOX_BACKEND", "local").strip().lower() == "local"
+        and flag in {"1", "true", "yes", "on"}
+    )
+
+
 def _request_id(request: Request) -> str:
     return getattr(request.state, "request_id", uuid.uuid4().hex)
 
@@ -406,6 +416,8 @@ def create_app(
     @app.get("/api/v1/config")
     async def public_config() -> dict[str, Any]:
         default_model = Hy3Config.from_env().model
+        sandbox_backend = os.getenv("SANDBOX_BACKEND", "local").strip().lower()
+        local_submission = _local_code_submission_enabled(config)
         return {
             "api_version": "v1",
             "authentication_required": config.authentication_required,
@@ -417,7 +429,12 @@ def create_app(
                 "per_job_credentials": True,
             },
             "code_submission": {
-                "enabled": os.getenv("SANDBOX_BACKEND", "local").strip().lower() == "docker",
+                "enabled": sandbox_backend == "docker" or local_submission,
+                "sandbox_mode": "docker" if sandbox_backend == "docker" else ("local" if local_submission else "unavailable"),
+                "warning": (
+                    "本机开发模式使用受限本地沙盒，只能运行你信任的代码；正式部署必须使用 Docker。"
+                    if local_submission else None
+                ),
                 "language": "python", "max_code_chars": 20_000, "max_steps": 20,
                 "max_step_chars": 2000, "max_request_bytes": config.max_request_bytes,
             },
@@ -565,10 +582,14 @@ def create_app(
         except KeyError:
             raise APIError(404, "problem_not_found", "指定题目不存在")
         if submission is not None:
-            if os.getenv("SANDBOX_BACKEND", "local").strip().lower() != "docker":
+            sandbox_backend = os.getenv("SANDBOX_BACKEND", "local").strip().lower()
+            local_submission = _local_code_submission_enabled(config)
+            if sandbox_backend != "docker" and not local_submission:
                 raise APIError(503, "submission_sandbox_required", "提交用户代码必须启用 Docker 安全沙盒，请配置 SANDBOX_BACKEND=docker 后重启服务")
-            if not await run_in_threadpool(docker_probe.ready, os.getenv("SANDBOX_DOCKER_IMAGE", "hy3-process-sandbox:py3.12")):
+            if sandbox_backend == "docker" and not await run_in_threadpool(docker_probe.ready, os.getenv("SANDBOX_DOCKER_IMAGE", "hy3-process-sandbox:py3.12")):
                 raise APIError(503, "submission_sandbox_unavailable", "Docker 沙盒未就绪，请启动 Docker 并构建沙盒镜像后重试")
+            if local_submission:
+                submission = {**submission, "_allow_local_sandbox": True}
         runtime = {"model": payload.model, "api_key": payload.provider_api_key}
         try:
             options = {"submission": submission} if submission is not None else {}

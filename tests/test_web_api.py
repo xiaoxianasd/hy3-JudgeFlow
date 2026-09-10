@@ -258,14 +258,24 @@ class WebAPITests(unittest.TestCase):
         self.assertEqual(self.manager.submissions, [])
 
     @patch.dict("os.environ", {"SANDBOX_BACKEND": "local", "ALLOW_UNSAFE_LOCAL_EXECUTION": "true"})
-    def test_code_submission_cannot_use_local_sandbox(self) -> None:
+    def test_code_submission_can_use_opted_in_local_sandbox_on_loopback(self) -> None:
         response = self.client.post("/api/v1/code-submissions", headers=self.auth, json={
             "problem_id": "two_sum_exists", "code": "def solve_case(case): return True",
         })
+        self.assertEqual(response.status_code, 202)
+        config = self.client.get("/api/v1/config").json()["code_submission"]
+        self.assertTrue(config["enabled"])
+        self.assertEqual(config["sandbox_mode"], "local")
+        self.assertTrue(self.manager.code_submissions[0]["_allow_local_sandbox"])
+
+    @patch.dict("os.environ", {"SANDBOX_BACKEND": "local", "ALLOW_UNSAFE_LOCAL_EXECUTION": "true"})
+    def test_code_submission_rejects_local_sandbox_on_non_loopback(self) -> None:
+        client = TestClient(create_app(test_config(host="0.0.0.0"), self.manager))
+        response = client.post("/api/v1/code-submissions", headers=self.auth, json={
+            "problem_id": "two_sum_exists", "code": "def solve_case(case): return True",
+        })
         self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.json()["error"]["code"], "submission_sandbox_required")
-        self.assertFalse(self.client.get("/api/v1/config").json()["code_submission"]["enabled"])
-        self.assertEqual(self.manager.submissions, [])
+        self.assertFalse(client.get("/api/v1/config").json()["code_submission"]["enabled"])
 
     @patch.dict("os.environ", {"SANDBOX_BACKEND": "docker"})
     @patch("hy3_tracejudge.api.app.DockerReadinessProbe.ready", return_value=False)
@@ -337,7 +347,7 @@ class WebAPITests(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Hy3 JudgeFlow", response.text)
-        self.assertIn("Hy3 推理过程评估与首错定位平台", response.text)
+        self.assertIn("Hy3 推理评估", response.text)
         self.assertIn('id="modelName"', response.text)
         self.assertIn('value="hy4-preview"', response.text)
         self.assertIn('id="modelApiKey"', response.text)
@@ -348,7 +358,7 @@ class WebAPITests(unittest.TestCase):
         self.assertNotIn("过程真的成立吗", response.text)
         self.assertIn('id="problemDetails"', response.text)
         self.assertIn('id="publicExamples"', response.text)
-        self.assertLess(response.text.index('id="problemDetails"'), response.text.index('id="result"'))
+        self.assertLess(response.text.index('id="result"'), response.text.index('id="problemDetails"'))
 
     def test_unknown_problem_is_not_accepted(self) -> None:
         response = self.client.post(

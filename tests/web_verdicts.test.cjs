@@ -9,19 +9,37 @@ const vm = require('node:vm');
 
 function app() {
   const elements = new Map();
+  const storage = new Map();
   const element = selector => {
     if (!elements.has(selector)) elements.set(selector, {value: 'single', innerHTML: '', textContent: '', addEventListener() {}});
     return elements.get(selector);
   };
   const context = vm.createContext({
     document: {querySelector: element, querySelectorAll: () => []},
-    sessionStorage: {getItem: () => ''}, Headers, TextEncoder,
+    sessionStorage: {
+      getItem: key => storage.get(key) || '',
+      setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: key => storage.delete(key),
+    }, Headers, TextEncoder,
     // init() is deliberately held before API/DOM setup; tests call render directly.
     fetch: () => new Promise(() => {}),
   });
   vm.runInContext(readFileSync(path.join(__dirname, '../hy3_tracejudge/web_assets/app.js'), 'utf8'), context);
   return {context, html: () => element('#result').innerHTML};
 }
+
+test('queued and running jobs expose useful elapsed progress', () => {
+  const {context} = app();
+  const now = Date.parse('2026-09-09T09:13:52Z');
+  assert.equal(
+    context.jobProgressText({status: 'queued', phase: 'queued', created_at: '2026-09-09T09:11:52Z'}, now),
+    '正在排队 · 已等待 2 分 0 秒；前面任务完成后会自动开始',
+  );
+  assert.equal(
+    context.jobProgressText({status: 'running', phase: 'hy3_generation', created_at: '2026-09-09T09:11:52Z', started_at: '2026-09-09T09:13:22Z'}, now),
+    '模型正在生成分步解答 · 本次运行 30 秒 · 总等待 2 分 0 秒',
+  );
+});
 
 function sample(overrides = {}) {
   return {answer: {code: 'def solve_case(case): return True', reasoning_steps: []}, evaluation: {
@@ -37,8 +55,21 @@ test('generation renders strict three-state verdicts without truthiness conversi
   const {context, html} = app();
   for (const [value, expected] of [[true, '成立'], [false, '不成立'], [null, '证据不足'], ['false', '证据不足']]) {
     context.render(sample({process_correct: value}));
-    assert.equal(html().match(/<span>推理过程<\/span><b>([^<]+)<\/b>/)[1], expected);
+    assert.equal(html().match(/<span>推理<\/span><b>([^<]+)<\/b>/)[1], expected);
   }
+});
+
+test('reasoning evidence uses a state-specific heading and tone', () => {
+  const {context} = app();
+  const passing = context.reasoningEvidenceHtml(sample({process_correct: true}).evaluation);
+  const failing = context.reasoningEvidenceHtml(sample({process_correct: false}).evaluation);
+  const uncertain = context.reasoningEvidenceHtml(sample({process_correct: null}).evaluation);
+  assert.match(passing, /reasoning-evidence good/);
+  assert.match(passing, /推理审查证据/);
+  assert.match(failing, /reasoning-evidence bad/);
+  assert.match(failing, /反例证据/);
+  assert.match(uncertain, /reasoning-evidence uncertain/);
+  assert.match(uncertain, /待补充证据/);
 });
 
 test('disabled Hypothesis is not described as no counterexample found', () => {
@@ -85,11 +116,11 @@ test('code validation and reasoning counterevidence are separate and the first-e
       evidence: ['步骤 5 错把“含面额 1”解释为最优硬币数等于 amount。'],
     }],
   }));
-  assert.match(html(), /代码验证证据/);
-  assert.match(html(), /推理反例证据/);
+  assert.match(html(), /代码证据/);
+  assert.match(html(), /反例证据/);
   assert.match(html(), /步骤 5/);
   assert.match(html(), /coins=\[1,5\].*最优答案是 2/);
-  assert.ok(html().indexOf('推理反例证据') < html().indexOf('查看完整推理过程'));
+  assert.ok(html().indexOf('反例证据') < html().indexOf('完整推理'));
 });
 
 test('saved supervisor jobs recover the selected first-error evidence without a rerun', () => {
@@ -118,6 +149,17 @@ test('failed and inconclusive reviewers are not displayed as passing', () => {
   ]}}));
   assert.match(html(), /调用失败 · 证据不足/);
   assert.doesNotMatch(html(), /通过审查/);
+});
+
+test('inconclusive verdict names completed, conclusive and abstaining reviews', () => {
+  const {context, html} = app();
+  context.render(sample({orchestration: {
+    topology: 'pipeline+supervisor', model_calls: 5, conflicts: [{kind: 'review_inconclusive'}],
+    decision: {incomplete_checks: ['understanding']},
+    specialist_reviews: [],
+  }}));
+  assert.match(html(), /审查完成 4\/5，结论明确 4\/5/);
+  assert.match(html(), /题意与建模审查弃判或证据不完整/);
 });
 
 test('shape errors with no execution or valid step array remain renderable', () => {

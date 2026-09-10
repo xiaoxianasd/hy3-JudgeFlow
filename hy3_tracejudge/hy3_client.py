@@ -63,6 +63,9 @@ def public_model_error(
     elif "timed out" in str(exc).lower() or "timeout" in str(exc).lower():
         code = "upstream_timeout"
         message = f"{model} 推理超时，请稍后重试或改用单评审"
+    elif "finish_reason=length" in str(exc):
+        code = "model_output_truncated"
+        message = f"{model} 的解答生成达到 token 上限，未能输出最终 JSON，请降低生成推理强度后重试"
     elif exc.failure_owner == "model":
         code = "model_output_invalid"
         message = f"{model} 未返回可校验的完整解答，请重新运行"
@@ -103,6 +106,8 @@ class Hy3Config:
     model: str = "hy3"
     timeout_seconds: float = 180.0
     max_tokens: int = 8192
+    review_max_tokens: int = 12288
+    solve_reasoning_effort: str = "low"
     temperature: float = 0.9
     top_p: float = 1.0
     review_reasoning_effort: str = "high"
@@ -116,6 +121,12 @@ class Hy3Config:
             model=os.getenv("HY3_MODEL", cls.model),
             timeout_seconds=float(os.getenv("HY3_TIMEOUT_SECONDS", str(cls.timeout_seconds))),
             max_tokens=int(os.getenv("HY3_MAX_TOKENS", str(cls.max_tokens))),
+            review_max_tokens=int(
+                os.getenv("HY3_REVIEW_MAX_TOKENS", str(cls.review_max_tokens))
+            ),
+            solve_reasoning_effort=os.getenv(
+                "HY3_SOLVE_REASONING_EFFORT", cls.solve_reasoning_effort
+            ),
             temperature=float(os.getenv("HY3_TEMPERATURE", str(cls.temperature))),
             top_p=float(os.getenv("HY3_TOP_P", str(cls.top_p))),
             review_reasoning_effort=os.getenv(
@@ -279,7 +290,7 @@ class Hy3Client:
         )
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            reasoning_effort="high",
+            reasoning_effort=self.config.solve_reasoning_effort,
         )
         answer = self._extract_structured(metadata, "Hy3 solver", failure_owner="model")
         errors = validate_answer_shape(answer)
@@ -394,7 +405,7 @@ class Hy3Client:
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             reasoning_effort=self.config.review_reasoning_effort,
-            max_tokens=min(self.config.max_tokens, 4096),
+            max_tokens=self.config.review_max_tokens,
         )
         return self._extract_structured(
             metadata, "Hy3 submission reviewer", failure_owner="evaluator"
@@ -426,7 +437,12 @@ class Hy3Client:
             "必须服从给定的执行接口契约；原题直接参数调用与 solve_case(case) 适配语义等价，"
             "不得仅因这两种接口形式不同而判为题意误读。标准过程为空表示未标注，"
             "不能把缺少标准过程本身作为错误证据。"
-            "证据不足时 valid=null；确定有错但无法定位时 valid=false 且 first_error_step=null。"
+            "valid 的含义必须严格遵守：已经逐项核对目标步骤且未发现实质错误时返回 true；"
+            "发现实质错误时返回 false；只有缺少题面、目标步骤等关键输入，或证据相互冲突到无法判断时才返回 null。"
+            "不得因为‘没有发现错误证据’、规则提示缺词、未写非必要说明或测试覆盖有限而返回 null；"
+            "这些情况下仍须依据本阶段的独立语义核对给出 true 或 false。"
+            "返回 null 时必须在 reason 中明确写出缺少的关键输入或无法化解的具体冲突。"
+            "确定有错但无法定位时 valid=false 且 first_error_step=null。"
             "reviewed_steps 必须准确列出本次已审查的目标步骤。"
             "判断必须引用题目条件、标准过程或可执行证据。若错误来自更早阶段，标记 inherited_from_step，"
             "若可用具体输入反驳某一步，必须在 reason 和 evidence 中写明输入、该步骤声称的结果与正确结果。"
@@ -473,7 +489,7 @@ class Hy3Client:
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             reasoning_effort=self.config.review_reasoning_effort,
-            max_tokens=min(self.config.max_tokens, 4096),
+            max_tokens=self.config.review_max_tokens,
         )
         review = self._extract_structured(
             metadata, f"Hy3 specialist {agent_name}", failure_owner="evaluator"
@@ -540,7 +556,7 @@ class Hy3Client:
         metadata = self.chat(
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             reasoning_effort=self.config.review_reasoning_effort,
-            max_tokens=min(self.config.max_tokens, 4096),
+            max_tokens=self.config.review_max_tokens,
         )
         decision = self._extract_structured(
             metadata, "Hy3 swarm supervisor", failure_owner="evaluator"

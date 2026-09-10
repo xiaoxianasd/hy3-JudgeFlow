@@ -94,6 +94,38 @@ class FakeAdapterMismatchClient:
         )
 
 
+class FakeInconclusiveUnderstandingClient(FakeMultiAgentClient):
+    def review_stage(self, problem, answer, evidence, *, agent_name, stage, responsibility):
+        if stage == "understanding":
+            return (
+                {
+                    "valid": None,
+                    "reviewed_steps": [1],
+                    "first_error_step": None,
+                    "error_type": None,
+                    "reason": "未形成明确结论",
+                    "evidence": [],
+                    "inherited_from_step": None,
+                    "confidence": 0.0,
+                },
+                {"usage": {"prompt_tokens": 5, "completion_tokens": 2}},
+            )
+        with self._lock:
+            self.calls.append(agent_name)
+        return (
+            {
+                "valid": True,
+                "reviewed_steps": [next(item["id"] for item in answer["reasoning_steps"] if item["stage"] == stage)],
+                "first_error_step": None,
+                "error_type": None,
+                "reason": "本阶段证据成立",
+                "evidence": [],
+                "inherited_from_step": None,
+                "confidence": 0.95,
+            },
+            {"usage": {"prompt_tokens": 5, "completion_tokens": 2}},
+        )
+
 def external_adapter_answer(problem):
     return {
         "reasoning_steps": [
@@ -158,6 +190,19 @@ class MultiAgentTests(unittest.TestCase):
         self.assertEqual(client.arbitration_calls, 1)
         self.assertEqual(result["model_calls"], 6)
         self.assertEqual(result["decision"]["supporting_sources"], ["algorithm_agent"])
+
+    def test_inconclusive_review_names_the_abstaining_stage(self) -> None:
+        result = run_multi_agent_review(
+            FakeInconclusiveUnderstandingClient(),
+            self.problem,
+            self.answer,
+            self.provisional,
+            mode="supervisor",
+        )
+        self.assertIsNone(result["decision"]["process_correct"])
+        self.assertEqual(result["decision"]["review_coverage"]["completed"], 5)
+        self.assertEqual(result["decision"]["review_coverage"]["conclusive"], 4)
+        self.assertIn("题意与建模审查弃判", result["decision"]["rationale"])
 
     def test_evaluator_exposes_supervisor_trace(self) -> None:
         client = FakeMultiAgentClient()

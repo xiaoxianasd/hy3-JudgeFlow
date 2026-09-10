@@ -66,7 +66,6 @@ def run_evaluation_job(
         )
     update_phase("hy3_generation")
     answer, generation = client.solve(problem)
-    update_phase("process_evaluation")
     evaluation = evaluate_answer(
         problem,
         answer,
@@ -74,6 +73,7 @@ def run_evaluation_job(
         hy3_client=client,
         review_mode=review_mode,
         reveal_hidden=False,
+        update_phase=update_phase,
     )
     public_generation = {
         key: generation.get(key)

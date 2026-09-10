@@ -6,10 +6,13 @@ let evaluationRunning = false;
 let selectedProblemId = null;
 const workflow = document.body?.dataset?.page === 'submission' ? 'submission' : 'generation';
 let submissionEnabled = false;
+let submissionSandboxMode = 'unavailable';
+let submissionSandboxWarning = '';
 let submissionMaxBytes = 65536;
 let perJobCredentials = true;
 let healthController = null;
 const submissionDrafts = new Map();
+const activeJobStorageKey = `tracejudge_active_job_${workflow}`;
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -30,6 +33,55 @@ function saveModelSettings() {
   const key = $('#modelApiKey')?.value.trim() || '';
   if (key) sessionStorage.setItem('tracejudge_model_api_key', key);
   else sessionStorage.removeItem('tracejudge_model_api_key');
+}
+
+function rememberActiveJob(job, statusUrl) {
+  sessionStorage.setItem(activeJobStorageKey, JSON.stringify({id: job.id, status_url: statusUrl}));
+  if (typeof window !== 'undefined' && window.history?.replaceState) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('job', job.id);
+    window.history.replaceState({}, '', url);
+  }
+}
+
+function loadActiveJob() {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(activeJobStorageKey) || 'null');
+    if (value && typeof value.id === 'string' && typeof value.status_url === 'string') return value;
+    if (typeof window !== 'undefined') {
+      const id = new URLSearchParams(window.location.search).get('job') || '';
+      if (/^[A-Za-z0-9]{32}$/.test(id)) return {id, status_url: `/api/v1/evaluations/${id}`};
+    }
+    return null;
+  } catch (_) {
+    sessionStorage.removeItem(activeJobStorageKey);
+    return null;
+  }
+}
+
+function clearActiveJob() {
+  sessionStorage.removeItem(activeJobStorageKey);
+}
+
+function durationText(seconds) {
+  const value = Math.max(0, Math.floor(seconds));
+  if (value < 60) return `${value} 秒`;
+  return `${Math.floor(value / 60)} 分 ${value % 60} 秒`;
+}
+
+function jobProgressText(job, now = Date.now()) {
+  const created = Date.parse(job.created_at || '');
+  const started = Date.parse(job.started_at || '');
+  const total = Number.isFinite(created) ? durationText((now - created) / 1000) : '计算中';
+  if (job.status === 'queued') return `正在排队 · 已等待 ${total}；前面任务完成后会自动开始`;
+  const running = Number.isFinite(started) ? durationText((now - started) / 1000) : total;
+  const phases = {
+    starting: 'Worker 已领取任务', hy3_generation: '模型正在生成分步解答',
+    code_execution: '正在执行固定测试', property_testing: '正在搜索属性反例',
+    process_evaluation: '正在执行测试与过程审查', multi_agent_review: '正在进行多 Agent 审查',
+    submission_review: '正在审查代码与过程', result_synthesis: '正在汇总结论与首错'
+  };
+  return `${phases[job.phase] || '评估任务正在运行'} · 本次运行 ${running} · 总等待 ${total}`;
 }
 
 async function api(path, options = {}) {
@@ -118,7 +170,7 @@ function showProblem() {
     $('#result').className = 'card empty';
     $('#result').innerHTML = workflow === 'submission'
       ? '<div><b>等待代码提交</b><br>提交后将在此展示实现、推理和定位证据</div>'
-      : '<div><span class="empty-step">3</span><b>等待评估结果</b><br>选择题目并运行后，这里将优先展示结论与直接证据</div>';
+      : '<div><span class="empty-step">3</span><b>等待评估结果</b><br>运行后显示结论与证据</div>';
   }
   $('#problemContent').hidden = !problem;
   if ($('#submissionProblem')) {
@@ -197,7 +249,13 @@ function setEvaluationRunning(running) {
 function updateSubmissionControls() {
   if (!$('#submitCode')) return;
   $('#submitCode').disabled = evaluationRunning || !$('#problem').value || !submissionEnabled;
-  $('#submissionSafety').hidden = submissionEnabled;
+  const safety = $('#submissionSafety');
+  const badge = $('#sandboxBadge');
+  if (badge) badge.textContent = submissionSandboxMode === 'docker' ? 'Python · Docker 沙盒' : 'Python · 本机受限沙盒';
+  safety.hidden = submissionEnabled && submissionSandboxMode === 'docker';
+  safety.textContent = submissionEnabled
+    ? (submissionSandboxWarning || '当前使用受限本地沙盒。')
+    : '代码提交当前不可用：请启动 Docker，或仅在本机开发环境显式启用受限本地沙盒。';
 }
 
 function rememberSubmissionDraft() {
@@ -264,8 +322,10 @@ function setPipeline(phase) {
   items.forEach(item => item.className = 'pipe');
   let done = 0;
   let active = -1;
-  if (phase === 'hy3_generation') active = 0;
-  if (phase === 'process_evaluation') { done = 1; active = 2; }
+  if (phase === 'queued' || phase === 'starting' || phase === 'hy3_generation') active = 0;
+  if (phase === 'code_execution' || phase === 'property_testing') { done = 1; active = 1; }
+  if (phase === 'process_evaluation' || phase === 'multi_agent_review' || phase === 'submission_review') { done = 2; active = 2; }
+  if (phase === 'result_synthesis') { done = 3; active = 3; }
   if (phase === 'completed') done = items.length;
   items.forEach((item, index) => {
     if (index < done || phase === 'completed') item.classList.add('done');
@@ -297,7 +357,17 @@ function verdictText(value, positive = '成立', negative = '不成立') {
 }
 
 function verdictTone(value) {
-  return value === true ? '' : value === false ? 'bad' : 'uncertain';
+  return value === true ? 'good' : value === false ? 'bad' : 'uncertain';
+}
+
+function inconclusiveSummary(evaluation) {
+  const coverage = evaluation.review_coverage;
+  const incompleteChecks = evaluation.orchestration?.decision?.incomplete_checks;
+  if ((evaluation.process_correct !== null && evaluation.process_correct !== undefined) || !coverage || coverage.expected <= 0 || !Array.isArray(incompleteChecks)) return '';
+  const stageLabels = {understanding: '题意与建模', algorithm: '算法', proof: '正确性证明', complexity: '复杂度', boundary: '边界', execution: '代码执行', semantic_review: '语义审查', unassigned_steps: '未分配步骤'};
+  const incomplete = incompleteChecks.map(item => stageLabels[item] || item);
+  const detail = incomplete.length ? `；${incomplete.join('、')}审查弃判或证据不完整` : '';
+  return `审查完成 ${coverage.completed}/${coverage.expected}，结论明确 ${coverage.conclusive}/${coverage.expected}${detail}，无法确认过程成立。`;
 }
 
 function propertyCheckText(hypothesis) {
@@ -368,6 +438,9 @@ function normalizedReasoningEvidence(evaluation) {
 function reasoningEvidenceHtml(evaluation) {
   const items = normalizedReasoningEvidence(evaluation);
   const tone = verdictTone(evaluation.process_correct);
+  const heading = evaluation.process_correct === true
+    ? '推理审查证据'
+    : evaluation.process_correct === false ? '反例证据' : '待补充证据';
   let body = '';
   if (items.length) {
     body = items.map(item => {
@@ -386,9 +459,25 @@ function reasoningEvidenceHtml(evaluation) {
   } else if (evaluation.process_correct === false) {
     body = '<p>已判定推理过程存在问题，但评审未提供可单独展示的结构化反例。</p>';
   } else {
-    body = '<p>当前证据不足，尚不能确认是否存在推理反例。</p>';
+    body = `<p>${esc(inconclusiveSummary(evaluation) || '当前证据不足，尚不能确认是否存在推理反例。')}</p>`;
   }
-  return `<section class="evidence-panel reasoning-evidence ${tone}"><h3>推理反例证据</h3>${body}</section>`;
+  return `<section class="evidence-panel reasoning-evidence ${tone}"><h3>${heading}</h3>${body}</section>`;
+}
+
+function reasoningTimelineHtml(steps, firstErrorStep) {
+  if (!steps.length) return '';
+  return `<section class="reasoning-map" aria-label="推理步骤"><div class="reasoning-map-header"><b>推理步骤</b><span>共 ${steps.length} 步</span></div><div class="reasoning-track">${steps.map(step => {
+    const bad = step.id === firstErrorStep ? ' bad' : '';
+    return `<div class="reasoning-node${bad}" title="${esc(step.title || `步骤 ${step.id}`)}"><b>${esc(step.id)}</b><em>${esc(step.title || `步骤 ${step.id}`)}</em></div>`;
+  }).join('')}</div></section>`;
+}
+
+function executionTableHtml(execution) {
+  const tests = Array.isArray(execution?.tests)
+    ? execution.tests.filter(item => item?.visibility === 'public').slice(0, 6)
+    : [];
+  if (!tests.length) return '';
+  return `<div class="evidence-table-wrap"><table class="evidence-table"><thead><tr><th>公开用例</th><th>预期</th><th>实际</th><th>结果</th></tr></thead><tbody>${tests.map((item, index) => `<tr><td>${esc(item.name || `用例 ${index + 1}`)}</td><td>${esc(formatValue(item.expected))}</td><td>${esc(formatValue(item.actual))}</td><td class="${item.passed ? 'pass' : 'fail'}">${item.passed ? '通过' : '未通过'}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function render(value) {
@@ -406,20 +495,24 @@ function render(value) {
     : coverage ? '未调用模型评审' : '历史记录未提供评审覆盖统计';
   const fixedText = execution ? `${execution.passed}/${execution.total}${execution.harness_error ? '（执行异常，请结合错误信息复核）' : ''}` : '未执行';
   const failureOwner = failureOwnerText(evaluation.failure_owner, evaluation.failure_owner_status);
+  const assessmentNote = inconclusiveSummary(evaluation) || evaluation.assessment_note || '历史记录未提供判定说明，建议重新评估。';
   $('#result').className = 'card';
-  $('#result').innerHTML = `<div class="result-heading"><span class="step-number">3</span><div><span class="label">评估结论</span><h2>答案、过程与首错</h2></div></div><div class="metrics">
-    <div class="metric ${verdictTone(evaluation.final_correct)}"><span>测试验证</span><b>${verdictText(evaluation.final_correct, '通过当前测试', '未通过')}</b></div>
-    <div class="metric ${verdictTone(evaluation.process_correct)}"><span>推理过程</span><b>${verdictText(evaluation.process_correct)}</b></div>
-    <div class="metric"><span>错误定位</span><b>${esc(position)}</b></div></div>
-    <p class="assessment-note ${verdictTone(evaluation.process_correct)}">${esc(evaluation.assessment_note || '历史记录未提供判定说明，建议重新评估。')}</p>
-    <section class="evidence-panel code-evidence"><h3>代码验证证据</h3><p>固定测试 ${esc(fixedText)}；Hypothesis：${esc(propertyCheckText(hypothesis))}。</p>
+  $('#result').innerHTML = `<div class="result-topline"><div class="result-title">评估结果 <span class="result-id">${esc(value.problem_id || '')}</span></div><span class="label">结论与证据</span></div><div class="metrics">
+    <div class="metric ${verdictTone(evaluation.final_correct)}"><span>测试</span><b>${verdictText(evaluation.final_correct, '测试通过', '未通过')}</b></div>
+    <div class="metric ${verdictTone(evaluation.process_correct)}"><span>推理</span><b>${verdictText(evaluation.process_correct)}</b></div>
+    <div class="metric"><span>首错</span><b>${esc(position)}</b></div></div>
+    <p class="assessment-note ${verdictTone(evaluation.process_correct)}">${esc(assessmentNote)}</p>
+    ${reasoningTimelineHtml(steps, evaluation.first_error_step)}
+    <div class="evidence-grid"><section class="evidence-panel code-evidence"><h3>代码证据</h3><p>固定测试 ${esc(fixedText)}；Hypothesis：${esc(propertyCheckText(hypothesis))}。</p>
+    <div class="evidence-stat-row"><span class="evidence-stat">固定测试 ${esc(fixedText)}</span><span class="evidence-stat">${esc(propertyCheckText(hypothesis))}</span></div>
+    ${executionTableHtml(execution)}
     ${hypothesis?.counterexample && !hypothesis.error ? `<h4>代码最小反例</h4><pre>${esc(formatValue(hypothesis.counterexample))}</pre>` : ''}</section>
-    ${reasoningEvidenceHtml(evaluation)}
+    ${reasoningEvidenceHtml(evaluation)}</div>
     <div class="verdict-metadata">${failureOwner ? `<p>失败归属：${esc(failureOwner)}</p>` : ''}<p>错误类型：${esc((evaluation.error_labels || []).join('、') || (evaluation.process_correct === true ? '未发现' : '未确认'))}</p></div>
     <p class="detail-note">测试通过仅表示当前测试覆盖内未发现错误，不是完整正确性证明。</p>
-    <details class="result-details"><summary>查看完整推理过程</summary><div class="details-body"><div class="steps">${steps.map(step => `<div class="step ${step.id === evaluation.first_error_step ? 'bad' : ''}"><b>${esc(step.id)}. ${esc(step.title)}</b><div>${esc(step.content)}</div></div>`).join('')}</div></div></details>
-    <details class="result-details"><summary>查看多 Agent 审查</summary><div class="details-body"><p>${esc(coverageText)}</p>${renderAgents(evaluation)}</div></details>
-    <details class="result-details"><summary>查看模型生成代码</summary><div class="details-body"><pre>${esc(answer.code || '')}</pre></div></details>`;
+    <details class="result-details"><summary>完整推理</summary><div class="details-body"><div class="steps">${steps.map(step => `<div class="step ${step.id === evaluation.first_error_step ? 'bad' : ''}"><b>${esc(step.id)}. ${esc(step.title)}</b><div>${esc(step.content)}</div></div>`).join('')}</div></div></details>
+    <details class="result-details"><summary>Agent 审查</summary><div class="details-body"><p>${esc(coverageText)}</p>${renderAgents(evaluation)}</div></details>
+    <details class="result-details"><summary>Hy3 代码</summary><div class="details-body"><pre>${esc(answer.code || '')}</pre></div></details>`;
 }
 
 function renderSubmission(value) {
@@ -459,19 +552,44 @@ async function pollJob(statusUrl) {
     const value = await api(statusUrl);
     const job = value.job;
     setPipeline(job.phase);
-    if (job.status === 'succeeded') return job.result;
+    const button = workflow === 'submission' ? $('#submitCode') : $('#run');
+    if (button) button.textContent = `${job.status === 'queued' ? '排队中' : '运行中'} · ${job.id.slice(0, 8)}`;
+    if (job.status === 'succeeded') {
+      clearActiveJob();
+      return job.result;
+    }
     if (job.status === 'failed') {
+      clearActiveJob();
       const failure = job.error || {};
       const owner = failureOwnerText(failure.failure_owner, failure.failure_owner_status);
       const message = `${failure.message || '评估任务失败'}${owner ? `；失败归属：${owner}` : ''}（任务编号：${job.id}）`;
       throw new APIRequestError(message, 500, failure.code || 'evaluation_failed');
     }
     $('#result').className = 'card empty';
-    const phases = {code_execution: '沙盒测试', property_testing: '属性测试与反例搜索', submission_review: '代码与过程审查'};
-    $('#result').innerHTML = `<div><b>评估任务正在运行</b><br>任务 ${esc(job.id.slice(0, 8))} · 阶段 ${esc(phases[job.phase] || job.phase)}</div>`;
+    $('#result').innerHTML = `<div><b>${job.status === 'queued' ? '评估任务正在排队' : '评估任务正在运行'}</b><br>任务 ${esc(job.id.slice(0, 8))}<br>${esc(jobProgressText(job))}</div>`;
     await sleep(1200);
   }
   throw new APIRequestError('等待评估结果超时，可稍后使用任务编号查询', 408, 'poll_timeout');
+}
+
+async function resumeActiveJob() {
+  const saved = loadActiveJob();
+  if (!saved) return;
+  const button = workflow === 'submission' ? $('#submitCode') : $('#run');
+  setEvaluationRunning(true);
+  if (button) button.textContent = `恢复任务 · ${saved.id.slice(0, 8)}`;
+  try {
+    const result = await pollJob(saved.status_url);
+    setPipeline('completed');
+    render(result);
+  } catch (error) {
+    if (error.status === 404) clearActiveJob();
+    $('#result').className = 'card empty';
+    $('#result').innerHTML = `<div class="error"><b>任务查询暂时中断</b><br>${esc(error.message)}<br>刷新页面会继续查询任务 ${esc(saved.id.slice(0, 8))}</div>`;
+  } finally {
+    setEvaluationRunning(false);
+    if (button) button.textContent = workflow === 'submission' ? '提交代码并评估' : '运行评估';
+  }
 }
 
 async function runEvaluation() {
@@ -528,6 +646,7 @@ async function runEvaluation() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
+    rememberActiveJob(submitted.job, submitted.status_url);
     button.textContent = `运行中 · ${submitted.job.id.slice(0, 8)}`;
     const result = await pollJob(submitted.status_url);
     setPipeline('completed');
@@ -537,7 +656,7 @@ async function runEvaluation() {
     $('#result').innerHTML = `<div class="error"><b>运行失败</b><br>${esc(error.message)}</div>`;
   } finally {
     setEvaluationRunning(false);
-    button.textContent = manual ? '提交代码并评估' : `调用 ${selectedModel()} 解答并评估所选题`;
+    button.textContent = manual ? '提交代码并评估' : '运行评估';
   }
 }
 
@@ -546,6 +665,8 @@ async function init() {
     const config = await api('/api/v1/config');
     authenticationRequired = config.authentication_required;
     submissionEnabled = Boolean(config.code_submission?.enabled);
+    submissionSandboxMode = config.code_submission?.sandbox_mode || 'unavailable';
+    submissionSandboxWarning = config.code_submission?.warning || '';
     submissionMaxBytes = config.code_submission?.max_request_bytes || 65536;
     perJobCredentials = config.model_runtime?.per_job_credentials !== false;
     updateSubmissionControls();
@@ -563,11 +684,12 @@ async function init() {
     $('#checkModel').disabled = !perJobCredentials;
     $('#toggleModelKey').disabled = !perJobCredentials;
     $('#modelKeyHint').textContent = perJobCredentials
-      ? '逐任务使用，只保存在当前标签页，不写入评测结果。'
+      ? '仅存当前标签页，不写入结果。'
       : '当前持久化队列使用服务端 HY3_MODEL/HY3_API_KEY，浏览器逐任务密钥已禁用。';
     problems = await api('/api/v1/problems');
     renderProblemOptions();
-    setHealth(`已选择 ${selectedModel()}，点击“保存并检查模型”测试连接`);
+    setHealth(`${selectedModel()} 待检查`);
+    await resumeActiveJob();
   } catch (error) {
     setHealth(error.message, 'bad');
     if (!problems.length) {

@@ -114,6 +114,16 @@ class Hy3ClientTests(unittest.TestCase):
         self.assertIn("已自动尝试 2 次", public["message"])
         self.assertNotIn("secret provider response", str(public))
 
+    def test_length_limited_generation_has_actionable_public_error(self) -> None:
+        error = Hy3APIError(
+            "Hy3 solver returned reasoning_content but no final content; finish_reason=length",
+            failure_owner="model",
+        )
+        public = public_model_error(error, "hy3", attempts=3, max_attempts=3)
+        self.assertEqual(public["code"], "model_output_truncated")
+        self.assertIn("token 上限", public["message"])
+        self.assertIn("已自动尝试 3 次", public["message"])
+
     def test_probe_performs_real_inference(self) -> None:
         fake = FakeHy3({"data": [{"id": "hy3"}]})
         responses = iter([
@@ -170,7 +180,7 @@ class Hy3ClientTests(unittest.TestCase):
         self.assertEqual(parsed["code"], answer["code"])
         self.assertEqual(fake.last_path, "/chat/completions")
         self.assertEqual(fake.last_payload["model"], "hy3")
-        self.assertEqual(fake.last_payload["chat_template_kwargs"]["reasoning_effort"], "high")
+        self.assertEqual(fake.last_payload["chat_template_kwargs"]["reasoning_effort"], "low")
         self.assertEqual(metadata["request_id"], "test-id")
         system_prompt = fake.last_payload["messages"][0]["content"]
         self.assertIn("允许 import", system_prompt)
@@ -185,7 +195,7 @@ class Hy3ClientTests(unittest.TestCase):
             base_url="https://tokenhub.tencentmaas.com/v1",
         )
         fake.solve(problem)
-        self.assertEqual(fake.last_payload["reasoning_effort"], "high")
+        self.assertEqual(fake.last_payload["reasoning_effort"], "low")
         self.assertEqual(fake.last_payload["response_format"], {"type": "json_object"})
         self.assertNotIn("chat_template_kwargs", fake.last_payload)
 

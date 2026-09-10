@@ -10,5 +10,11 @@ venv/
 *.egg-info/
 tmp/
 reports/hy3_raw/
+web.stdout.log
+web.stderr.log
+reports/*.stdout.log
+reports/*.stderr.log
+reports/*.json.lock
+reports/*_premigration_backup*.json
 data/raw/*
 !data/raw/README.md

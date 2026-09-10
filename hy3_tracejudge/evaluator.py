@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import math
 from collections import Counter
-from typing import Any
+from typing import Any, Callable
 
 from .executor import run_candidate
 from .hy3_client import Hy3Client
@@ -83,11 +83,14 @@ def evaluate_answer(
     hypothesis_examples: int = 60,
     hy3_client: Hy3Client | None = None,
     review_mode: str = "single",
+    update_phase: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     if review_mode not in {"single", "supervisor", "swarm"}:
         raise ValueError(f"Unsupported review mode: {review_mode}")
     shape_errors = validate_answer_shape(answer)
     if shape_errors:
+        if update_phase is not None:
+            update_phase("result_synthesis")
         return {
             "problem_id": problem["id"],
             "difficulty": problem["difficulty"],
@@ -114,9 +117,13 @@ def evaluate_answer(
             "orchestration": None,
         }
 
+    if update_phase is not None:
+        update_phase("code_execution")
     execution = run_candidate(problem, answer["code"])
     hypothesis = None
     if use_hypothesis and not execution.harness_error:
+        if update_phase is not None:
+            update_phase("property_testing")
         hypothesis = find_counterexample(
             problem,
             answer["code"],
@@ -134,6 +141,8 @@ def evaluate_answer(
     if hy3_client is None:
         decision, _ = _build_decision(problem, answer, provisional, [], specialists=())
     else:
+        if update_phase is not None:
+            update_phase("multi_agent_review")
         if review_mode == "single":
             hy3_review, hy3_metadata, decision = run_single_agent_review(
                 hy3_client, problem, answer, provisional
@@ -153,6 +162,8 @@ def evaluate_answer(
                 "model_calls": orchestration["model_calls"],
                 "usage": orchestration["usage_total"],
             }
+    if update_phase is not None:
+        update_phase("result_synthesis")
     final_correct = test_verdict(provisional["execution"], hypothesis)
     process_correct = decision["process_correct"]
     review_failure_owners = set()
